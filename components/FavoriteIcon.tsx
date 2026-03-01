@@ -89,7 +89,7 @@ export default function FavoriteIcon({
         <Star
           onClick={handleChange}
           className={`h-${size} w-${size} hover:cursor-pointer`}
-          fill={isFavorited ? "gold" : "none"}
+          fill={isFavorited ? "lightgray" : "none"}
         />
       </TooltipTrigger>
       <TooltipContent>

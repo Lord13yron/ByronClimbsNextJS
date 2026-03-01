@@ -20,7 +20,7 @@ export const columns: ColumnDef<Climb>[] = [
       return (
         <Tooltip>
           <TooltipTrigger>
-            <Star className="h-4 w-4" fill="gold" />
+            <Star className="h-4 w-4" fill="lightgrey" />
           </TooltipTrigger>
           <TooltipContent>
             <p>Favorites</p>

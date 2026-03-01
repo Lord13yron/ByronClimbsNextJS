@@ -1,6 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
+export const metadata = {
+  title: "About Byron",
+  description:
+    "Discover the climbing journey of Byron, a passionate climber who started at 38. Learn about his experiences, favorite crags in Kelowna, and his transition from bouldering to sport climbing.",
+};
+
 export default function AboutPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -10,7 +16,8 @@ export default function AboutPage() {
         <div className="mb-8">
           <div className="w-full h-74 md:h-110 sm:h-100 rounded-lg flex items-center justify-center mb-4">
             <Image
-              src="/Background-2.JPEG"
+              // src="/Background-2.JPEG"
+              src="https://qrlzxwxpceqrycynoyzh.supabase.co/storage/v1/object/public/ui-images/Background-2.JPEG"
               alt="Byron climbing"
               width={800}
               height={600}
@@ -50,7 +57,8 @@ export default function AboutPage() {
           {/* Add your second photo here - maybe at a crag */}
           <div className="w-full h-90 md:h-130 sm:h-120 rounded-lg flex items-center justify-center mb-4">
             <Image
-              src="/Background-1.jpg"
+              // src="/Background-1.jpg"
+              src="https://qrlzxwxpceqrycynoyzh.supabase.co/storage/v1/object/public/ui-images/Background-1.JPG"
               alt="Climbing in Kelowna"
               width={800}
               height={600}

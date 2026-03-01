@@ -1,27 +1,11 @@
-// import Image from "next/image";
-
-// export default function HeroBanner() {
-//   return (
-//     <div className="w-full h-110 text-center bg-brand-600 relative">
-//       <Image
-//         src="/Background-2.jpeg"
-//         alt="Climbing Adventures"
-//         fill
-//         className="object-cover"
-//       />
-//       <h1 className="text-white absolute text-4xl font-bold left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-//         BYRON CLIMBS
-//       </h1>
-//     </div>
-//   );
-// }
 import Image from "next/image";
 
 export default function HeroBanner() {
   return (
     <div className="relative w-full h-110 flex items-center justify-center bg-brand-600 overflow-hidden">
       <Image
-        src="/background.jpeg"
+        // src="/background.jpeg"
+        src="https://qrlzxwxpceqrycynoyzh.supabase.co/storage/v1/object/public/ui-images/background.JPEG"
         alt="Climbing Adventures"
         fill
         className="object-cover"
