@@ -5,19 +5,14 @@ import { signInWithMagicLink } from "@/lib/auth-actions";
 
 export default function SignUpPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 flex flex-col gap-6">
+    <div className="flex min-h-screen items-center justify-center ">
+      <div className="w-full max-w-md bg-secondary rounded-xl shadow-lg p-8 flex flex-col gap-6">
         <div className="mb-4 text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Sign Up</h1>
-          <p className="text-gray-500 text-sm">
-            Please sign up to create an account.
-          </p>
+          <h1 className="text-2xl font-bold  mb-2">Sign Up</h1>
+          <p className=" text-sm">Please sign up to create an account.</p>
         </div>
         <form action={signInWithMagicLink} className="flex flex-col gap-4">
-          <label
-            htmlFor="email-magic"
-            className="text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="email-magic" className="text-sm font-medium ">
             Email Address
           </label>
           <Input
@@ -26,7 +21,7 @@ export default function SignUpPage() {
             name="email-magic"
             required
             placeholder="you@example.com"
-            className="mb-2"
+            className="mb-2 bg-background"
           />
           <Button type="submit" className="w-full">
             Sign up with Email
@@ -38,7 +33,7 @@ export default function SignUpPage() {
           <div className="grow h-px bg-gray-200" />
         </div>
         <GoogleSignin />
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-6 text-center text-sm ">
           Already have an account?{" "}
           <a
             href="/account/signin"

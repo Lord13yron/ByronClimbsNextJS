@@ -5,40 +5,49 @@
 
 // export default function SigninPage() {
 //   return (
-//     <div className="flex flex-col max-w-md mx-auto gap-4 mt-16">
-//       <form action={signInWithMagicLink} className="flex flex-col gap-1">
-//         <h1>Sign In with Email</h1>
-//         <Input
-//           type="email"
-//           id="email-magic"
-//           name="email-magic"
-//           required
-//           placeholder="Email"
-//         />
-//         <Button type="submit">Sign In</Button>
-//       </form>
-//       <GoogleSignin />
-
-//       {/* <form action={signInUser}>
-//         <Input
-//           type="email"
-//           id="email"
-//           name="email"
-//           required
-//           placeholder="Email"
-//         />
-//         <Input
-//           type="password"
-//           id="password"
-//           name="password"
-//           required
-//           placeholder="Password"
-//         />
-//         <Button type="submit">Sign In</Button>
-//       </form>
-//       <p>
-//         Don&apos;t have an account? <Link href="/account/signup">Sign Up</Link>
-//       </p> */}
+//     <div className="flex min-h-screen items-center justify-center bg-gray-50">
+//       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 flex flex-col gap-6">
+//         <div className="mb-4 text-center">
+//           <h1 className="text-2xl font-bold text-gray-800 mb-2">Sign In</h1>
+//           <p className="text-gray-500 text-sm">
+//             Welcome back! Please sign in to your account.
+//           </p>
+//         </div>
+//         <form action={signInWithMagicLink} className="flex flex-col gap-4">
+//           <label
+//             htmlFor="email-magic"
+//             className="text-sm font-medium text-gray-700"
+//           >
+//             Email Address
+//           </label>
+//           <Input
+//             type="email"
+//             id="email-magic"
+//             name="email-magic"
+//             required
+//             placeholder="you@example.com"
+//             className="mb-2"
+//           />
+//           <Button type="submit" className="w-full">
+//             Sign In with Email
+//           </Button>
+//         </form>
+//         <div className="flex items-center my-4">
+//           <div className="grow h-px bg-gray-200" />
+//           <span className="mx-2 text-gray-400 text-xs">OR</span>
+//           <div className="grow h-px bg-gray-200" />
+//         </div>
+//         <GoogleSignin />
+//         <div className="mt-6 text-center text-sm text-gray-600">
+//           Don&apos;t have an account?{" "}
+//           <a
+//             href="/account/signup"
+//             className="text-blue-600 hover:underline font-medium"
+//           >
+//             Sign Up
+//           </a>
+//         </div>
+//       </div>
 //     </div>
 //   );
 // }
@@ -50,19 +59,16 @@ import { signInWithMagicLink } from "@/lib/auth-actions";
 
 export default function SigninPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 flex flex-col gap-6">
+    <div className="flex min-h-screen items-center justify-center ">
+      <div className="w-full max-w-md bg-secondary rounded-xl shadow-lg p-8 flex flex-col gap-6">
         <div className="mb-4 text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Sign In</h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className="text-2xl font-bold  mb-2">Sign In</h1>
+          <p className=" text-sm">
             Welcome back! Please sign in to your account.
           </p>
         </div>
         <form action={signInWithMagicLink} className="flex flex-col gap-4">
-          <label
-            htmlFor="email-magic"
-            className="text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="email-magic" className="text-sm font-medium ">
             Email Address
           </label>
           <Input
@@ -71,7 +77,7 @@ export default function SigninPage() {
             name="email-magic"
             required
             placeholder="you@example.com"
-            className="mb-2"
+            className="mb-2 bg-background"
           />
           <Button type="submit" className="w-full">
             Sign In with Email
@@ -79,11 +85,11 @@ export default function SigninPage() {
         </form>
         <div className="flex items-center my-4">
           <div className="grow h-px bg-gray-200" />
-          <span className="mx-2 text-gray-400 text-xs">OR</span>
+          <span className="mx-2  text-xs">OR</span>
           <div className="grow h-px bg-gray-200" />
         </div>
         <GoogleSignin />
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-6 text-center text-sm ">
           Don&apos;t have an account?{" "}
           <a
             href="/account/signup"
