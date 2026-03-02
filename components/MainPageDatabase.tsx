@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 
 export default function MainPageDatabase() {
   return (
-    <section className="my-12 py-8 px-6  rounded-lg shadow-lg bg-secondary">
+    <section className="mt-12 mb-9 py-8 px-6  rounded-lg shadow-lg bg-secondary">
       <h2 className="text-3xl font-bold text-center mb-6 ">
         Track Your Climbing Journey
       </h2>

@@ -45,7 +45,7 @@ import { Button } from "./ui/button";
 
 export default function MainPageBlog() {
   return (
-    <div className="py-4">
+    <div className="py-4 border-b-2 border-gray-500">
       <h2 className="text-2xl text-center font-bold mb-4">
         Welcome to Byron&#39;s Climbing Blog
       </h2>
@@ -66,7 +66,7 @@ export default function MainPageBlog() {
         <PostsGrid limit={6} />
       </Suspense>
 
-      <Link href="/blog" className="flex w-full justify-center ">
+      <Link href="/blog" className="flex w-full justify-center mb-4">
         <Button className="cursor-pointer hover:underline">
           View All Posts
         </Button>

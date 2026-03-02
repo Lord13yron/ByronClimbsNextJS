@@ -21,6 +21,7 @@ import {
 import Notes from "./Notes";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import Link from "next/link";
+import DeleteClimb from "./DeleteClimb";
 
 type ClimbProps = {
   databaseId: string;
@@ -49,16 +50,26 @@ export default async function Climb({ databaseId, isAdmin }: ClimbProps) {
           )}
           {climb?.name}{" "}
           {isAdmin ? (
-            <Tooltip>
-              <TooltipTrigger>
-                <Link href={`/admin/edit-climb/${climb.id}-${climb.slug}`}>
-                  <SquarePen className={` hover:cursor-pointer`} />
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Edit Climb - {climb.name}</p>
-              </TooltipContent>
-            </Tooltip>
+            <>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Link href={`/admin/edit-climb/${climb.id}-${climb.slug}`}>
+                    <SquarePen className={` hover:cursor-pointer`} />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit Climb - {climb.name}</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger className="ml-2">
+                  <DeleteClimb climb={climb} size={6} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Delete {climb.name}</p>
+                </TooltipContent>
+              </Tooltip>
+            </>
           ) : (
             <span>
               <FavoriteIcon

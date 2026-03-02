@@ -18,15 +18,20 @@ import { useRouter } from "next/navigation";
 
 type DeleteClimbProps = {
   climb: Climb;
+  size?: number;
 };
 
-export default function DeleteClimb({ climb }: DeleteClimbProps) {
+export default function DeleteClimb({ climb, size = 4 }: DeleteClimbProps) {
   const router = useRouter();
-  function handleDelete() {
+  async function handleDelete() {
     try {
-      deleteClimb(climb.id);
+      await deleteClimb(climb.id);
       toast.success(`Climb - "${climb.name}" deleted successfully!`);
-      router.refresh();
+      if (size === 6) {
+        router.push("/admin/climbs");
+      } else {
+        router.refresh();
+      }
     } catch (error) {
       console.error("Error deleting climb:", error);
       toast.error(
@@ -37,7 +42,10 @@ export default function DeleteClimb({ climb }: DeleteClimbProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Trash2 className="h-4 w-4 hover:text-red-600 cursor-pointer" />
+        {/* <Trash2 className="h-4 w-4 hover:text-red-600 cursor-pointer" /> */}
+        <Trash2
+          className={`h-${size} w-${size} hover:text-red-600 cursor-pointer`}
+        />
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
