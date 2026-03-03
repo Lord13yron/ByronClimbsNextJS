@@ -5,7 +5,7 @@ import { updateSession } from "./lib/supabase/middleware";
 
 // import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Always update the session first
   const response = await updateSession(request);
 

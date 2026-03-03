@@ -21,7 +21,7 @@ export default function Home() {
         <div className=" border-t-2 border-gray-400 pt-8 mt-4">
           <Image
             // src="/Background-3.jpg"
-            src="https://qrlzxwxpceqrycynoyzh.supabase.co/storage/v1/object/public/ui-images/Background-3.JPG"
+            src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ui-images/Background-3.JPG`}
             alt="Logo"
             width={900}
             height={600}

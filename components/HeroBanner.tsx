@@ -5,7 +5,7 @@ export default function HeroBanner() {
     <div className="relative w-full h-110 flex items-center justify-center bg-brand-600 overflow-hidden">
       <Image
         // src="/background.jpeg"
-        src="https://qrlzxwxpceqrycynoyzh.supabase.co/storage/v1/object/public/ui-images/background.JPEG"
+        src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ui-images/background.JPEG`}
         alt="Climbing Adventures"
         fill
         className="object-cover"

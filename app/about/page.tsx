@@ -17,7 +17,7 @@ export default function AboutPage() {
           <div className="w-full h-74 md:h-110 sm:h-100 rounded-lg flex items-center justify-center mb-4">
             <Image
               // src="/Background-2.JPEG"
-              src="https://qrlzxwxpceqrycynoyzh.supabase.co/storage/v1/object/public/ui-images/Background-2.JPEG"
+              src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ui-images/Background-2.JPEG`}
               alt="Byron climbing"
               width={800}
               height={600}
@@ -58,7 +58,7 @@ export default function AboutPage() {
           <div className="w-full h-90 md:h-130 sm:h-120 rounded-lg flex items-center justify-center mb-4">
             <Image
               // src="/Background-1.jpg"
-              src="https://qrlzxwxpceqrycynoyzh.supabase.co/storage/v1/object/public/ui-images/Background-1.JPG"
+              src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ui-images/Background-1.JPG`}
               alt="Climbing in Kelowna"
               width={800}
               height={600}

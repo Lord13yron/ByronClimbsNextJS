@@ -43,7 +43,7 @@ export default async function Climb({ databaseId }: ClimbProps) {
       ) : (
         <div className="w-full relative p-1 h-100 mb-8">
           <Image
-            src="https://qrlzxwxpceqrycynoyzh.supabase.co/storage/v1/object/public/postImages/default-climb.png"
+            src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/postImages/default-climb.png`}
             alt="Default climb image"
             fill
             className="object-contain"
@@ -73,7 +73,7 @@ export default async function Climb({ databaseId }: ClimbProps) {
       ) : (
         <div className="w-full relative p-1 h-100 ">
           <Image
-            src="https://qrlzxwxpceqrycynoyzh.supabase.co/storage/v1/object/public/postImages/default-video.png"
+            src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/postImages/default-video.png`}
             alt="Default climb video"
             fill
             className="object-contain"

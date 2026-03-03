@@ -1,40 +1,3 @@
-// import Image from "next/image";
-// import {
-//   Carousel,
-//   CarouselContent,
-//   CarouselItem,
-//   CarouselNext,
-//   CarouselPrevious,
-// } from "./ui/carousel";
-// import { ContentImage } from "@/app/types/types";
-
-// type ImageContainerProps = {
-//   images: ContentImage[];
-// };
-
-// export default function ImageContainer({ images }: ImageContainerProps) {
-//   return (
-//     <Carousel className="w-[80%] max-w-6xl mb-8">
-//       <CarouselContent>
-//         {images.map((image, index) => (
-//           <CarouselItem key={index}>
-//             <div className="w-full relative p-1 h-100">
-//               <Image
-//                 src={image.url}
-//                 alt="https://qrlzxwxpceqrycynoyzh.supabase.co/storage/v1/object/public/postImages/default-climb.png"
-//                 fill
-//                 className="object-contain "
-//               />
-//             </div>
-//           </CarouselItem>
-//         ))}
-//       </CarouselContent>
-//       {images.length > 1 && <CarouselPrevious />}
-//       {images.length > 1 && <CarouselNext />}
-//     </Carousel>
-//   );
-// }
-
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
@@ -66,7 +29,7 @@ export default function ImageContainer({ images }: ImageContainerProps) {
               >
                 <Image
                   src={image.url}
-                  alt="https://qrlzxwxpceqrycynoyzh.supabase.co/storage/v1/object/public/postImages/default-climb.png"
+                  alt={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/postImages/default-climb.png`}
                   fill
                   className="object-contain"
                 />
