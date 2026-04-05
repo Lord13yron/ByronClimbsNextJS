@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function HeroBanner() {
   return (
-    <div className="relative w-full h-110 flex items-center justify-center bg-brand-600 overflow-hidden">
+    <div className="relative w-full h-110 flex items-center justify-center overflow-hidden">
       <Image
         // src="/background.jpeg"
         src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ui-images/background.JPEG`}

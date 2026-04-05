@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Contact Us | Next Climbing",
@@ -44,12 +45,12 @@ export default function ContactPage() {
                   </svg>
                   <div className="ml-3">
                     <p className="text-sm font-medium ">Email</p>
-                    <a
-                      href="mailto:info@nextclimbing.com"
+                    <Link
+                      href="mailto:byron.climbs.rocks@gmail.com"
                       className="text-blue-600 hover:text-blue-700"
                     >
                       byron.climbs.rocks@gmail.com
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -60,7 +61,10 @@ export default function ContactPage() {
           <div className="bg-secondary rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold  mb-4">Follow Us</h2>
             <div className="flex space-x-4">
-              <a href="#" className=" hover:text-blue-600 transition-colors">
+              <a
+                href="https://www.instagram.com/byron.hayes.77"
+                className=" hover:text-blue-600 transition-colors"
+              >
                 <span className="sr-only">Instagram</span>
                 <svg
                   className="w-6 h-6"
