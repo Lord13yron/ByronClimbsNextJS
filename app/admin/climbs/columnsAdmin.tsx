@@ -32,7 +32,10 @@ export const columnsAdmin: ColumnDef<Climb>[] = [
     cell: ({ row }) => (
       <div className="flex justify-between gap-4 font-bold ">
         <div className="flex gap-2 ">
-          <Link href={`/admin/climbs/${row.original.id}-${row.original.slug}`}>
+          <Link
+            className="capitalize"
+            href={`/admin/climbs/${row.original.id}-${row.original.slug}`}
+          >
             {row.getValue("name")}
           </Link>
         </div>
@@ -78,6 +81,7 @@ export const columnsAdmin: ColumnDef<Climb>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => <div className="capitalize">{row.getValue("city")}</div>,
   },
   {
     accessorKey: "area",
@@ -92,6 +96,7 @@ export const columnsAdmin: ColumnDef<Climb>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => <div className="capitalize">{row.getValue("area")}</div>,
   },
   {
     accessorKey: "subArea",
@@ -106,6 +111,9 @@ export const columnsAdmin: ColumnDef<Climb>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("subArea")}</div>
+    ),
   },
   {
     id: "Edit",

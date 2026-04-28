@@ -2,7 +2,7 @@
 
 import {
   ColumnDef,
-  ColumnFiltersState,
+  FilterFn,
   SortingState,
   flexRender,
   getCoreRowModel,
@@ -37,6 +37,14 @@ import {
   ChevronsRight,
 } from "lucide-react";
 
+const climbGlobalFilter: FilterFn<any> = (row, _columnId, value) => {
+  const q = String(value).toLowerCase();
+  return ["name", "grade", "city", "area", "subArea"].some((field) =>
+    String(row.getValue(field) ?? "").toLowerCase().includes(q)
+  );
+};
+climbGlobalFilter.autoRemove = (val) => !val;
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -47,21 +55,21 @@ export function DataTableSignedOut<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
   const table = useReactTable({
     data,
     columns,
     autoResetPageIndex: false,
-
+    globalFilterFn: climbGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
-      columnFilters,
+      globalFilter,
     },
   });
 
@@ -69,11 +77,9 @@ export function DataTableSignedOut<TData, TValue>({
     <div className="p-2 ">
       <div className="flex flex-col gap-2 sm:flex-row items-center justify-between py-4 ">
         <Input
-          placeholder="Search for a climb..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
+          placeholder="Search by name, grade, city, area..."
+          value={globalFilter}
+          onChange={(event) => setGlobalFilter(event.target.value)}
           className="max-w-sm "
         />
       </div>

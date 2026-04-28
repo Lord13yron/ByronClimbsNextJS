@@ -149,12 +149,12 @@ export async function editNote(formData: FormData) {
 
 export async function addClimb(formData: FormData) {
   const supabase = await createClient();
-  const name = formData.get("name") as string;
+  const name = (formData.get("name") as string).trim().toLowerCase();
   const type = formData.get("type") as string;
   const grade = formData.get("grade") as string;
-  const city = formData.get("city") as string;
-  const area = formData.get("area") as string;
-  const subArea = formData.get("sub-area") as string;
+  const city = (formData.get("city") as string).trim().toLowerCase();
+  const area = (formData.get("area") as string).trim().toLowerCase();
+  const subArea = (formData.get("sub-area") as string).trim().toLowerCase();
   const images = formData.getAll("images") as File[];
   const video = formData.get("video") as string;
 
@@ -184,7 +184,7 @@ export async function addClimb(formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      throw new Error("That climb already exists.");
+      return { error: "That climb already exists." };
     }
     console.error("Error adding climb:", error);
     throw new Error("Failed to add climb");

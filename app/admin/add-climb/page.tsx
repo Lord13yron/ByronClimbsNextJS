@@ -78,7 +78,11 @@ export default function AddClimb() {
     const form = event.currentTarget;
     const formData = new FormData(form);
     addClimb(formData)
-      .then(() => {
+      .then((result) => {
+        if (result && "error" in result) {
+          toast.error(result.error);
+          return;
+        }
         console.log("Climb added successfully");
         form.reset();
         toast.success("Climb added successfully!");

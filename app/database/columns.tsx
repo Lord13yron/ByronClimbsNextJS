@@ -68,19 +68,13 @@ export const columns: ColumnDef<Climb>[] = [
         </Button>
       );
     },
-    // cell: ({ row }) => (
-    //   <div className="flex justify-between gap-4 font-bold ">
-    //     <div className="flex gap-2 ">
-    //       <Link href={`/database/${row.original.slug}`}>
-    //         {row.getValue("name")}
-    //       </Link>
-    //     </div>
-    //   </div>
-    // ),
     cell: ({ row }) => (
       <div className="flex justify-between gap-4 font-bold ">
         <div className="flex gap-2 ">
-          <Link href={`/database/${row.original.id}-${row.original.slug}`}>
+          <Link
+            className="capitalize"
+            href={`/database/${row.original.id}-${row.original.slug}`}
+          >
             {row.getValue("name")}
           </Link>
         </div>
@@ -125,6 +119,7 @@ export const columns: ColumnDef<Climb>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => <div className="capitalize">{row.getValue("city")}</div>,
   },
   {
     accessorKey: "area",
@@ -139,6 +134,7 @@ export const columns: ColumnDef<Climb>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => <div className="capitalize">{row.getValue("area")}</div>,
   },
   {
     accessorKey: "subArea",
@@ -153,5 +149,8 @@ export const columns: ColumnDef<Climb>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("subArea")}</div>
+    ),
   },
 ];

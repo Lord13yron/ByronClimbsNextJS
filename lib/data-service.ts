@@ -24,20 +24,6 @@ export async function getPosts() {
   return data as Post[];
 }
 
-// export async function getRecentPosts(limit: number) {
-//   const supabase = await createClient();
-//   const { data, error } = await supabase
-//     .from("posts")
-//     .select("*")
-//     .order("created_at", { ascending: false })
-//     .limit(limit);
-
-//   if (error) {
-//     throw new Error("Failed to fetch recent posts", error);
-//   }
-//   return data as Post[];
-// }
-
 export async function getRecentPosts(limit?: number) {
   const supabase = await createClient();
   let query = supabase
