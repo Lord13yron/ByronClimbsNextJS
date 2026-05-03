@@ -12,8 +12,9 @@ import { Label } from "./ui/label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import DeleteImage from "./DeleteImage";
 import { toast } from "sonner";
-import { addImagesToPost } from "@/lib/actions";
+import { addImagesToPost, linkExistingImageToPost } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+import ImageLibraryPicker from "./ImageLibraryPicker";
 
 type EditPostImagesProps = {
   images?: ContentImage[];
@@ -22,6 +23,7 @@ type EditPostImagesProps = {
 
 export default function EditPostImages({ images, post }: EditPostImagesProps) {
   const router = useRouter();
+
   function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -37,6 +39,22 @@ export default function EditPostImages({ images, post }: EditPostImagesProps) {
         toast.error(error.message || "Failed to edit post");
       });
   }
+
+  async function handleLinkExisting(urls: string[]) {
+    try {
+      await Promise.all(
+        urls.map((url) => linkExistingImageToPost(url, post.id.toString()))
+      );
+      toast.success(
+        `${urls.length} image${urls.length !== 1 ? "s" : ""} added from library`
+      );
+      router.refresh();
+    } catch (error) {
+      console.error("Error linking images:", error);
+      toast.error("Failed to add images from library");
+    }
+  }
+
   return (
     <Collapsible className="data-[state=open]:bg-muted rounded-md">
       <CollapsibleTrigger asChild>
@@ -53,7 +71,6 @@ export default function EditPostImages({ images, post }: EditPostImagesProps) {
                 <div className="flex justify-end p-2">
                   <Tooltip>
                     <TooltipTrigger>
-                      {/* <Trash2 className="h-4 hover:text-red-500 cursor-pointer" /> */}
                       <DeleteImage image={image} type="post" />
                     </TooltipTrigger>
                     <TooltipContent>
@@ -87,9 +104,10 @@ export default function EditPostImages({ images, post }: EditPostImagesProps) {
             multiple
             className="w-full"
           />
-          <Button type="submit" className="mt-2">
-            Upload Images
-          </Button>
+          <div className="flex gap-2 mt-2">
+            <Button type="submit">Upload Images</Button>
+            <ImageLibraryPicker onSelect={handleLinkExisting} />
+          </div>
         </form>
       </CollapsibleContent>
     </Collapsible>

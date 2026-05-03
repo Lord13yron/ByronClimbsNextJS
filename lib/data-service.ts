@@ -184,6 +184,19 @@ export async function getFavoritesForUser() {
   return data as Favorite[];
 }
 
+export async function getAllImagesForLibrary(): Promise<string[]> {
+  const supabase = await createClient();
+  const [{ data: climbImages }, { data: postImages }] = await Promise.all([
+    supabase.from("climb_images").select("url"),
+    supabase.from("post_images").select("url"),
+  ]);
+  const allUrls = [
+    ...(climbImages?.map((i: { url: string }) => i.url) ?? []),
+    ...(postImages?.map((i: { url: string }) => i.url) ?? []),
+  ];
+  return [...new Set(allUrls)];
+}
+
 export async function getNotesForClimb(climbId: number) {
   const supabase = await createClient();
   const user = await getUser();

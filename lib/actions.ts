@@ -3,8 +3,29 @@
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth-actions";
 import { createClient } from "./supabase/supabaseServer";
-import { getImagesForClimb, getImagesForPost } from "./data-service";
+import { getAllImagesForLibrary, getImagesForClimb, getImagesForPost } from "./data-service";
 import { Climb } from "@/app/types/types";
+
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
+// Returns true only if this URL has no other references in climb_images or post_images.
+// Used to decide whether deleting the DB row should also remove the storage file.
+async function isSoleImageReference(
+  supabase: SupabaseClient,
+  url: string,
+): Promise<boolean> {
+  const [{ count: climbCount }, { count: postCount }] = await Promise.all([
+    supabase
+      .from("climb_images")
+      .select("*", { count: "exact", head: true })
+      .eq("url", url),
+    supabase
+      .from("post_images")
+      .select("*", { count: "exact", head: true })
+      .eq("url", url),
+  ]);
+  return (climbCount ?? 0) + (postCount ?? 0) <= 1;
+}
 
 export async function addClimbToSends(climbId: number) {
   // Implementation to add the climb to the user's sends
@@ -157,9 +178,10 @@ export async function addClimb(formData: FormData) {
   const subArea = (formData.get("sub-area") as string).trim().toLowerCase();
   const images = formData.getAll("images") as File[];
   const video = formData.get("video") as string;
+  const existingImageUrls = formData.getAll("existing_image_urls") as string[];
 
   const hasVideo = video && typeof video === "string" && video.trim() !== "";
-  const hasImages = images && images[0] instanceof File;
+  const hasImages = images.length > 0 && images[0] instanceof File && images[0].size > 0;
   console.log("Video URL:", video);
   console.log("Has video?", hasVideo);
 
@@ -224,6 +246,16 @@ export async function addClimb(formData: FormData) {
     await Promise.all(promises);
   }
 
+  if (existingImageUrls.length > 0) {
+    const { error: linkError } = await supabase
+      .from("climb_images")
+      .insert(existingImageUrls.map((url) => ({ url, climb_id: climbData.id })));
+    if (linkError) {
+      console.error("Error linking existing images to climb:", linkError);
+      throw new Error("Failed to link existing images to climb");
+    }
+  }
+
   if (hasVideo) {
     const { error: videoError } = await supabase
       .from("climb_videos")
@@ -269,23 +301,26 @@ export async function deleteClimb(climbId: number) {
   const supabase = await createClient();
   try {
     const images = await getImagesForClimb(climbId);
-    console.log("Images to delete for climb ID", climbId, ":", images);
     if (images.length > 0) {
-      const imagePaths = images.map(
-        (image) => image.url.split("/").pop() || "",
+      const soleChecks = await Promise.all(
+        images.map((img) => isSoleImageReference(supabase, img.url)),
       );
+      const pathsToDelete = images
+        .filter((_, i) => soleChecks[i])
+        .map((img) => img.url.split("/").pop() || "")
+        .filter(Boolean);
 
-      console.log("imagePaths to delete:", imagePaths);
+      if (pathsToDelete.length > 0) {
+        const { error: storageError } = await supabase.storage
+          .from("postImages")
+          .remove(pathsToDelete);
 
-      const { error: storageError } = await supabase.storage
-        .from("postImages")
-        .remove(imagePaths);
-
-      if (storageError) {
-        throw new Error(
-          "Failed to delete climb images from storage",
-          storageError,
-        );
+        if (storageError) {
+          throw new Error(
+            "Failed to delete climb images from storage",
+            storageError,
+          );
+        }
       }
     }
 
@@ -319,18 +354,20 @@ export async function getClimbByIdClient(climbId: string) {
 export async function deleteClimbImage(imageId: number, imageUrl: string) {
   const supabase = await createClient();
   const imagePath = imageUrl.split("/").pop() || "";
-  console.log("Deleting image with ID:", imageId, "and path:", imagePath);
 
   try {
-    const { error: storageError } = await supabase.storage
-      .from("postImages")
-      .remove([imagePath]);
+    const sole = await isSoleImageReference(supabase, imageUrl);
+    if (sole) {
+      const { error: storageError } = await supabase.storage
+        .from("postImages")
+        .remove([imagePath]);
 
-    if (storageError) {
-      throw new Error(
-        "Failed to delete climb image from storage",
-        storageError,
-      );
+      if (storageError) {
+        throw new Error(
+          "Failed to delete climb image from storage",
+          storageError,
+        );
+      }
     }
 
     const { error } = await supabase
@@ -354,11 +391,12 @@ export async function addImagesToClimb(formData: FormData) {
   const climbId = formData.get("climb_id") as string;
   const images = formData.getAll("new_images") as File[];
 
-  if (!climbId || images.length === 0) {
+  const validImages = images.filter((f) => f instanceof File && f.size > 0);
+  if (!climbId || validImages.length === 0) {
     throw new Error("Missing required fields");
   }
 
-  const newImages = Array.from(images);
+  const newImages = validImages;
   const promises = newImages.map(async (image) => {
     const imageName = `${Date.now()}-${image.name.replace(/\s+/g, "-").toLowerCase()}`;
     try {
@@ -435,9 +473,10 @@ export async function createBlogPost(formData: FormData) {
   const content = formData.get("content") as string;
   const images = formData.getAll("images") as File[];
   const video = formData.get("video") as string;
+  const existingImageUrls = formData.getAll("existing_image_urls") as string[];
 
   const hasVideo = video && typeof video === "string" && video.trim() !== "";
-  const hasImages = images && images[0] instanceof File;
+  const hasImages = images.length > 0 && images[0] instanceof File && images[0].size > 0;
   console.log("Video URL:", video);
   console.log("Has video?", hasVideo);
 
@@ -498,6 +537,16 @@ export async function createBlogPost(formData: FormData) {
     await Promise.all(promises);
   }
 
+  if (existingImageUrls.length > 0) {
+    const { error: linkError } = await supabase
+      .from("post_images")
+      .insert(existingImageUrls.map((url) => ({ url, post_id: postData.id })));
+    if (linkError) {
+      console.error("Error linking existing images to post:", linkError);
+      throw new Error("Failed to link existing images to post");
+    }
+  }
+
   if (hasVideo) {
     const { error: videoError } = await supabase
       .from("post_videos")
@@ -516,23 +565,26 @@ export async function deleteBlogPost(postId: number) {
   const supabase = await createClient();
   try {
     const images = await getImagesForPost(postId);
-    console.log("Images to delete for post ID", postId, ":", images);
     if (images.length > 0) {
-      const imagePaths = images.map(
-        (image) => image.url.split("/").pop() || "",
+      const soleChecks = await Promise.all(
+        images.map((img) => isSoleImageReference(supabase, img.url)),
       );
+      const pathsToDelete = images
+        .filter((_, i) => soleChecks[i])
+        .map((img) => img.url.split("/").pop() || "")
+        .filter(Boolean);
 
-      console.log("imagePaths to delete:", imagePaths);
+      if (pathsToDelete.length > 0) {
+        const { error: storageError } = await supabase.storage
+          .from("postImages")
+          .remove(pathsToDelete);
 
-      const { error: storageError } = await supabase.storage
-        .from("postImages")
-        .remove(imagePaths);
-
-      if (storageError) {
-        throw new Error(
-          "Failed to delete post images from storage",
-          storageError,
-        );
+        if (storageError) {
+          throw new Error(
+            "Failed to delete post images from storage",
+            storageError,
+          );
+        }
       }
     }
 
@@ -553,23 +605,26 @@ export async function deletePost(postId: number) {
   const supabase = await createClient();
   try {
     const images = await getImagesForPost(postId);
-    console.log("Images to delete for post ID", postId, ":", images);
     if (images.length > 0) {
-      const imagePaths = images.map(
-        (image) => image.url.split("/").pop() || "",
+      const soleChecks = await Promise.all(
+        images.map((img) => isSoleImageReference(supabase, img.url)),
       );
+      const pathsToDelete = images
+        .filter((_, i) => soleChecks[i])
+        .map((img) => img.url.split("/").pop() || "")
+        .filter(Boolean);
 
-      console.log("imagePaths to delete:", imagePaths);
+      if (pathsToDelete.length > 0) {
+        const { error: storageError } = await supabase.storage
+          .from("postImages")
+          .remove(pathsToDelete);
 
-      const { error: storageError } = await supabase.storage
-        .from("postImages")
-        .remove(imagePaths);
-
-      if (storageError) {
-        throw new Error(
-          "Failed to delete climb images from storage",
-          storageError,
-        );
+        if (storageError) {
+          throw new Error(
+            "Failed to delete post images from storage",
+            storageError,
+          );
+        }
       }
     }
 
@@ -614,11 +669,12 @@ export async function addImagesToPost(formData: FormData) {
   const postId = formData.get("post_id") as string;
   const images = formData.getAll("new_images") as File[];
 
-  if (!postId || images.length === 0) {
+  const validImages = images.filter((f) => f instanceof File && f.size > 0);
+  if (!postId || validImages.length === 0) {
     throw new Error("Missing required fields");
   }
 
-  const newImages = Array.from(images);
+  const newImages = validImages;
   const promises = newImages.map(async (image) => {
     const imageName = `${Date.now()}-${image.name.replace(/\s+/g, "-").toLowerCase()}`;
     try {
@@ -652,15 +708,17 @@ export async function addImagesToPost(formData: FormData) {
 export async function deletePostImage(imageId: number, imageUrl: string) {
   const supabase = await createClient();
   const imagePath = imageUrl.split("/").pop() || "";
-  console.log("Deleting image with ID:", imageId, "and path:", imagePath);
 
   try {
-    const { error: storageError } = await supabase.storage
-      .from("postImages")
-      .remove([imagePath]);
+    const sole = await isSoleImageReference(supabase, imageUrl);
+    if (sole) {
+      const { error: storageError } = await supabase.storage
+        .from("postImages")
+        .remove([imagePath]);
 
-    if (storageError) {
-      throw new Error("Failed to delete post image from storage", storageError);
+      if (storageError) {
+        throw new Error("Failed to delete post image from storage", storageError);
+      }
     }
 
     const { error } = await supabase
@@ -716,5 +774,33 @@ export async function deletePostVideo(videoId: number) {
     throw new Error("Failed to delete post video");
   }
 
+  return true;
+}
+
+export async function getImageLibrary(): Promise<string[]> {
+  return getAllImagesForLibrary();
+}
+
+export async function linkExistingImageToClimb(url: string, climbId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("climb_images")
+    .insert({ url, climb_id: climbId });
+  if (error) {
+    console.error("Error linking image to climb:", error);
+    throw new Error("Failed to link image to climb");
+  }
+  return true;
+}
+
+export async function linkExistingImageToPost(url: string, postId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("post_images")
+    .insert({ url, post_id: postId });
+  if (error) {
+    console.error("Error linking image to post:", error);
+    throw new Error("Failed to link image to post");
+  }
   return true;
 }
