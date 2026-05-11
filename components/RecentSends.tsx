@@ -1,135 +1,101 @@
-// import { Climb } from "@/app/types/types";
-
-// type RecentsendsProps = {
-//   sends: Climb[];
-// };
-
-// export default function RecentSends({ sends }: RecentsendsProps) {
-//   console.log("RecentSends component received sends:", sends.slice(0, 5)); // Log the sends data received by the component
-//   return (
-//     <div className="mt-8 w-full max-w-6xl">
-//       <h2 className="text-xl font-semibold mb-4">Recent Sends</h2>
-//       {sends.length === 0 ? (
-//         <p className="text-gray-500">No recent sends found.</p>
-//       ) : (
-//         <ul className="space-y-4">
-//           {sends.map((send) => (
-//             <li key={send.id} className="p-4 border rounded-lg">
-//               <h3 className="text-lg font-medium">
-//                 {send.name} -{" "}
-//                 {send.type === "boulder" ? `V${send.grade}` : `${send.grade}`}
-//               </h3>
-//               <p className="text-sm text-gray-500">
-//                 Sent on: {new Date(send.created_at).toLocaleDateString()}
-//               </p>
-//             </li>
-//           ))}
-//         </ul>
-//       )}
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { Climb } from "@/app/types/types";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import Link from "next/link";
+import GradeChip from "./ui/GradeChip";
+import MonoChip from "./ui/MonoChip";
 
 type RecentsendsProps = {
   sends: Climb[];
 };
 
+function formatSentDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}.${mm}.${dd}`;
+}
+
 export default function RecentSends({ sends }: RecentsendsProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const sendsPerPage = 10;
 
-  // Calculate pagination
   const indexOfLastSend = currentPage * sendsPerPage;
   const indexOfFirstSend = indexOfLastSend - sendsPerPage;
   const currentSends = sends.slice(indexOfFirstSend, indexOfLastSend);
-  const totalPages = Math.ceil(sends.length / sendsPerPage);
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
+  const totalPages = Math.max(1, Math.ceil(sends.length / sendsPerPage));
 
   return (
-    <div className="mt-8 w-full  bg-secondary p-4 rounded-lg shadow-xl">
-      <div className="flex justify-between">
-        <h2 className="text-xl font-semibold mb-4">Recent Sends</h2>
-        <Link href="/database?filter=favorites" className="hover:underline">
-          View Favorites
+    <div className="bg-chalk-2 border border-chalk-3 rounded-md p-4.5 md:p-6">
+      {/* Header */}
+      <div className="flex justify-between items-end mb-4.5 flex-wrap gap-3">
+        <div>
+          <h2 className="font-display uppercase text-[28px] md:text-[36px] m-0 leading-none text-granite-100">
+            Recent sends.
+          </h2>
+        </div>
+        <Link
+          href="/database?filter=favorites"
+          className="font-display uppercase text-xs text-granite-100 border-b border-granite-100 pb-0.5 tracking-[0.01em]"
+        >
+          View favorites →
         </Link>
       </div>
+
       {sends.length === 0 ? (
-        <p className="">No recent sends found.</p>
+        <MonoChip className="text-slate-500 block py-4">
+          No sends recorded yet.
+        </MonoChip>
       ) : (
         <>
-          <ul className="space-y-4">
+          <ul className="flex flex-col gap-2.5 m-0 p-0 list-none">
             {currentSends.map((send) => (
-              <li key={send.id} className="p-2 border rounded-lg bg-background">
-                <div className="flex justify-between">
-                  <Link
-                    href={`/database/${send.id}-${send.slug}`}
-                    className="hover:underline"
-                  >
-                    <h3 className="font-medium">{send.name}</h3>
-                  </Link>
-                  <h3 className="border rounded bg-primary-foreground px-1">
-                    {" "}
-                    {send.type === "boulder"
-                      ? `V${send.grade}`
-                      : `${send.grade}`}
+              <li
+                key={send.id}
+                className="bg-chalk border border-chalk-3 px-3.5 py-3 md:px-4.5 md:py-3.5 flex justify-between items-center gap-3"
+              >
+                <div className="min-w-0">
+                  <h3 className="font-display uppercase text-[16px] md:text-[18px] leading-[1.1] m-0 text-granite-100 truncate">
+                    {send.name}
                   </h3>
+                  <MonoChip className="mt-1.5 text-slate-500 block">
+                    SENT ON · {formatSentDate(send.created_at)}
+                  </MonoChip>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Sent on: {new Date(send.created_at).toLocaleDateString()}
-                </p>
+                <GradeChip
+                  grade={
+                    send.type === "boulder" ? `V${send.grade}` : send.grade
+                  }
+                  variant="outline"
+                />
               </li>
             ))}
           </ul>
 
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 mt-6">
-              {/* <button
-                onClick={handlePrevPage}
-                disabled={currentPage === 1}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-              >
-                Previous
-              </button> */}
-              <Button onClick={handlePrevPage} disabled={currentPage === 1}>
-                Previous
-              </Button>
-              <span className="text-sm">
-                Page {currentPage} of {totalPages}
-              </span>
-              {/* <button
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-              >
-                Next
-              </button> */}
-              <Button
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
-            </div>
-          )}
+          {/* Pagination — always visible so layout is stable */}
+          <div className="flex items-center justify-center gap-4 mt-5.5">
+            <Button
+              onClick={() => setCurrentPage((p) => p - 1)}
+              disabled={currentPage === 1}
+              variant="secondary"
+              size="sm"
+            >
+              Previous
+            </Button>
+            <MonoChip>
+              PAGE {currentPage} OF {totalPages}
+            </MonoChip>
+            <Button
+              onClick={() => setCurrentPage((p) => p + 1)}
+              disabled={currentPage === totalPages}
+              size="sm"
+            >
+              Next
+            </Button>
+          </div>
         </>
       )}
     </div>

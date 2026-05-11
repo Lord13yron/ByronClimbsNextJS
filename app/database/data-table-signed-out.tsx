@@ -2,11 +2,9 @@
 
 import {
   ColumnDef,
-  FilterFn,
   SortingState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -22,7 +20,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -37,13 +34,7 @@ import {
   ChevronsRight,
 } from "lucide-react";
 
-const climbGlobalFilter: FilterFn<any> = (row, _columnId, value) => {
-  const q = String(value).toLowerCase();
-  return ["name", "grade", "city", "area", "subArea"].some((field) =>
-    String(row.getValue(field) ?? "").toLowerCase().includes(q)
-  );
-};
-climbGlobalFilter.autoRemove = (val) => !val;
+const DESKTOP_ONLY_COLUMNS = new Set(["location", "city", "type"]);
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -55,61 +46,30 @@ export function DataTableSignedOut<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
   const table = useReactTable({
     data,
     columns,
-    autoResetPageIndex: false,
-    globalFilterFn: climbGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    onGlobalFilterChange: setGlobalFilter,
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      sorting,
-      globalFilter,
-    },
+    state: { sorting },
   });
 
   return (
-    <div className="p-2 ">
-      <div className="flex flex-col gap-2 sm:flex-row items-center justify-between py-4 ">
-        <Input
-          placeholder="Search by name, grade, city, area..."
-          value={globalFilter}
-          onChange={(event) => setGlobalFilter(event.target.value)}
-          className="max-w-sm "
-        />
-      </div>
-      <div className="overflow-x-auto rounded-md border ">
+    <div>
+      {/* Table */}
+      <div className="border border-chalk-3 rounded-sm overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              // <TableRow key={headerGroup.id}>
-              //   {headerGroup.headers.map((header) => {
-              //     return (
-              //       <TableHead key={header.id}>
-              //         {header.isPlaceholder
-              //           ? null
-              //           : flexRender(
-              //               header.column.columnDef.header,
-              //               header.getContext(),
-              //             )}
-              //       </TableHead>
-              //     );
-              //   })}
-              // </TableRow>
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="bg-chalk-2 hover:bg-chalk-2 border-b border-chalk-3">
                 {headerGroup.headers.map((header) => {
-                  const isNameColumn = header.column.id === "name";
+                  const isDesktopOnly = DESKTOP_ONLY_COLUMNS.has(header.column.id);
                   return (
                     <TableHead
                       key={header.id}
-                      className={
-                        isNameColumn ? "sticky left-0 z-10 bg-background" : ""
-                      }
+                      className={`py-3 px-4.5 font-normal ${isDesktopOnly ? "hidden md:table-cell" : ""}`}
                     >
                       {header.isPlaceholder
                         ? null
@@ -125,32 +85,20 @@ export function DataTableSignedOut<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                // <TableRow
-                //   key={row.id}
-                //   data-state={row.getIsSelected() && "selected"}
-                // >
-                //   {row.getVisibleCells().map((cell) => (
-                //     <TableCell key={cell.id}>
-                //       {flexRender(
-                //         cell.column.columnDef.cell,
-                //         cell.getContext(),
-                //       )}
-                //     </TableCell>
-                //   ))}
-                // </TableRow>
+              table.getRowModel().rows.map((row, i) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className={`border-b border-chalk-2 hover:bg-chalk-2 transition-colors duration-150 ${
+                    i % 2 === 0 ? "bg-chalk" : "bg-[rgba(236,231,222,0.4)]"
+                  }`}
                 >
                   {row.getVisibleCells().map((cell) => {
-                    const isNameColumn = cell.column.id === "name";
+                    const isDesktopOnly = DESKTOP_ONLY_COLUMNS.has(cell.column.id);
                     return (
                       <TableCell
                         key={cell.id}
-                        className={
-                          isNameColumn ? "sticky left-0 z-10 bg-background" : ""
-                        }
+                        className={`py-4 px-4.5 ${isDesktopOnly ? "hidden md:table-cell" : ""}`}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -165,7 +113,7 @@ export function DataTableSignedOut<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center font-mono text-[10px] uppercase tracking-widest text-slate-500"
                 >
                   No results.
                 </TableCell>
@@ -174,32 +122,14 @@ export function DataTableSignedOut<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      {/* <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
-      </div> */}
-      <div className="flex items-center justify-between px-2 py-2">
-        {/* <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div> */}
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between px-0 py-3">
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Rows per page</p>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-slate-500">
+              Rows per page
+            </p>
             <Select
               value={`${table.getState().pagination.pageSize}`}
               onValueChange={(value) => {
@@ -220,7 +150,7 @@ export function DataTableSignedOut<TData, TValue>({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex w-25 items-center justify-center text-sm font-medium">
+          <div className="flex w-25 items-center justify-center font-mono text-[10px] uppercase tracking-widest text-slate-500">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}
           </div>

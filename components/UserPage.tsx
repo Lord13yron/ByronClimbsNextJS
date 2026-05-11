@@ -5,6 +5,9 @@ import RecentSends from "./RecentSends";
 import { getClimbs, getSendsForUser } from "@/lib/data-service";
 import GradePieChart from "./GradePieChart";
 import DateBarGraph from "./DateBarGraph";
+import TopoLine from "./ui/TopoLine";
+import MonoChip from "./ui/MonoChip";
+import UsernameEditor from "./UsernameEditor";
 
 export default async function UserPage() {
   const user = await getUser();
@@ -15,65 +18,87 @@ export default async function UserPage() {
     .filter((climb) => sendsForUser.some((send) => send.climb_id === climb.id))
     .map((climb) => {
       const send = sendsForUser.find((send) => send.climb_id === climb.id)!;
-      return {
-        ...climb,
-        created_at: send.created_at,
-      };
+      return { ...climb, created_at: send.created_at };
     });
 
   const boulderSends = sends.filter((climb) => climb.type === "boulder");
   const sportSends = sends.filter((climb) => climb.type === "sport");
 
-  const sportGradeData = sportSends.reduce(
-    (acc, climb) => {
-      const existingGrade = acc.find((item) => item.grade === climb.grade);
-      if (existingGrade) {
-        existingGrade.count++;
-      } else {
-        acc.push({ grade: climb.grade, count: 1 });
-      }
-      return acc;
-    },
-    [] as { grade: string; count: number }[],
-  );
-
   const boulderGradeData = boulderSends.reduce(
     (acc, climb) => {
-      const existingGrade = acc.find((item) => item.grade === climb.grade);
-      if (existingGrade) {
-        existingGrade.count++;
-      } else {
-        acc.push({ grade: climb.grade, count: 1 });
-      }
+      const existing = acc.find((item) => item.grade === climb.grade);
+      if (existing) existing.count++;
+      else acc.push({ grade: climb.grade, count: 1 });
       return acc;
     },
     [] as { grade: string; count: number }[],
   );
 
+  const sportGradeData = sportSends.reduce(
+    (acc, climb) => {
+      const existing = acc.find((item) => item.grade === climb.grade);
+      if (existing) existing.count++;
+      else acc.push({ grade: climb.grade, count: 1 });
+      return acc;
+    },
+    [] as { grade: string; count: number }[],
+  );
+
+  const username = user?.username ?? "climber";
+
   return (
-    <div className="flex flex-col justify-center max-w-6xl items-center mx-auto p-4">
-      <div className="flex flex-col">
-        <p>Welcome, {user?.username}!</p>
-        {user?.role === "admin" && (
-          <>
-            <p className="text-sm text-gray-500">You have admin privileges.</p>
-            <Link href="/admin" className="text-blue-500 underline">
-              Go to Admin Dashboard
-            </Link>
-          </>
-        )}
+    <div className="bg-chalk min-h-screen">
+      {/* MASTHEAD */}
+      <section className="max-w-7xl mx-auto px-4 py-10 md:px-14 md:py-16">
+        <MonoChip className="text-ember mb-3 block">— ACCOUNT</MonoChip>
+        <div className="flex justify-between items-end gap-6 flex-wrap">
+          <div>
+            <h1 className="font-display uppercase text-[56px] md:text-[108px] text-granite-100 m-0 leading-[0.92] tracking-[0.01em]">
+              Welcome,
+            </h1>
+            <UsernameEditor username={username} />
+            {user?.role === "admin" && (
+              <>
+                <MonoChip className="mt-4 text-slate-500 block">
+                  YOU HAVE ADMIN PRIVILEGES.
+                </MonoChip>
+                <Link
+                  href="/admin"
+                  className="font-display uppercase text-[13px] text-ember border-b border-ember pb-0.5 mt-2.5 inline-block tracking-[0.01em]"
+                >
+                  Go to admin dashboard →
+                </Link>
+              </>
+            )}
+          </div>
+          <form action={signOutUser}>
+            <Button type="submit" variant="default">
+              Sign Out
+            </Button>
+          </form>
+        </div>
+      </section>
+
+      {/* TOPO DIVIDER */}
+      <div className="max-w-7xl mx-auto px-4 md:px-14 text-chalk-3 opacity-60">
+        <TopoLine height={32} seed={4} />
       </div>
-      <div className="mt-4">
-        <form action={signOutUser}>
-          <Button type="submit">Sign Out</Button>
-        </form>
-      </div>
-      <RecentSends sends={sends} />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-        <GradePieChart data={boulderGradeData} type="boulder" />
-        <GradePieChart data={sportGradeData} type="sport" />
-        <DateBarGraph sends={sends} />
-      </div>
+
+      {/* RECENT SENDS */}
+      <section className="max-w-7xl mx-auto px-4 py-8 md:px-14 md:py-12">
+        <RecentSends sends={sends} />
+      </section>
+
+      {/* CHARTS */}
+      <section className="max-w-7xl mx-auto px-4 pb-16 md:px-14 md:pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <GradePieChart data={boulderGradeData} type="boulder" />
+          <GradePieChart data={sportGradeData} type="sport" />
+          <div className="md:col-span-2">
+            <DateBarGraph sends={sends} />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

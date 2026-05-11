@@ -47,7 +47,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { Star } from "lucide-react";
+import { Heart } from "lucide-react";
 import { Favorite } from "@/app/types/types";
 import { addClimbToFavorites, removeClimbFromFavorites } from "@/lib/actions";
 
@@ -86,10 +86,13 @@ export default function FavoriteIcon({
   return (
     <Tooltip>
       <TooltipTrigger>
-        <Star
+        <Heart
           onClick={handleChange}
-          className={`h-${size} w-${size} hover:cursor-pointer`}
-          fill={isFavorited ? "lightgray" : "none"}
+          className={`h-${size} w-${size} cursor-pointer transition-colors duration-150 ${
+            isFavorited
+              ? "fill-ember stroke-ember"
+              : "fill-none stroke-slate-400 hover:stroke-ember"
+          }`}
         />
       </TooltipTrigger>
       <TooltipContent>

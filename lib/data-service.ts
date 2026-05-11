@@ -70,6 +70,16 @@ export async function getImagesForPost(postId: number) {
   return data as PostImage[];
 }
 
+export async function getAllPostImages() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("post_images").select("*");
+
+  if (error) {
+    throw new Error("Failed to fetch all post images", error);
+  }
+  return data as PostImage[];
+}
+
 export async function getVideosForPost(postId: number) {
   const supabase = await createClient();
   const { data, error } = await supabase

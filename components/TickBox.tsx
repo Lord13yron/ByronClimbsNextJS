@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { addClimbToSends, removeClimbFromSends } from "@/lib/actions";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Send } from "@/app/types/types";
-import { Square, SquareCheckBig } from "lucide-react";
+import { Square, Check } from "lucide-react";
 
 type TickBoxProps = {
   size?: number;
@@ -41,10 +41,12 @@ export default function TickBox({ size, climbId, sends }: TickBoxProps) {
           className={`h-${size} w-${size} hover:cursor-pointer `}
         /> */}
         {isSent ? (
-          <SquareCheckBig
+          <div
             onClick={handleChange}
-            className={`h-${size} w-${size} cursor-pointer `}
-          />
+            className={`h-${size} w-${size} cursor-pointer rounded-sm bg-ember flex items-center justify-center`}
+          >
+            <Check className="h-3 w-3 text-white" strokeWidth={3} />
+          </div>
         ) : (
           <Square
             onClick={handleChange}
