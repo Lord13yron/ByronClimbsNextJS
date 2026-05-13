@@ -295,11 +295,11 @@ export async function getRecentActivity(limit = 8): Promise<ActivityItem[]> {
     ...(sends ?? []).map(
       (s: {
         created_at: string;
-        climbs: { name: string } | null;
-        profiles: { username: string } | null;
+        climbs: { name: string }[];
+        profiles: { username: string }[];
       }) => ({
         type: "send_logged",
-        label: `${s.profiles?.username ?? "Someone"} sent ${s.climbs?.name ?? "unknown route"}`,
+        label: `${s.profiles[0]?.username ?? "Someone"} sent ${s.climbs[0]?.name ?? "unknown route"}`,
         created_at: s.created_at,
       })
     ),
