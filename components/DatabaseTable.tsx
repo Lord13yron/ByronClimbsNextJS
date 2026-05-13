@@ -5,29 +5,33 @@ import {
   getClimbs,
   getFavoritesForUser,
   getSendsForUser,
+  getAllClimbImages,
 } from "@/lib/data-service";
 import { Climb, Favorite, Send } from "@/app/types/types";
 import Link from "next/link";
+import Image from "next/image";
 import GradeChip from "./ui/GradeChip";
 import TypeGlyph from "./ui/TypeGlyph";
 import MonoChip from "./ui/MonoChip";
 import FavoriteIcon from "./FavoriteIcon";
-import TickBox from "./TickBox";
 
 function CardView({
   climbs,
   sends,
   favorites,
+  climbImageMap,
 }: {
   climbs: Climb[];
   sends: Send[];
   favorites: Favorite[];
+  climbImageMap: Map<number, string>;
 }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5 px-4 md:px-14 max-w-[1280px] mx-auto w-full pb-16">
       {climbs.map((climb) => {
         const isSent = sends.some((s) => s.climb_id === climb.id);
         const sentDate = sends.find((s) => s.climb_id === climb.id)?.created_at;
+        const imageUrl = climbImageMap.get(climb.id);
 
         return (
           <div
@@ -36,20 +40,34 @@ function CardView({
           >
             {/* Photo / placeholder */}
             <div className="relative" style={{ height: 200 }}>
-              <div
-                className="w-full h-full flex items-center justify-center"
-                style={{
-                  background:
-                    "repeating-linear-gradient(45deg, var(--chalk-2), var(--chalk-2) 8px, var(--chalk) 8px, var(--chalk) 16px)",
-                }}
-              >
-                <MonoChip className="text-slate-400">{climb.name.toUpperCase()}</MonoChip>
-              </div>
+              {imageUrl ? (
+                <Image
+                  src={imageUrl}
+                  alt={climb.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center"
+                  style={{
+                    background:
+                      "repeating-linear-gradient(45deg, var(--chalk-2), var(--chalk-2) 8px, var(--chalk) 8px, var(--chalk) 16px)",
+                  }}
+                >
+                  <MonoChip className="text-slate-400">
+                    {climb.name.toUpperCase()}
+                  </MonoChip>
+                </div>
+              )}
 
               {/* Grade chip overlay */}
               <div className="absolute top-2.5 left-2.5">
                 <GradeChip
-                  grade={climb.type === "boulder" ? `V${climb.grade}` : climb.grade}
+                  grade={
+                    climb.type === "boulder" ? `V${climb.grade}` : climb.grade
+                  }
                   variant={isSent ? "ember" : "solid"}
                 />
               </div>
@@ -74,7 +92,9 @@ function CardView({
                   </svg>
                   <MonoChip className="text-[9px] text-ember">
                     SENT{" "}
-                    {new Date(sentDate).toLocaleDateString("en-CA").replace(/-/g, ".")}
+                    {new Date(sentDate)
+                      .toLocaleDateString("en-CA")
+                      .replace(/-/g, ".")}
                   </MonoChip>
                 </div>
               )}
@@ -86,11 +106,15 @@ function CardView({
                   {climb.name}
                 </h3>
               </Link>
-              <MonoChip className="mt-1.5 block text-slate-500">{climb.city}</MonoChip>
+              <MonoChip className="mt-1.5 block text-slate-500">
+                {climb.city}
+              </MonoChip>
               <div className="mt-3 pt-2.5 border-t border-dashed border-chalk-3 flex justify-between items-center">
                 <div className="flex items-center gap-1.5 text-slate-700">
                   <TypeGlyph type={climb.type} size={12} />
-                  <MonoChip className="text-slate-700">{climb.type.toUpperCase()}</MonoChip>
+                  <MonoChip className="text-slate-700">
+                    {climb.type.toUpperCase()}
+                  </MonoChip>
                 </div>
                 <MonoChip className="text-slate-500">{climb.area}</MonoChip>
               </div>
@@ -109,9 +133,17 @@ export default async function DatabaseTable({
 }) {
   const params = await searchParams;
 
-  const climbs = await getClimbs();
-  const sends = await getSendsForUser();
-  const favorites = await getFavoritesForUser();
+  const [climbs, sends, favorites, climbImages] = await Promise.all([
+    getClimbs(),
+    getSendsForUser(),
+    getFavoritesForUser(),
+    getAllClimbImages(),
+  ]);
+
+  const climbImageMap = climbImages.reduce((map, img) => {
+    if (!map.has(img.climb_id)) map.set(img.climb_id, img.url);
+    return map;
+  }, new Map<number, string>());
 
   const sentClimbs = climbs.filter((climb) =>
     sends.some((send) => send.climb_id === climb.id),
@@ -140,7 +172,9 @@ export default async function DatabaseTable({
     const q = params.q.toLowerCase();
     data = data.filter((c) =>
       ["name", "grade", "city", "area", "subArea"].some((field) =>
-        String((c as Record<string, unknown>)[field] ?? "").toLowerCase().includes(q),
+        String((c as Record<string, unknown>)[field] ?? "")
+          .toLowerCase()
+          .includes(q),
       ),
     );
   }
@@ -148,13 +182,11 @@ export default async function DatabaseTable({
   const view = params.view ?? "list";
 
   if (view === "cards") {
-    return (
-      <CardView climbs={data} sends={sends} favorites={favorites} />
-    );
+    return <CardView climbs={data} sends={sends} favorites={favorites} climbImageMap={climbImageMap} />;
   }
 
   return (
-    <div className="px-4 md:px-14 max-w-[1280px] mx-auto w-full pb-16">
+    <div className="px-4 md:px-14 max-w-7xl mx-auto w-full pb-16">
       <DataTable
         columns={columns}
         data={data}

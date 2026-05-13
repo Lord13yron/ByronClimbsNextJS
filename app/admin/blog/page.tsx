@@ -1,26 +1,43 @@
 import PostsGrid from "@/components/PostsGrid";
 import PostsGridSkeleton from "@/components/PostsGridSkeleton";
+import MonoChip from "@/components/ui/MonoChip";
+import TopoLine from "@/components/ui/TopoLine";
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "Climbing Blog",
-  description: "Explore articles, tips, and stories from the climbing world.",
+  title: "Admin — Blog",
+  description: "Manage blog posts in the admin dashboard.",
 };
 
 export default async function AdminBlogPage() {
   return (
-    <div className="flex flex-col min-h-screen max-w-6xl w-full mx-auto px-4 ">
-      <h1 className="text-4xl font-bold text-center mt-8 mb-4">
-        Admin Climbing Blog
-      </h1>
-      <p className="text-center mb-8">
-        View and manage blog posts in the admin dashboard. Here you can edit,
-        delete, or create new posts to keep your climbing blog up to date with
-        the latest content and stories from the climbing world.
-      </p>
-      <Suspense fallback={<PostsGridSkeleton />}>
-        <PostsGrid type="admin" />
-      </Suspense>
+    <div className="bg-chalk min-h-screen p-6 md:p-10">
+      <div className="max-w-5xl mx-auto">
+
+        <div className="mb-6">
+          <MonoChip className="text-ember mb-3 block">— THE FIELD JOURNAL</MonoChip>
+          <h1
+            className="font-display uppercase font-extrabold leading-[0.92] tracking-[0.01em] text-granite-100"
+            style={{ fontSize: "clamp(36px, 5vw, 64px)" }}
+          >
+            Blog posts.
+          </h1>
+          <p className="mt-3 text-[15px] leading-[1.6] text-slate-700 font-body">
+            Edit, delete, or create new entries.
+          </p>
+        </div>
+
+        <div className="text-chalk-3 opacity-60">
+          <TopoLine height={36} seed={11} />
+        </div>
+
+        <div className="mt-8">
+          <Suspense fallback={<PostsGridSkeleton />}>
+            <PostsGrid type="admin" />
+          </Suspense>
+        </div>
+
+      </div>
     </div>
   );
 }

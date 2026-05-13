@@ -12,7 +12,7 @@ export default async function PostsGrid({
 }: PostsGridProps) {
   const posts = limit ? await getRecentPosts(limit) : await getRecentPosts();
   return (
-    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 lg:grid-cols-3  ">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:grid-cols-3">
       {posts.map((post) => (
         <MainPageBlogPost key={post.id} post={post} type={type} />
       ))}
