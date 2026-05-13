@@ -1,180 +1,111 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { ChevronsUpDown, SquarePen, Trash2 } from "lucide-react";
+import { ChevronsUpDown, SquarePen } from "lucide-react";
 import Link from "next/link";
 import { Climb } from "@/app/types/types";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import DeleteClimb from "@/components/DeleteClimb";
-
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
+import GradeChip from "@/components/ui/GradeChip";
+import MonoChip from "@/components/ui/MonoChip";
+import TypeGlyph from "@/components/ui/TypeGlyph";
 
 export const columnsAdmin: ColumnDef<Climb>[] = [
   {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <ChevronsUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    id: "edit",
+    header: () => null,
     cell: ({ row }) => (
-      <div className="flex justify-between gap-4 font-bold ">
-        <div className="flex gap-2 ">
-          <Link
-            className="capitalize"
-            href={`/admin/climbs/${row.original.id}-${row.original.slug}`}
-          >
-            {row.getValue("name")}
-          </Link>
-        </div>
-      </div>
+      <Link href={`/admin/edit-climb/${row.original.id}-${row.original.slug}`}>
+        <SquarePen className="h-4 w-4 text-slate-400 hover:text-ember transition-colors duration-150" />
+      </Link>
     ),
   },
-
   {
     accessorKey: "grade",
-    header: ({ column }) => {
-      return (
-        <div className="flex justify-center">
-          <Button
-            className=""
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Grade
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
-    cell: ({ row }) => (
-      <div className="text-center ">
-        {" "}
-        {row.original.type === "boulder"
+    header: ({ column }) => (
+      <button
+        className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-widest text-slate-500"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Grade
+        <ChevronsUpDown className="h-2.5 w-2.5" />
+      </button>
+    ),
+    cell: ({ row }) => {
+      const grade =
+        row.original.type === "boulder"
           ? `V${row.getValue("grade")}`
-          : `${row.getValue("grade")}`}
+          : `${row.getValue("grade")}`;
+      return <GradeChip grade={grade} variant="outline" />;
+    },
+  },
+  {
+    accessorKey: "name",
+    header: ({ column }) => (
+      <button
+        className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-widest text-slate-500"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Route
+        <ChevronsUpDown className="h-2.5 w-2.5" />
+      </button>
+    ),
+    cell: ({ row }) => (
+      <div>
+        <Link
+          href={`/admin/climbs/${row.original.id}-${row.original.slug}`}
+          className="font-display uppercase text-[17px] tracking-[0.02em] text-granite-100 hover:text-ember transition-colors duration-150"
+        >
+          {row.getValue("name")}
+        </Link>
+        <div className="md:hidden mt-0.5">
+          <MonoChip>
+            {row.original.area}
+            {row.original.subArea ? ` · ${row.original.subArea}` : ""}
+          </MonoChip>
+        </div>
       </div>
     ),
   },
   {
-    accessorKey: "city",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          City
-          <ChevronsUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="capitalize">{row.getValue("city")}</div>,
-  },
-  {
+    id: "location",
     accessorKey: "area",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Area
-          <ChevronsUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="capitalize">{row.getValue("area")}</div>,
-  },
-  {
-    accessorKey: "subArea",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Sub Area
-          <ChevronsUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: () => <MonoChip className="text-[9px]">Area</MonoChip>,
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("subArea")}</div>
+      <div>
+        <div className="text-[13px] font-medium text-granite-100 capitalize">
+          {row.original.area}
+        </div>
+        {row.original.subArea && (
+          <MonoChip className="mt-0.5 capitalize">{row.original.subArea}</MonoChip>
+        )}
+      </div>
     ),
   },
   {
-    id: "Edit",
-    header: () => {
-      return (
-        <Tooltip>
-          <TooltipTrigger>
-            <SquarePen className="h-4 w-4" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Edit Climb</p>
-          </TooltipContent>
-        </Tooltip>
-      );
-    },
+    id: "city",
+    accessorKey: "city",
+    header: () => <MonoChip className="text-[9px]">City</MonoChip>,
+    cell: ({ row }) => (
+      <MonoChip className="capitalize">{row.original.city}</MonoChip>
+    ),
+  },
+  {
+    id: "type",
+    accessorKey: "type",
+    header: () => <MonoChip className="text-[9px]">Type</MonoChip>,
     cell: ({ row }) => {
+      const t = row.original.type;
       return (
-        <div className="flex gap-2">
-          <Tooltip>
-            <TooltipTrigger>
-              <Link
-                href={`/admin/edit-climb/${row.original.id}-${row.original.slug}`}
-              >
-                <SquarePen className="h-4 w-4 hover:text-green-800" />
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Edit {row.original.name}</p>
-            </TooltipContent>
-          </Tooltip>
+        <div className="flex items-center gap-1.5 text-slate-700">
+          <TypeGlyph type={t} size={13} />
+          <MonoChip className="text-granite-100">{t}</MonoChip>
         </div>
       );
     },
   },
   {
-    id: "Delete",
-    header: () => {
-      return (
-        <Tooltip>
-          <TooltipTrigger>
-            <Trash2 className="h-4 w-4" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Delete Climb</p>
-          </TooltipContent>
-        </Tooltip>
-      );
-    },
-    cell: ({ row }) => {
-      return (
-        <div className="flex gap-2">
-          <Tooltip>
-            <TooltipTrigger>
-              <DeleteClimb climb={row.original} />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Delete {row.original.name}</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-      );
-    },
+    id: "delete",
+    header: () => null,
+    cell: ({ row }) => <DeleteClimb climb={row.original} />,
   },
 ];

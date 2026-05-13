@@ -804,3 +804,34 @@ export async function linkExistingImageToPost(url: string, postId: string) {
   }
   return true;
 }
+
+export async function updateUsername(
+  _: { error: string } | { success: true } | null,
+  formData: FormData,
+): Promise<{ error: string } | { success: true }> {
+  const raw = (formData.get("username") as string)?.trim().toLowerCase();
+
+  if (!raw || raw.length < 2) return { error: "Username must be at least 2 characters." };
+  if (raw.length > 20) return { error: "Username must be 20 characters or less." };
+  if (!/^[a-z0-9_ -]+$/.test(raw))
+    return { error: "Only letters, numbers, spaces, underscores, and hyphens allowed." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated." };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ username: raw })
+    .eq("id", user.id);
+
+  if (error) {
+    if (error.code === "23505") return { error: "That username is already taken." };
+    return { error: "Failed to update username." };
+  }
+
+  revalidatePath("/account");
+  return { success: true };
+}

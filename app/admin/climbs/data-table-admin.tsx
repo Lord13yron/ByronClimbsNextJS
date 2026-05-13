@@ -47,6 +47,8 @@ const climbGlobalFilter: FilterFn<any> = (row, _columnId, value) => {
 };
 climbGlobalFilter.autoRemove = (val) => !val;
 
+const DESKTOP_ONLY_COLUMNS = new Set(["location", "city", "type"]);
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -76,35 +78,36 @@ export default function DataTableAdmin<TData, TValue>({
   });
 
   return (
-    <div className="p-2 ">
-      <div className="flex  gap-2 sm:flex-row items-center justify-between py-4 ">
+    <div>
+      <div className="flex gap-2 sm:flex-row items-center justify-between py-4">
         <Input
           placeholder="Search by name, grade, city, area..."
           value={globalFilter}
           onChange={(event) => setGlobalFilter(event.target.value)}
-          className="max-w-sm "
+          className="max-w-sm"
         />
         <Link href="/admin/add-climb">
           <Button className="cursor-pointer">
-            {" "}
             <Plus />
             Add Climb
           </Button>
         </Link>
       </div>
-      <div className="overflow-x-auto rounded-md border ">
+
+      <div className="border border-chalk-3 rounded-sm overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow
+                key={headerGroup.id}
+                className="bg-chalk-2 hover:bg-chalk-2 border-b border-chalk-3"
+              >
                 {headerGroup.headers.map((header) => {
-                  const isNameColumn = header.column.id === "name";
+                  const isDesktopOnly = DESKTOP_ONLY_COLUMNS.has(header.column.id);
                   return (
                     <TableHead
                       key={header.id}
-                      className={
-                        isNameColumn ? "sticky left-0 z-10 bg-background" : ""
-                      }
+                      className={`py-3 px-4.5 font-normal ${isDesktopOnly ? "hidden md:table-cell" : ""}`}
                     >
                       {header.isPlaceholder
                         ? null
@@ -120,19 +123,20 @@ export default function DataTableAdmin<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row, i) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className={`border-b border-chalk-2 hover:bg-chalk-2 transition-colors duration-150 ${
+                    i % 2 === 0 ? "bg-chalk" : "bg-[rgba(236,231,222,0.4)]"
+                  }`}
                 >
                   {row.getVisibleCells().map((cell) => {
-                    const isNameColumn = cell.column.id === "name";
+                    const isDesktopOnly = DESKTOP_ONLY_COLUMNS.has(cell.column.id);
                     return (
                       <TableCell
                         key={cell.id}
-                        className={
-                          isNameColumn ? "sticky left-0 z-10 bg-background" : ""
-                        }
+                        className={`py-4 px-4.5 ${isDesktopOnly ? "hidden md:table-cell" : ""}`}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -147,7 +151,7 @@ export default function DataTableAdmin<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center font-mono text-[10px] uppercase tracking-widest text-slate-500"
                 >
                   No results.
                 </TableCell>
@@ -156,32 +160,13 @@ export default function DataTableAdmin<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      {/* <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
-      </div> */}
-      <div className="flex items-center justify-between px-2 py-2">
-        {/* <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div> */}
+
+      <div className="flex items-center justify-between px-0 py-3">
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Rows per page</p>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-slate-500">
+              Rows per page
+            </p>
             <Select
               value={`${table.getState().pagination.pageSize}`}
               onValueChange={(value) => {
@@ -202,7 +187,7 @@ export default function DataTableAdmin<TData, TValue>({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex w-25 items-center justify-center text-sm font-medium">
+          <div className="flex w-25 items-center justify-center font-mono text-[10px] uppercase tracking-widest text-slate-500">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}
           </div>

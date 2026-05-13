@@ -1,325 +1,174 @@
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
-// import { Users, TrendingUp, Activity, MountainSnow } from "lucide-react";
-// import Link from "next/link";
-
-// export default async function AdminPage() {
-//   // TODO: Replace with actual data from your database
-//   const stats = {
-//     totalUsers: 1234,
-//     totalRoutes: 456,
-//     activeClimbers: 89,
-//     completionRate: 67,
-//   };
-
-//   return (
-//     <div className="flex flex-col min-h-screen w-full p-8 ">
-//       <div className="max-w-7xl mx-auto w-full space-y-8">
-//         {/* Header */}
-//         <div>
-//           <h1 className="text-4xl font-bold ">Admin Dashboard</h1>
-//           <p className="\ mt-2">
-//             Welcome back! Here&#39;s what&#39;s happening today.
-//           </p>
-//         </div>
-
-//         {/* Stats Grid */}
-//         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-//           <Card className="">
-//             <CardHeader className="flex flex-row items-center justify-between pb-2">
-//               <CardTitle className="text-sm font-medium ">
-//                 Total Users
-//               </CardTitle>
-//               <Users className="h-4 w-4 text-blue-600" />
-//             </CardHeader>
-//             <CardContent>
-//               <div className="text-3xl font-bold">{stats.totalUsers}</div>
-//               <p className="text-xs text-green-600 mt-1">
-//                 +12% from last month
-//               </p>
-//             </CardContent>
-//           </Card>
-
-//           <Card>
-//             <CardHeader className="flex flex-row items-center justify-between pb-2">
-//               <CardTitle className="text-sm font-medium ">
-//                 Total Routes
-//               </CardTitle>
-//               <MountainSnow className="h-4 w-4 t" />
-//             </CardHeader>
-//             <CardContent>
-//               <div className="text-3xl font-bold">{stats.totalRoutes}</div>
-//               <p className="text-xs text-green-600 mt-1">+8% from last month</p>
-//             </CardContent>
-//           </Card>
-
-//           <Card>
-//             <CardHeader className="flex flex-row items-center justify-between pb-2">
-//               <CardTitle className="text-sm font-medium ">
-//                 Active Climbers
-//               </CardTitle>
-//               <Activity className="h-4 w-4 text-orange-600" />
-//             </CardHeader>
-//             <CardContent>
-//               <div className="text-3xl font-bold">{stats.activeClimbers}</div>
-//               <p className="text-xs mt-1">Currently active</p>
-//             </CardContent>
-//           </Card>
-
-//           <Card>
-//             <CardHeader className="flex flex-row items-center justify-between pb-2">
-//               <CardTitle className="text-sm font-medium ">
-//                 Completion Rate
-//               </CardTitle>
-//               <TrendingUp className="h-4 w-4 text-green-600" />
-//             </CardHeader>
-//             <CardContent>
-//               <div className="text-3xl font-bold">{stats.completionRate}%</div>
-//               <p className="text-xs text-green-600 mt-1">+5% from last month</p>
-//             </CardContent>
-//           </Card>
-//         </div>
-
-//         {/* Quick Actions & Recent Activity */}
-//         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-//           <Card>
-//             <CardHeader>
-//               <CardTitle>Quick Actions</CardTitle>
-//               <CardDescription>Common administrative tasks</CardDescription>
-//             </CardHeader>
-//             <CardContent className="space-y-2">
-//               <Link href="/admin/add-climb">
-//                 <button className="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
-//                   <div className="font-medium">Add New Route</div>
-//                   <div className="text-sm text-gray-600">
-//                     Create a new climbing route
-//                   </div>
-//                 </button>
-//               </Link>
-//               <Link href="/admin/blog/add-post">
-//                 <button className="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
-//                   <div className="font-medium">Add a New Blog Post</div>
-//                   <div className="text-sm text-gray-600">
-//                     Create a new blog post
-//                   </div>
-//                 </button>
-//               </Link>
-//               <Link href="/admin/settings">
-//                 <button className="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
-//                   <div className="font-medium">Settings</div>
-//                   <div className="text-sm text-gray-600">
-//                     Access site settings and configurations
-//                   </div>
-//                 </button>
-//               </Link>
-//             </CardContent>
-//           </Card>
-
-//           <Card>
-//             <CardHeader>
-//               <CardTitle>Recent Activity</CardTitle>
-//               <CardDescription>Latest system updates</CardDescription>
-//             </CardHeader>
-//             <CardContent className="space-y-4">
-//               <div className="flex items-start space-x-3">
-//                 <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-//                 <div>
-//                   <p className="text-sm font-medium">New user registered</p>
-//                   <p className="text-xs text-gray-600">2 minutes ago</p>
-//                 </div>
-//               </div>
-//               <div className="flex items-start space-x-3">
-//                 <div className="w-2 h-2 bg-green-600 rounded-full mt-2"></div>
-//                 <div>
-//                   <p className="text-sm font-medium">
-//                     Route &quot;Crimson Wave&quot; completed
-//                   </p>
-//                   <p className="text-xs text-gray-600">15 minutes ago</p>
-//                 </div>
-//               </div>
-//               <div className="flex items-start space-x-3">
-//                 <div className="w-2 h-2 bg-purple-600 rounded-full mt-2"></div>
-//                 <div>
-//                   <p className="text-sm font-medium">
-//                     New route added to database
-//                   </p>
-//                   <p className="text-xs text-gray-600">1 hour ago</p>
-//                 </div>
-//               </div>
-//             </CardContent>
-//           </Card>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Users, TrendingUp, Activity, MountainSnow } from "lucide-react";
+import MonoChip from "@/components/ui/MonoChip";
+import TopoLine from "@/components/ui/TopoLine";
+import { getAdminStats, getRecentActivity } from "@/lib/data-service";
 import Link from "next/link";
 
+function timeAgo(isoString: string): string {
+  const seconds = Math.floor(
+    (Date.now() - new Date(isoString).getTime()) / 1000
+  );
+  if (seconds < 60) return `${seconds} SECONDS AGO`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} MINUTE${minutes === 1 ? "" : "S"} AGO`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} HOUR${hours === 1 ? "" : "S"} AGO`;
+  const days = Math.floor(hours / 24);
+  return `${days} DAY${days === 1 ? "" : "S"} AGO`;
+}
+
 export default async function AdminPage() {
-  // TODO: Replace with actual data from your database
-  const stats = {
-    totalUsers: 1234,
-    totalRoutes: 456,
-    activeClimbers: 89,
-    completionRate: 67,
-  };
+  const [stats, activity] = await Promise.all([
+    getAdminStats(),
+    getRecentActivity(),
+  ]);
 
   return (
-    <div className="flex flex-col min-h-screen w-full p-8">
-      <div className="max-w-7xl mx-auto w-full space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-4xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
-            Welcome back! Here&#39;s what&#39;s happening today.
+    <div className="bg-chalk min-h-screen p-6 md:p-10">
+      <div className="max-w-5xl mx-auto">
+
+        {/* Masthead */}
+        <div className="mb-6">
+          <MonoChip className="text-ember mb-3 block">— ADMIN DASHBOARD</MonoChip>
+          <h1
+            className="font-display uppercase font-extrabold leading-[0.92] tracking-[0.01em] text-granite-100"
+            style={{ fontSize: "clamp(36px, 5vw, 72px)" }}
+          >
+            Dashboard.
+          </h1>
+          <p className="mt-3 text-[15px] leading-[1.6] text-slate-700 font-body">
+            Site overview and quick actions.
           </p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.totalUsers}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                +12% from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Routes
-              </CardTitle>
-              <MountainSnow className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.totalRoutes}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                +8% from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Climbers
-              </CardTitle>
-              <Activity className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.activeClimbers}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Currently active
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Completion Rate
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.completionRate}%</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                +5% from last month
-              </p>
-            </CardContent>
-          </Card>
+        <div className="text-chalk-3 opacity-60">
+          <TopoLine height={36} seed={3} />
         </div>
 
-        {/* Quick Actions & Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common administrative tasks</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-1 space-y-2 ">
-              <Link href="/admin/add-climb">
-                <button className="w-full text-left px-4 py-3 bg-accent hover:bg-accent/80 rounded-lg transition-colors">
-                  <div className="font-medium">Add New Route</div>
-                  <div className="text-sm text-muted-foreground">
-                    Create a new climbing route
-                  </div>
-                </button>
-              </Link>
-              <Link href="/admin/blog/add-post">
-                <button className="w-full text-left px-4 py-3 bg-accent hover:bg-accent/80 rounded-lg transition-colors">
-                  <div className="font-medium">Add a New Blog Post</div>
-                  <div className="text-sm text-muted-foreground">
-                    Create a new blog post
-                  </div>
-                </button>
-              </Link>
-              <Link href="/admin/settings">
-                <button className="w-full text-left px-4 py-3 bg-accent hover:bg-accent/80 rounded-lg transition-colors">
-                  <div className="font-medium">Settings</div>
-                  <div className="text-sm text-muted-foreground">
-                    Access site settings and configurations
-                  </div>
-                </button>
-              </Link>
-            </CardContent>
-          </Card>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+          <div className="bg-chalk-2 border border-chalk-3 rounded-sm p-6">
+            <MonoChip className="text-ember block mb-3">— TOTAL CLIMBS</MonoChip>
+            <div className="font-display text-[56px] leading-none text-granite-100">
+              {stats.totalClimbs}
+            </div>
+            <MonoChip className="text-slate-400 block mt-2">ROUTES IN DATABASE</MonoChip>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest system updates</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+          <div className="bg-chalk-2 border border-chalk-3 rounded-sm p-6">
+            <MonoChip className="text-ember block mb-3">— SENDS LOGGED</MonoChip>
+            <div className="font-display text-[56px] leading-none text-granite-100">
+              {stats.totalSends}
+            </div>
+            <MonoChip className="text-slate-400 block mt-2">ALL-TIME SENDS</MonoChip>
+          </div>
+
+          <div className="bg-chalk-2 border border-chalk-3 rounded-sm p-6">
+            <MonoChip className="text-ember block mb-3">— TOTAL USERS</MonoChip>
+            <div className="font-display text-[56px] leading-none text-granite-100">
+              {stats.totalUsers}
+            </div>
+            <MonoChip className="text-slate-400 block mt-2">REGISTERED ACCOUNTS</MonoChip>
+          </div>
+
+          <div className="bg-chalk-2 border border-chalk-3 rounded-sm p-6">
+            <MonoChip className="text-ember block mb-3">— BLOG POSTS</MonoChip>
+            <div className="font-display text-[56px] leading-none text-granite-100">
+              {stats.totalPosts}
+            </div>
+            <MonoChip className="text-slate-400 block mt-2">PUBLISHED ENTRIES</MonoChip>
+          </div>
+        </div>
+
+        <div className="text-chalk-3 opacity-60 mt-8">
+          <TopoLine height={36} seed={7} />
+        </div>
+
+        {/* Quick Actions + Recent Activity */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+
+          {/* Quick Actions */}
+          <div className="bg-chalk-2 border border-chalk-3 rounded-sm overflow-hidden">
+            <div className="px-6 pt-6 pb-4">
+              <MonoChip className="text-ember block mb-2">— QUICK ACTIONS</MonoChip>
+              <h2 className="font-display uppercase font-bold text-[28px] leading-none text-granite-100">
+                Actions.
+              </h2>
+            </div>
+            <div>
+              <Link
+                href="/admin/add-climb"
+                className="flex justify-between items-center border-t border-chalk-3 py-4 px-6 hover:bg-chalk-3/40 transition-colors duration-150"
+              >
                 <div>
-                  <p className="text-sm font-medium">New user registered</p>
-                  <p className="text-xs text-muted-foreground">2 minutes ago</p>
+                  <div className="font-display uppercase font-semibold text-[13px] tracking-[0.06em] text-granite-100">
+                    Add New Route
+                  </div>
+                  <MonoChip className="text-slate-400 block mt-0.5">
+                    CREATE A CLIMBING ROUTE
+                  </MonoChip>
                 </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                <span className="font-display text-ember text-[18px]">→</span>
+              </Link>
+              <Link
+                href="/admin/blog/add-post"
+                className="flex justify-between items-center border-t border-chalk-3 py-4 px-6 hover:bg-chalk-3/40 transition-colors duration-150"
+              >
                 <div>
-                  <p className="text-sm font-medium">
-                    Route &quot;Crimson Wave&quot; completed
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    15 minutes ago
-                  </p>
+                  <div className="font-display uppercase font-semibold text-[13px] tracking-[0.06em] text-granite-100">
+                    Add Blog Post
+                  </div>
+                  <MonoChip className="text-slate-400 block mt-0.5">
+                    WRITE A NEW ENTRY
+                  </MonoChip>
                 </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                <span className="font-display text-ember text-[18px]">→</span>
+              </Link>
+              <Link
+                href="/admin/settings"
+                className="flex justify-between items-center border-t border-chalk-3 py-4 px-6 hover:bg-chalk-3/40 transition-colors duration-150"
+              >
                 <div>
-                  <p className="text-sm font-medium">
-                    New route added to database
-                  </p>
-                  <p className="text-xs text-muted-foreground">1 hour ago</p>
+                  <div className="font-display uppercase font-semibold text-[13px] tracking-[0.06em] text-granite-100">
+                    Settings
+                  </div>
+                  <MonoChip className="text-slate-400 block mt-0.5">
+                    SITE CONFIGURATION
+                  </MonoChip>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <span className="font-display text-ember text-[18px]">→</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="bg-chalk-2 border border-chalk-3 rounded-sm overflow-hidden">
+            <div className="px-6 pt-6 pb-4">
+              <MonoChip className="text-ember block mb-2">— RECENT ACTIVITY</MonoChip>
+              <h2 className="font-display uppercase font-bold text-[28px] leading-none text-granite-100">
+                Activity.
+              </h2>
+            </div>
+            <div className="px-6 pb-6 flex flex-col gap-5 border-t border-chalk-3 pt-5">
+              {activity.length === 0 ? (
+                <MonoChip className="text-slate-400">NO RECENT ACTIVITY</MonoChip>
+              ) : (
+                activity.map((item, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-ember rounded-full mt-1.25 shrink-0" />
+                    <div>
+                      <p className="text-[14px] font-body text-granite-100 leading-snug">
+                        {item.label}
+                      </p>
+                      <MonoChip className="text-slate-400 block mt-1">
+                        {timeAgo(item.created_at)}
+                      </MonoChip>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

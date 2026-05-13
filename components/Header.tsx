@@ -1,6 +1,9 @@
 "use client";
-import { Menu, UserRound, X } from "lucide-react";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 import {
   Drawer,
   DrawerClose,
@@ -9,152 +12,168 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "./ui/drawer";
+import BrandMark from "./BrandMark";
+import MonoChip from "./ui/MonoChip";
+import { createClient } from "@/lib/supabase/supabaseClient";
 
-import Image from "next/image";
-import { ModeToggle } from "./ModeToggle";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { useRouter } from "next/navigation";
+function getInitials(username: string | null, email: string | null): string {
+  const source = username || email || "";
+  const parts = source.split(/[\s@]/);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return source.slice(0, 2).toUpperCase();
+}
+
+const navItems = [
+  { href: "/", label: "Home" },
+  { href: "/blog", label: "Field Notes" },
+  { href: "/database", label: "Database" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+];
 
 export default function Header() {
-  const router = useRouter();
+  const pathname = usePathname();
+  const [initials, setInitials] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username, email")
+          .eq("id", user.id)
+          .single();
+        setInitials(getInitials(profile?.username ?? null, profile?.email ?? user.email ?? null));
+      }
+      setAuthChecked(true);
+    });
+  }, []);
+
   return (
-    <div className="px-2 py-2 md:px-0 md:py-2 flex justify-center items-center border-b-2 bg-secondary">
-      <div className="flex w-full justify-between md:justify-center md:gap-8 lg:gap-16 items-center px-4">
-        <Link
-          href="/"
-          className="text-2xl lg:text-3xl text-gray-500 font-bold flex items-center gap-2 p-2"
-        >
-          <div className="relative w-18 h-18">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              fill
-              sizes="60px"
-              className="object-contain"
-            />
+    <header className="border-b border-border bg-background z-10 relative">
+      <div className="flex items-center justify-between px-4 md:px-14 py-3">
+        {/* Brand */}
+        <Link href="/" className="flex items-center gap-3 shrink-0">
+          <BrandMark size={36} />
+          <div className="flex flex-col leading-none">
+            <span className="font-display uppercase font-bold text-[19px] tracking-[0.06em] text-granite-100">
+              Byron Climbs
+            </span>
+            <MonoChip className="mt-1 text-[9px]">
+              EST. 2019 · KELOWNA, BC
+            </MonoChip>
           </div>
-          Byron Climbs
         </Link>
 
-        <div className="md:hidden">
-          <Drawer direction="left">
-            <DrawerTrigger>
-              <Menu className="hover:cursor-pointer border-2 py-1 px-2 h-8 w-10" />
-            </DrawerTrigger>
-            <DrawerContent direction="left">
-              <DrawerHeader>
-                <div className="flex justify-between">
-                  <DrawerTitle>Menu</DrawerTitle>
-                  <DrawerClose className="ml-auto">
-                    <X className="hover:cursor-pointer hover:bg-slate-100 rounded-full p-1" />
-                  </DrawerClose>
-                </div>
-              </DrawerHeader>
-
-              <nav className="flex flex-col w-full ">
-                <DrawerClose>
-                  <div
-                    className="w-full text-start px-4 py-2 hover:cursor-pointer hover:bg-secondary"
-                    onClick={() => router.push("/")}
-                  >
-                    Home
-                  </div>
-                </DrawerClose>
-
-                <DrawerClose>
-                  <div
-                    className="w-full text-start px-4 py-2 hover:cursor-pointer hover:bg-secondary"
-                    onClick={() => router.push("/about")}
-                  >
-                    About
-                  </div>
-                </DrawerClose>
-
-                <DrawerClose>
-                  <div
-                    className="w-full text-start px-4 py-2 hover:cursor-pointer hover:bg-secondary"
-                    onClick={() => router.push("/blog")}
-                  >
-                    Blog
-                  </div>
-                </DrawerClose>
-
-                <DrawerClose>
-                  <div
-                    className="w-full text-start px-4 py-2 hover:cursor-pointer hover:bg-secondary"
-                    onClick={() => router.push("/database")}
-                  >
-                    Database
-                  </div>
-                </DrawerClose>
-                <DrawerClose>
-                  <div
-                    className="w-full text-start px-4 py-2 hover:cursor-pointer hover:bg-secondary"
-                    onClick={() => router.push("/contact")}
-                  >
-                    Contact
-                  </div>
-                </DrawerClose>
-                <DrawerClose>
-                  <div
-                    className="w-full text-start px-4 py-2 hover:cursor-pointer hover:bg-secondary"
-                    onClick={() => router.push("/account")}
-                  >
-                    Profile
-                  </div>
-                </DrawerClose>
-              </nav>
-              <div className="ml-3 mt-3 ">
-                <Tooltip>
-                  <TooltipTrigger>
-                    <ModeToggle />
-                  </TooltipTrigger>
-                  <TooltipContent>Toggle theme</TooltipContent>
-                </Tooltip>
-              </div>
-            </DrawerContent>
-          </Drawer>
-        </div>
-
-        <nav className="hidden md:block">
-          <ul className="flex gap-4 md:gap-8 items-center">
-            <li>
-              <Link href="/">Home</Link>
-            </li>
-            <li>
-              <Link href="/about">About</Link>
-            </li>
-
-            <li>
-              <Link href="/blog">Blog</Link>
-            </li>
-            <li>
-              <Link href="/database">Database</Link>
-            </li>
-            <li>
-              <Link href="/contact">Contact</Link>
-            </li>
-            <li>
-              <Tooltip>
-                <TooltipTrigger>
-                  <Link href="/account">
-                    <UserRound />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>View Profile</TooltipContent>
-              </Tooltip>
-            </li>
-            <li>
-              <Tooltip>
-                <TooltipTrigger>
-                  <ModeToggle />
-                </TooltipTrigger>
-                <TooltipContent>Toggle theme</TooltipContent>
-              </Tooltip>
-            </li>
-          </ul>
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navItems.map((item) => {
+            const active =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`font-display uppercase text-[13px] font-semibold tracking-[0.06em] px-3.5 py-2 border-b-2 transition-colors duration-150 ${
+                  active
+                    ? "text-granite-100 border-ember"
+                    : "text-slate-500 border-transparent hover:text-granite-100"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
+
+        {/* Right side: avatar + theme + mobile trigger */}
+        <div className="flex items-center gap-3">
+          {authChecked && (
+            initials ? (
+              <Link
+                href="/account"
+                className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-granite-200 text-chalk font-display font-bold text-[13px] border-[1.5px] border-ember hover:border-ember-soft transition-colors"
+                aria-label="Profile"
+              >
+                {initials}
+              </Link>
+            ) : (
+              <Link
+                href="/account/signin"
+                className="hidden md:flex font-display uppercase text-[13px] font-semibold tracking-[0.06em] px-3.5 py-2 text-slate-500 hover:text-granite-100 transition-colors duration-150"
+              >
+                Sign in
+              </Link>
+            )
+          )}
+
+          {/* Mobile drawer trigger */}
+          <div className="md:hidden">
+            <Drawer direction="left">
+              <DrawerTrigger asChild>
+                <button
+                  className="border border-chalk-3 p-1.5 rounded-sm hover:bg-chalk-2 transition-colors"
+                  aria-label="Open menu"
+                >
+                  <Menu className="w-4 h-4" />
+                </button>
+              </DrawerTrigger>
+              <DrawerContent direction="left" className="bg-background w-72">
+                <DrawerHeader className="flex items-center justify-between px-4 py-3 border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <BrandMark size={28} />
+                    <DrawerTitle className="font-display uppercase text-[15px] tracking-[0.06em]">
+                      Byron Climbs
+                    </DrawerTitle>
+                  </div>
+                  <DrawerClose asChild>
+                    <button className="p-1 hover:bg-chalk-2 rounded-sm transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </DrawerClose>
+                </DrawerHeader>
+
+                <nav className="flex flex-col p-2">
+                  {navItems.map((item) => {
+                    const active =
+                      item.href === "/"
+                        ? pathname === "/"
+                        : pathname.startsWith(item.href);
+                    return (
+                      <DrawerClose key={item.href} asChild>
+                        <Link
+                          href={item.href}
+                          className={`font-display uppercase text-[13px] font-semibold tracking-[0.05em] px-3 py-2.5 rounded-sm transition-colors ${
+                            active
+                              ? "text-ember bg-chalk-2"
+                              : "text-granite-100 hover:bg-chalk-2"
+                          }`}
+                        >
+                          {item.label}
+                        </Link>
+                      </DrawerClose>
+                    );
+                  })}
+                  <DrawerClose asChild>
+                    <Link
+                      href="/account"
+                      className="font-display uppercase text-[13px] font-semibold tracking-[0.05em] px-3 py-2.5 rounded-sm text-granite-100 hover:bg-chalk-2 transition-colors mt-1 border-t border-border pt-3"
+                    >
+                      Profile
+                    </Link>
+                  </DrawerClose>
+                </nav>
+              </DrawerContent>
+            </Drawer>
+          </div>
+        </div>
       </div>
-    </div>
+    </header>
   );
 }

@@ -1,86 +1,228 @@
 "use client";
 
-import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useState } from "react";
+import TypeGlyph from "./ui/TypeGlyph";
+import MonoChip from "./ui/MonoChip";
 
-type GradeData = {
-  grade: string;
-  count: number;
-};
+type GradeData = { grade: string; count: number };
+type Props = { data: GradeData[]; type: "boulder" | "sport" };
 
-type Props = {
-  data: GradeData[];
-  type: "boulder" | "sport";
-};
-
-// Color palette (add more if needed)
-const COLORS = [
-  "#e5e7eb", // 1 very light gray
-  "#d1d5db",
-  "#9ca3af",
-  "#6b7280",
-  "#4b5563",
-  "#374151",
-
-  "#c7d2fe", // subtle indigo
-  "#a5b4fc",
-  "#818cf8",
-  "#6366f1",
-
-  "#bbf7d0", // soft green
-  "#86efac",
-  "#4ade80",
-  "#22c55e",
-
-  "#fde68a", // soft amber
-  "#fbbf24",
-  "#f59e0b",
-
-  "#ef4444", // hardest grades
+const SEGMENT_COLORS = [
+  "#C8541E", // ember
+  "#2A4D7A", // deep blue
+  "#3D6644", // forest
+  "#9B7A2A", // amber
+  "#6B3258", // plum
+  "#4A7272", // teal
+  "#923040", // crimson
+  "#5A5570", // slate purple
 ];
+const MONO_FONT = "'JetBrains Mono', ui-monospace, monospace";
+
+function buildArcPath(
+  cx: number,
+  cy: number,
+  r: number,
+  sa: number,
+  ea: number,
+): string {
+  // Clamp to just under 2π so a single full segment still renders
+  const safeEa = ea - sa >= Math.PI * 2 - 0.001 ? sa + Math.PI * 2 - 0.001 : ea;
+  const large = safeEa - sa > Math.PI ? 1 : 0;
+  const x1 = cx + r * Math.cos(sa);
+  const y1 = cy + r * Math.sin(sa);
+  const x2 = cx + r * Math.cos(safeEa);
+  const y2 = cy + r * Math.sin(safeEa);
+  return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`;
+}
 
 export default function GradePieChart({ data, type }: Props) {
-  const total = data.reduce((sum, item) => sum + item.count, 0);
+  const [hovered, setHovered] = useState<number | null>(null);
 
-  // Add percentage + color directly into the data
-  const chartData = data.map((item, index) => ({
-    name: `${type === "boulder" ? "V" : ""}${item.grade}`,
-    value: item.count,
-    percent: total ? item.count / total : 0,
-    fill: COLORS[index % COLORS.length],
-  }));
+  const total = data.reduce((sum, d) => sum + d.count, 0);
+  const kicker = type === "boulder" ? "— BOULDER" : "— SPORT";
+  const title = type === "boulder" ? "By Grade · Boulder" : "By Grade · Sport";
 
-  // Handle empty state
   if (total === 0) {
     return (
-      <div className="w-full h-80 flex items-center justify-center text-muted-foreground">
-        No climb data
+      <div className="bg-chalk border border-chalk-3 rounded-md p-5.5">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <MonoChip className="text-ember mb-1.5 block">{kicker}</MonoChip>
+            <h3 className="font-display uppercase text-[22px] m-0 leading-none text-granite-100">
+              {title}
+            </h3>
+          </div>
+          <TypeGlyph type={type} size={20} className="text-slate-500 mt-1" />
+        </div>
+        <MonoChip className="text-slate-500 block py-6 text-center">
+          No {type} sends yet.
+        </MonoChip>
       </div>
     );
   }
 
+  const cx = 100;
+  const cy = 100;
+  const r = 80;
+  const innerR = 42;
+  let cumulative = 0;
+
+  const segments = data.map((d, i) => {
+    const sa = (cumulative / total) * Math.PI * 2 - Math.PI / 2;
+    cumulative += d.count;
+    const ea = (cumulative / total) * Math.PI * 2 - Math.PI / 2;
+    const mid = (sa + ea) / 2;
+    const isRight = Math.cos(mid) >= 0;
+
+    // Callout line: start just inside the outer edge → elbow → horizontal tick
+    const elbowX = cx + (r + 20) * Math.cos(mid);
+    const elbowY = cy + (r + 20) * Math.sin(mid);
+    const tickX = elbowX + (isRight ? 16 : -16);
+
+    const displayGrade = type === "boulder" ? `V${d.grade}` : d.grade;
+
+    return {
+      path: buildArcPath(cx, cy, r, sa, ea),
+      color: SEGMENT_COLORS[i % SEGMENT_COLORS.length],
+      displayGrade,
+      count: d.count,
+      pct: Math.round((d.count / total) * 100),
+      // polyline points
+      lineStartX: cx + (r - 6) * Math.cos(mid),
+      lineStartY: cy + (r - 6) * Math.sin(mid),
+      elbowX,
+      elbowY,
+      tickX,
+      textX: tickX + (isRight ? 4 : -4),
+      textAnchor: (isRight ? "start" : "end") as "start" | "end",
+    };
+  });
+
+  const MIN_LABEL_GAP = 13;
+  const adjustedLabelY = (() => {
+    const ys = segments.map((s) => s.elbowY);
+    for (const isRight of [true, false]) {
+      const side = segments
+        .map((s, i) => ({ i, y: s.elbowY }))
+        .filter((_, i) => (segments[i].textAnchor === "start") === isRight)
+        .sort((a, b) => a.y - b.y);
+      for (let k = 1; k < side.length; k++) {
+        const minY = ys[side[k - 1].i] + MIN_LABEL_GAP;
+        if (ys[side[k].i] < minY) ys[side[k].i] = minY;
+      }
+    }
+    return ys;
+  })();
+
+  const hovSeg = hovered !== null ? segments[hovered] : null;
+
   return (
-    <div className="w-full h-80 mt-8">
-      <h1 className="text-lg font-semibold mb-4 text-center">
-        {type === "boulder" ? "Boulder" : "Sport"} Grade Distribution
-      </h1>
-      <ResponsiveContainer width="100%" height={320}>
-        <PieChart>
-          <Pie
-            data={chartData}
-            dataKey="value"
-            nameKey="name"
-            label={({ name, payload }) =>
-              `${name} ${(payload.percent * 100).toFixed(0)}%`
-            }
-            isAnimationActive
-          />
-          <Tooltip
-            labelClassName="mt-8"
-            formatter={(value) => `${value} climbs`}
-          />
-          <Legend />
-        </PieChart>
-      </ResponsiveContainer>
+    <div className="bg-chalk border border-chalk-3 rounded-md p-5.5">
+      {/* Card header */}
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <MonoChip className="text-ember mb-1.5 block">{kicker}</MonoChip>
+          <h3 className="font-display uppercase text-[22px] m-0 leading-none text-granite-100">
+            {title}
+          </h3>
+        </div>
+        <TypeGlyph type={type} size={20} className="text-slate-500 mt-1" />
+      </div>
+
+      {/* Chart area — SVG + HTML overlay share the same block */}
+      <div className="relative">
+        <svg
+          width="100%"
+          viewBox="-70 -15 340 230"
+          style={{ overflow: "visible" }}
+        >
+          {/* Segments */}
+          {segments.map((s, i) => (
+            <path
+              key={i}
+              d={s.path}
+              fill={s.color}
+              stroke="var(--chalk)"
+              strokeWidth="1.5"
+              style={{
+                cursor: "pointer",
+                opacity: hovered !== null && hovered !== i ? 0.4 : 1,
+                transition: "opacity 0.12s ease",
+              }}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+            />
+          ))}
+
+          {/* Donut hole */}
+          <circle cx={cx} cy={cy} r={innerR} fill="var(--chalk)" />
+
+          {/* Callout lines — rendered before labels so text is always on top */}
+          {segments.map((s, i) => (
+            <polyline
+              key={i}
+              points={`${s.lineStartX},${s.lineStartY} ${s.elbowX},${s.elbowY} ${s.tickX},${adjustedLabelY[i]}`}
+              fill="none"
+              stroke="var(--chalk-3)"
+              strokeWidth="1"
+              style={{
+                pointerEvents: "none",
+                opacity: hovered !== null && hovered !== i ? 0.25 : 0.85,
+                transition: "opacity 0.12s ease",
+              }}
+            />
+          ))}
+
+          {/* Labels — rendered last so they always sit above lines */}
+          {segments.map((s, i) => (
+            <text
+              key={i}
+              x={s.textX}
+              y={adjustedLabelY[i] + 4}
+              textAnchor={s.textAnchor}
+              fontFamily={MONO_FONT}
+              fontSize={9}
+              style={{
+                pointerEvents: "none",
+                fill: hovered === i ? "var(--ember)" : "var(--slate-700)",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                transition: "fill 0.12s ease",
+                paintOrder: "stroke fill",
+                stroke: "var(--chalk)",
+                strokeWidth: 5,
+                strokeLinejoin: "round",
+              }}
+            >
+              {s.displayGrade} · {s.pct}%
+            </text>
+          ))}
+        </svg>
+
+        {/* Center label — HTML so Saira/Mono fonts render correctly.
+            The div is inset-0 and the content is centered at 50%/50%,
+            which maps exactly to cx/cy in the viewBox above. */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          {hovSeg ? (
+            <>
+              <span className="font-display text-[32px] leading-none text-granite-100">
+                {hovSeg.count}
+              </span>
+              <MonoChip className="mt-1 text-[9px] text-slate-500">
+                {hovSeg.displayGrade}
+              </MonoChip>
+            </>
+          ) : (
+            <>
+              <span className="font-display text-[32px] leading-none text-granite-100">
+                {total}
+              </span>
+              <MonoChip className="mt-1 text-[9px]">SENDS</MonoChip>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

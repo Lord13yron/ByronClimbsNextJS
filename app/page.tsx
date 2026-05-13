@@ -2,33 +2,25 @@ import HeroBanner from "@/components/HeroBanner";
 import MainPageBlog from "@/components/MainPageBlog";
 import MainPageDatabase from "@/components/MainPageDatabase";
 import SupabaseAuthListener from "@/components/SupabaseAuthListener";
-import Image from "next/image";
+import TopoLine from "@/components/ui/TopoLine";
 
 export const metadata = {
-  title: "Byron Climbs - Your Ultimate Climbing Companion",
+  title: "Byron Climbs",
   description:
-    "Discover climbing routes, track your progress, and connect with fellow climbers using Byron Climbs.",
+    "A personal climbing journal — routes logged, sends marked, beta left behind.",
 };
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen mx-auto">
+    <div className="flex flex-col min-h-screen">
       <SupabaseAuthListener />
       <HeroBanner />
-      <div className="flex flex-col min-h-screen max-w-6xl mx-0 sm:mx-auto px-4 w-full">
-        <MainPageBlog />
-        <MainPageDatabase />
-        <div className=" border-t-2 border-gray-400 pt-8 mt-4">
-          <Image
-            // src="/Background-3.jpg"
-            src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/ui-images/Background-3.JPG`}
-            alt="Logo"
-            width={900}
-            height={600}
-            className="mx-auto"
-          />
-        </div>
+      <MainPageBlog />
+      {/* Topo divider */}
+      <div className="px-4 md:px-14 text-chalk-3">
+        <TopoLine height={48} seed={3} />
       </div>
+      <MainPageDatabase />
     </div>
   );
 }

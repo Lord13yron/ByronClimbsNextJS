@@ -33,6 +33,9 @@ export type Favorite = {
 
 export type SearchParams = {
   filter?: string;
+  type?: string;
+  view?: string;
+  q?: string;
 };
 
 export type Note = {

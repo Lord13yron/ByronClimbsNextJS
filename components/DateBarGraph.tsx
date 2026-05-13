@@ -1,16 +1,8 @@
 "use client";
 
 import { Climb } from "@/app/types/types";
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
 import { useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import MonoChip from "./ui/MonoChip";
 import {
   Select,
   SelectContent,
@@ -21,16 +13,10 @@ import {
   SelectValue,
 } from "./ui/select";
 
-const chartConfig = {
-  boulder: {
-    label: "Boulder",
-    color: "#2563eb",
-  },
-  sport: {
-    label: "Sport",
-    color: "#60a5fa",
-  },
-} satisfies ChartConfig;
+const MONTH_LABELS = [
+  "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+  "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+];
 
 type DateBarGraphProps = {
   sends: Climb[];
@@ -39,101 +25,102 @@ type DateBarGraphProps = {
 export default function DateBarGraph({ sends }: DateBarGraphProps) {
   const [selectedYear, setSelectedYear] = useState<string>("2026");
 
-  const chartData = useMemo(() => {
-    const monthlyData: Record<string, { boulder: number; sport: number }> = {};
+  const { chartData, dateRange } = useMemo(() => {
+    const counts: number[] = Array(12).fill(0);
 
-    // Initialize all 12 months
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-
-    months.forEach((month) => {
-      monthlyData[month] = { boulder: 0, sport: 0 };
-    });
-
-    // Aggregate sends by month and type
     sends.forEach((climb) => {
-      const date = new Date(climb.created_at);
-      const monthName = months[date.getMonth()];
-      const year = date.getFullYear().toString();
-
-      if (year !== selectedYear) {
-        return;
-      }
-
-      if (climb.type === "boulder") {
-        monthlyData[monthName].boulder += 1;
-      } else if (climb.type === "sport") {
-        monthlyData[monthName].sport += 1;
+      const d = new Date(climb.created_at);
+      if (d.getFullYear().toString() === selectedYear) {
+        counts[d.getMonth()] += 1;
       }
     });
 
-    // Convert to array format for recharts
-    return months.map((month) => ({
-      month,
-      boulder: monthlyData[month].boulder,
-      sport: monthlyData[month].sport,
-    }));
+    const data = MONTH_LABELS.map((m, i) => ({ m, n: counts[i] }));
+
+    // Build a date range label from the first and last non-zero months
+    const nonZeroIndices = counts
+      .map((n, i) => (n > 0 ? i : -1))
+      .filter((i) => i >= 0);
+
+    let rangeLabel = selectedYear;
+    if (nonZeroIndices.length >= 2) {
+      rangeLabel = `${MONTH_LABELS[nonZeroIndices[0]]} → ${MONTH_LABELS[nonZeroIndices[nonZeroIndices.length - 1]]} ${selectedYear}`;
+    } else if (nonZeroIndices.length === 1) {
+      rangeLabel = `${MONTH_LABELS[nonZeroIndices[0]]} ${selectedYear}`;
+    }
+
+    return { chartData: data, dateRange: rangeLabel };
   }, [sends, selectedYear]);
 
+  const max = Math.max(...chartData.map((d) => d.n), 1);
+
   return (
-    <div className="flex flex-col items-center gap-2  w-full mt-16 ">
-      <h1 className="text-lg font-semibold text-center">
-        Climb Sends by Month
-      </h1>
-      <div className="">
-        <Select onValueChange={(value) => setSelectedYear(value)}>
-          <SelectTrigger size="sm" className="w-full max-w-48 ">
-            <SelectValue placeholder="Select a year" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Year</SelectLabel>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2026">2026</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+    <div className="bg-chalk border border-chalk-3 rounded-md p-5.5">
+      {/* Header */}
+      <div className="flex justify-between items-end mb-5 flex-wrap gap-3">
+        <div>
+          <MonoChip className="text-ember mb-1.5 block">— TIMELINE</MonoChip>
+          <h3 className="font-display uppercase text-[22px] m-0 leading-none text-granite-100">
+            Sends Over Time
+          </h3>
+        </div>
+        <div className="flex items-center gap-3">
+          <MonoChip className="text-slate-500">{dateRange}</MonoChip>
+          <Select
+            onValueChange={(value) => setSelectedYear(value)}
+            defaultValue={selectedYear}
+          >
+            <SelectTrigger size="sm" className="w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Year</SelectLabel>
+                <SelectItem value="2025">2025</SelectItem>
+                <SelectItem value="2026">2026</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-      <ChartContainer
-        config={chartConfig}
-        className="min-h-32 w-full max-w-130 h-60 md:h-70"
+
+      {/* Bar chart */}
+      <div
+        className="flex items-end gap-1.5 md:gap-3 border-b border-chalk-3"
+        style={{ height: 180, paddingBottom: 28, position: "relative" }}
       >
-        <BarChart
-          accessibilityLayer
-          data={chartData}
-          margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-        >
-          <CartesianGrid vertical={false} />
-          <XAxis
-            dataKey="month"
-            tickLine={false}
-            tickMargin={10}
-            axisLine={false}
-            tickFormatter={(value) => value.slice(0, 3)}
-            interval="preserveStartEnd"
-            angle={-90}
-            textAnchor="end"
-            height={60}
-          />
-          <YAxis width={40} tickLine={false} axisLine={false} />
-          <ChartTooltip content={<ChartTooltipContent />} />
-          <ChartLegend content={<ChartLegendContent />} />
-          <Bar dataKey="boulder" fill="var(--color-boulder)" radius={2} />
-          <Bar dataKey="sport" fill="var(--color-sport)" radius={2} />
-        </BarChart>
-      </ChartContainer>
+        {chartData.map((d, i) => {
+          const heightPct = (d.n / max) * 100;
+          const isMax = d.n === max && d.n > 0;
+          return (
+            <div
+              key={i}
+              className="flex-1 flex flex-col items-center h-full relative"
+            >
+              <div className="flex-1 w-full flex items-end">
+                <div
+                  className="w-full relative"
+                  style={{
+                    height: `${heightPct}%`,
+                    background: isMax
+                      ? "var(--ember)"
+                      : "var(--granite-200)",
+                  }}
+                >
+                  {d.n > 0 && (
+                    <MonoChip className="absolute -top-4.5 left-1/2 -translate-x-1/2 text-[10px] text-granite-100 whitespace-nowrap">
+                      {d.n}
+                    </MonoChip>
+                  )}
+                </div>
+              </div>
+              <MonoChip className="absolute -bottom-5.5 text-[9px] text-slate-500">
+                {d.m}
+              </MonoChip>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
