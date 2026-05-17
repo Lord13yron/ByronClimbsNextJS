@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { addImagesToPost, linkExistingImageToPost } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import ImageLibraryPicker from "./ImageLibraryPicker";
+import { uploadFilesToBucket } from "@/lib/upload/clientUpload";
+import { useState } from "react";
 
 type EditPostImagesProps = {
   images?: ContentImage[];
@@ -23,21 +25,36 @@ type EditPostImagesProps = {
 
 export default function EditPostImages({ images, post }: EditPostImagesProps) {
   const router = useRouter();
+  const [isUploading, setIsUploading] = useState(false);
 
-  function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const formData = new FormData(form);
-    addImagesToPost(formData)
-      .then(() => {
-        console.log("Post edited successfully");
-        toast.success("Post edited successfully!");
-        router.refresh();
-      })
-      .catch((error) => {
-        console.error("Error editing post:", error);
-        toast.error(error.message || "Failed to edit post");
-      });
+    const fileInput = form.elements.namedItem("new_images") as HTMLInputElement;
+    const files = Array.from(fileInput.files ?? []);
+    if (files.length === 0) {
+      toast.error("Please select at least one image to upload.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const urls = await uploadFilesToBucket(files);
+      const formData = new FormData();
+      formData.append("post_id", String(post.id));
+      urls.forEach((url) => formData.append("new_image_urls", url));
+      await addImagesToPost(formData);
+      toast.success("Post edited successfully!");
+      form.reset();
+      router.refresh();
+    } catch (error) {
+      console.error("Error editing post:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to edit post";
+      toast.error(message);
+    } finally {
+      setIsUploading(false);
+    }
   }
 
   async function handleLinkExisting(urls: string[]) {
@@ -93,7 +110,6 @@ export default function EditPostImages({ images, post }: EditPostImagesProps) {
           )}
         </div>
         <form onSubmit={handleFormSubmit}>
-          <input type="hidden" name="post_id" value={post.id} />
           <Label htmlFor="new_images" className="text-sm font-medium">
             Upload new images (you can select multiple):
           </Label>
@@ -103,9 +119,12 @@ export default function EditPostImages({ images, post }: EditPostImagesProps) {
             accept="image/*"
             multiple
             className="w-full"
+            disabled={isUploading}
           />
           <div className="flex gap-2 mt-2">
-            <Button type="submit">Upload Images</Button>
+            <Button type="submit" disabled={isUploading}>
+              {isUploading ? "Uploading…" : "Upload Images"}
+            </Button>
             <ImageLibraryPicker onSelect={handleLinkExisting} />
           </div>
         </form>

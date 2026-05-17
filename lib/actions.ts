@@ -176,14 +176,11 @@ export async function addClimb(formData: FormData) {
   const city = (formData.get("city") as string).trim().toLowerCase();
   const area = (formData.get("area") as string).trim().toLowerCase();
   const subArea = (formData.get("sub-area") as string).trim().toLowerCase();
-  const images = formData.getAll("images") as File[];
-  const video = formData.get("video") as string;
+  const newImageUrls = formData.getAll("new_image_urls") as string[];
   const existingImageUrls = formData.getAll("existing_image_urls") as string[];
+  const video = formData.get("video") as string;
 
   const hasVideo = video && typeof video === "string" && video.trim() !== "";
-  const hasImages = images.length > 0 && images[0] instanceof File && images[0].size > 0;
-  console.log("Video URL:", video);
-  console.log("Has video?", hasVideo);
 
   if (!name || !type || !grade || !city || !area || !subArea) {
     throw new Error("Missing required fields");
@@ -212,47 +209,14 @@ export async function addClimb(formData: FormData) {
     throw new Error("Failed to add climb");
   }
 
-  if (hasImages) {
-    // Upload images and create product_images records
-    const newImages = Array.from(images);
-    const promises = newImages.map(async (image) => {
-      const imageName = `${Date.now()}-${image.name
-        .replace(/\s+/g, "-")
-        .toLowerCase()}`;
-      try {
-        const { error: storageError } = await supabase.storage
-          .from("postImages")
-          .upload(imageName, image);
-        if (storageError) {
-          console.error("Image upload error:", storageError);
-          throw new Error("Error uploading climb image");
-        }
-
-        const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/postImages/${imageName}`;
-
-        const { error } = await supabase
-          .from("climb_images")
-          .insert({ url, climb_id: climbData.id })
-          .select();
-        if (error) {
-          console.error("Error inserting climb image:", error);
-          throw new Error("Climb image could not be inserted");
-        }
-      } catch (imageError) {
-        console.error("Image upload error:", imageError);
-        throw new Error("Climb image could not be uploaded");
-      }
-    });
-    await Promise.all(promises);
-  }
-
-  if (existingImageUrls.length > 0) {
-    const { error: linkError } = await supabase
+  const allImageUrls = [...newImageUrls, ...existingImageUrls];
+  if (allImageUrls.length > 0) {
+    const { error: imageError } = await supabase
       .from("climb_images")
-      .insert(existingImageUrls.map((url) => ({ url, climb_id: climbData.id })));
-    if (linkError) {
-      console.error("Error linking existing images to climb:", linkError);
-      throw new Error("Failed to link existing images to climb");
+      .insert(allImageUrls.map((url) => ({ url, climb_id: climbData.id })));
+    if (imageError) {
+      console.error("Error inserting climb images:", imageError);
+      throw new Error("Climb images could not be inserted");
     }
   }
 
@@ -389,41 +353,21 @@ export async function deleteClimbImage(imageId: number, imageUrl: string) {
 export async function addImagesToClimb(formData: FormData) {
   const supabase = await createClient();
   const climbId = formData.get("climb_id") as string;
-  const images = formData.getAll("new_images") as File[];
+  const urls = formData.getAll("new_image_urls") as string[];
 
-  const validImages = images.filter((f) => f instanceof File && f.size > 0);
-  if (!climbId || validImages.length === 0) {
+  if (!climbId || urls.length === 0) {
     throw new Error("Missing required fields");
   }
 
-  const newImages = validImages;
-  const promises = newImages.map(async (image) => {
-    const imageName = `${Date.now()}-${image.name.replace(/\s+/g, "-").toLowerCase()}`;
-    try {
-      const { error: storageError } = await supabase.storage
-        .from("postImages")
-        .upload(imageName, image);
-      if (storageError) {
-        console.error("Image upload error:", storageError);
-        throw new Error("Error uploading climb image");
-      }
+  const { error } = await supabase
+    .from("climb_images")
+    .insert(urls.map((url) => ({ url, climb_id: climbId })));
 
-      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/postImages/${imageName}`;
+  if (error) {
+    console.error("Error inserting climb images:", error);
+    throw new Error("Climb images could not be inserted");
+  }
 
-      const { error } = await supabase
-        .from("climb_images")
-        .insert({ url, climb_id: climbId })
-        .select();
-      if (error) {
-        console.error("Error inserting climb image:", error);
-        throw new Error("Climb image could not be inserted");
-      }
-    } catch (imageError) {
-      console.error("Image upload error:", imageError);
-      throw new Error("Climb image could not be uploaded");
-    }
-  });
-  await Promise.all(promises);
   return true;
 }
 
@@ -471,14 +415,11 @@ export async function createBlogPost(formData: FormData) {
   const supabase = await createClient();
   const title = formData.get("title") as string;
   const content = formData.get("content") as string;
-  const images = formData.getAll("images") as File[];
-  const video = formData.get("video") as string;
+  const newImageUrls = formData.getAll("new_image_urls") as string[];
   const existingImageUrls = formData.getAll("existing_image_urls") as string[];
+  const video = formData.get("video") as string;
 
   const hasVideo = video && typeof video === "string" && video.trim() !== "";
-  const hasImages = images.length > 0 && images[0] instanceof File && images[0].size > 0;
-  console.log("Video URL:", video);
-  console.log("Has video?", hasVideo);
 
   if (!title || !content) {
     throw new Error("Missing required fields");
@@ -503,47 +444,14 @@ export async function createBlogPost(formData: FormData) {
     throw new Error("Failed to add post");
   }
 
-  if (hasImages) {
-    // Upload images and create product_images records
-    const newImages = Array.from(images);
-    const promises = newImages.map(async (image) => {
-      const imageName = `${Date.now()}-${image.name
-        .replace(/\s+/g, "-")
-        .toLowerCase()}`;
-      try {
-        const { error: storageError } = await supabase.storage
-          .from("postImages")
-          .upload(imageName, image);
-        if (storageError) {
-          console.error("Image upload error:", storageError);
-          throw new Error("Error uploading post image");
-        }
-
-        const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/postImages/${imageName}`;
-
-        const { error } = await supabase
-          .from("post_images")
-          .insert({ url, post_id: postData.id })
-          .select();
-        if (error) {
-          console.error("Error inserting post image:", error);
-          throw new Error("Post image could not be inserted");
-        }
-      } catch (imageError) {
-        console.error("Image upload error:", imageError);
-        throw new Error("Post image could not be uploaded");
-      }
-    });
-    await Promise.all(promises);
-  }
-
-  if (existingImageUrls.length > 0) {
-    const { error: linkError } = await supabase
+  const allImageUrls = [...newImageUrls, ...existingImageUrls];
+  if (allImageUrls.length > 0) {
+    const { error: imageError } = await supabase
       .from("post_images")
-      .insert(existingImageUrls.map((url) => ({ url, post_id: postData.id })));
-    if (linkError) {
-      console.error("Error linking existing images to post:", linkError);
-      throw new Error("Failed to link existing images to post");
+      .insert(allImageUrls.map((url) => ({ url, post_id: postData.id })));
+    if (imageError) {
+      console.error("Error inserting post images:", imageError);
+      throw new Error("Post images could not be inserted");
     }
   }
 
@@ -667,41 +575,21 @@ export async function editBlogPost(formData: FormData) {
 export async function addImagesToPost(formData: FormData) {
   const supabase = await createClient();
   const postId = formData.get("post_id") as string;
-  const images = formData.getAll("new_images") as File[];
+  const urls = formData.getAll("new_image_urls") as string[];
 
-  const validImages = images.filter((f) => f instanceof File && f.size > 0);
-  if (!postId || validImages.length === 0) {
+  if (!postId || urls.length === 0) {
     throw new Error("Missing required fields");
   }
 
-  const newImages = validImages;
-  const promises = newImages.map(async (image) => {
-    const imageName = `${Date.now()}-${image.name.replace(/\s+/g, "-").toLowerCase()}`;
-    try {
-      const { error: storageError } = await supabase.storage
-        .from("postImages")
-        .upload(imageName, image);
-      if (storageError) {
-        console.error("Image upload error:", storageError);
-        throw new Error("Error uploading post image");
-      }
+  const { error } = await supabase
+    .from("post_images")
+    .insert(urls.map((url) => ({ url, post_id: postId })));
 
-      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/postImages/${imageName}`;
+  if (error) {
+    console.error("Error inserting post images:", error);
+    throw new Error("Post images could not be inserted");
+  }
 
-      const { error } = await supabase
-        .from("post_images")
-        .insert({ url, post_id: postId })
-        .select();
-      if (error) {
-        console.error("Error inserting post image:", error);
-        throw new Error("Post image could not be inserted");
-      }
-    } catch (imageError) {
-      console.error("Image upload error:", imageError);
-      throw new Error("Post image could not be uploaded");
-    }
-  });
-  await Promise.all(promises);
   return true;
 }
 

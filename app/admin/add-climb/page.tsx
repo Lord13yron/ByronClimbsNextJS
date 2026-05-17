@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { addClimb } from "@/lib/actions";
+import { uploadFilesToBucket } from "@/lib/upload/clientUpload";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -35,25 +36,37 @@ const SPORTGRADES = [
 
 export default function AddClimb() {
   const [climbType, setClimbType] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
-    addClimb(formData)
-      .then((result) => {
-        if (result && "error" in result) {
-          toast.error(result.error);
-          return;
-        }
-        form.reset();
-        toast.success("Climb added successfully!");
-        setClimbType("");
-      })
-      .catch((error) => {
-        console.error("Error adding climb:", error);
-        toast.error(error.message || "Failed to add climb");
-      });
+    const files = formData.getAll("images").filter(
+      (f): f is File => f instanceof File && f.size > 0
+    );
+    formData.delete("images");
+
+    setIsSubmitting(true);
+    try {
+      const urls = await uploadFilesToBucket(files);
+      urls.forEach((url) => formData.append("new_image_urls", url));
+      const result = await addClimb(formData);
+      if (result && "error" in result) {
+        toast.error(result.error);
+        return;
+      }
+      form.reset();
+      toast.success("Climb added successfully!");
+      setClimbType("");
+    } catch (error) {
+      console.error("Error adding climb:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to add climb";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -196,7 +209,9 @@ export default function AddClimb() {
           </div>
 
           <div className="mt-4 flex justify-end">
-            <Button type="submit">Add Climb</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Adding…" : "Add Climb"}
+            </Button>
           </div>
         </form>
 

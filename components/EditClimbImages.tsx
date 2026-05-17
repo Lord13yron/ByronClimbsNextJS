@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { addImagesToClimb, linkExistingImageToClimb } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import ImageLibraryPicker from "./ImageLibraryPicker";
+import { uploadFilesToBucket } from "@/lib/upload/clientUpload";
+import { useState } from "react";
 
 type EditClimbImagesProps = {
   images?: ContentImage[];
@@ -26,21 +28,36 @@ export default function EditClimbImages({
   climb,
 }: EditClimbImagesProps) {
   const router = useRouter();
+  const [isUploading, setIsUploading] = useState(false);
 
-  function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const formData = new FormData(form);
-    addImagesToClimb(formData)
-      .then(() => {
-        console.log("Climb edited successfully");
-        toast.success("Climb edited successfully!");
-        router.refresh();
-      })
-      .catch((error) => {
-        console.error("Error editing climb:", error);
-        toast.error(error.message || "Failed to edit climb");
-      });
+    const fileInput = form.elements.namedItem("new_images") as HTMLInputElement;
+    const files = Array.from(fileInput.files ?? []);
+    if (files.length === 0) {
+      toast.error("Please select at least one image to upload.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const urls = await uploadFilesToBucket(files);
+      const formData = new FormData();
+      formData.append("climb_id", String(climb.id));
+      urls.forEach((url) => formData.append("new_image_urls", url));
+      await addImagesToClimb(formData);
+      toast.success("Climb edited successfully!");
+      form.reset();
+      router.refresh();
+    } catch (error) {
+      console.error("Error editing climb:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to edit climb";
+      toast.error(message);
+    } finally {
+      setIsUploading(false);
+    }
   }
 
   async function handleLinkExisting(urls: string[]) {
@@ -96,7 +113,6 @@ export default function EditClimbImages({
           )}
         </div>
         <form onSubmit={handleFormSubmit}>
-          <input type="hidden" name="climb_id" value={climb.id} />
           <Label htmlFor="new_images" className="text-sm font-medium">
             Upload new images (you can select multiple):
           </Label>
@@ -106,9 +122,12 @@ export default function EditClimbImages({
             accept="image/*"
             multiple
             className="w-full"
+            disabled={isUploading}
           />
           <div className="flex gap-2 mt-2">
-            <Button type="submit">Upload Images</Button>
+            <Button type="submit" disabled={isUploading}>
+              {isUploading ? "Uploading…" : "Upload Images"}
+            </Button>
             <ImageLibraryPicker onSelect={handleLinkExisting} />
           </div>
         </form>

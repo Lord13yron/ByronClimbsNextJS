@@ -7,22 +7,37 @@ import MonoChip from "@/components/ui/MonoChip";
 import TopoLine from "@/components/ui/TopoLine";
 import { Textarea } from "@/components/ui/textarea";
 import { createBlogPost } from "@/lib/actions";
+import { uploadFilesToBucket } from "@/lib/upload/clientUpload";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export default function AddBlogPage() {
-  function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
-    createBlogPost(formData)
-      .then(() => {
-        form.reset();
-        toast.success("Blog post added successfully!");
-      })
-      .catch((error) => {
-        console.error("Error adding blog post:", error);
-        toast.error(error.message || "Failed to add blog post");
-      });
+    const files = formData.getAll("images").filter(
+      (f): f is File => f instanceof File && f.size > 0
+    );
+    formData.delete("images");
+
+    setIsSubmitting(true);
+    try {
+      const urls = await uploadFilesToBucket(files);
+      urls.forEach((url) => formData.append("new_image_urls", url));
+      await createBlogPost(formData);
+      form.reset();
+      toast.success("Blog post added successfully!");
+    } catch (error) {
+      console.error("Error adding blog post:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to add blog post";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -82,7 +97,9 @@ export default function AddBlogPage() {
           </div>
 
           <div className="mt-4 flex justify-end">
-            <Button type="submit">Create Post</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating…" : "Create Post"}
+            </Button>
           </div>
         </form>
 
