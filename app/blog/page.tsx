@@ -149,12 +149,13 @@ export default async function BlogPage({
           </p>
           <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-5 md:gap-9 items-stretch">
             {imageByPost.get(featured.id) ? (
-              <div className="relative h-70 md:h-120 overflow-hidden">
+              <div className="relative h-70 md:h-120 overflow-hidden bg-chalk">
                 <Image
                   src={imageByPost.get(featured.id)!}
                   alt={featured.title}
                   fill
-                  className="object-cover object-center"
+                  sizes="(min-width: 768px) 58vw, 100vw"
+                  className="object-contain object-center"
                 />
               </div>
             ) : (

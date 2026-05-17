@@ -143,7 +143,7 @@ export default async function Page({
                 alt={post.title}
                 fill
                 sizes="100vw"
-                className="object-cover object-center"
+                className="object-contain object-center"
                 priority
               />
             </div>
@@ -191,7 +191,7 @@ export default async function Page({
                           alt={post.title}
                           fill
                           sizes="(max-width: 768px) 100vw, 1200px"
-                          className="object-cover object-center transition-transform duration-700 hover:scale-[1.02]"
+                          className="object-contain object-center transition-transform duration-700 hover:scale-[1.02]"
                         />
                       ) : (
                         <iframe

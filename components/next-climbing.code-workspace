@@ -1,12 +1,13 @@
 {
   "folders": [
 	{
-		"name": "next-climbing",
 		"path": ".."
 	},
 	{
-		"name": "design_handoff_byron_climbs",
-		"path": "../../design_handoff_byron_climbs"
+		"path": "../../design_handoff_byron_climbs_blog"
+	},
+	{
+		"path": "../../design_handoff_account_redesign"
 	}
 ],
   "settings": {}
