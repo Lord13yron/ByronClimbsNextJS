@@ -573,37 +573,24 @@ export async function editBlogPost(formData: FormData) {
 }
 
 export async function addImagesToPost(formData: FormData) {
-  try {
-    const supabase = await createClient();
-    const postId = formData.get("post_id") as string;
-    const urls = formData.getAll("new_image_urls") as string[];
+  const supabase = await createClient();
+  const postId = formData.get("post_id") as string;
+  const urls = formData.getAll("new_image_urls") as string[];
 
-    if (!postId || urls.length === 0) {
-      return { ok: false as const, error: "Missing required fields" };
-    }
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    const { error } = await supabase
-      .from("post_images")
-      .insert(urls.map((url) => ({ url, post_id: postId })));
-
-    if (error) {
-      console.error("[addImagesToPost] insert error", { error, user });
-      return {
-        ok: false as const,
-        error: `db ${error.code ?? "?"}: ${error.message}${error.details ? ` — ${error.details}` : ""} (user=${user?.id ?? "anon"})`,
-      };
-    }
-
-    return { ok: true as const };
-  } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
-    console.error("[addImagesToPost] unexpected error:", e);
-    return { ok: false as const, error: `unexpected: ${message}` };
+  if (!postId || urls.length === 0) {
+    throw new Error("Missing required fields");
   }
+
+  const { error } = await supabase
+    .from("post_images")
+    .insert(urls.map((url) => ({ url, post_id: postId })));
+
+  if (error) {
+    console.error("Error inserting post images:", error);
+    throw new Error("Post images could not be inserted");
+  }
+
+  return true;
 }
 
 export async function deletePostImage(imageId: number, imageUrl: string) {

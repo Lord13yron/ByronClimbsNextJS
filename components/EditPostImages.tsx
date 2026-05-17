@@ -43,12 +43,7 @@ export default function EditPostImages({ images, post }: EditPostImagesProps) {
       const formData = new FormData();
       formData.append("post_id", String(post.id));
       urls.forEach((url) => formData.append("new_image_urls", url));
-      const result = await addImagesToPost(formData);
-      if (!result.ok) {
-        console.error("addImagesToPost returned error:", result.error);
-        toast.error(result.error);
-        return;
-      }
+      await addImagesToPost(formData);
       toast.success("Post edited successfully!");
       form.reset();
       router.refresh();
