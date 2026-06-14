@@ -5,6 +5,7 @@ import { getImagesForPost } from "@/lib/data-service";
 import Image from "next/image";
 import { Post } from "@/app/types/types";
 import MonoChip from "./ui/MonoChip";
+import Reveal from "./anim/Reveal";
 
 function estimateReadTime(content: string) {
   return Math.max(1, Math.round(content.split(" ").length / 200));
@@ -13,6 +14,21 @@ function estimateReadTime(content: string) {
 function formatPostDate(dateString: string) {
   const d = new Date(dateString);
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** Diagonal-hatch fallback for posts with no cover image. */
+function HatchPlaceholder() {
+  return (
+    <div
+      className="w-full h-full flex items-center justify-center"
+      style={{
+        backgroundImage:
+          "repeating-linear-gradient(-45deg, var(--chalk-2) 0 8px, var(--chalk-3) 8px 16px)",
+      }}
+    >
+      <MonoChip className="text-slate-500">FIELD PHOTO</MonoChip>
+    </div>
+  );
 }
 
 async function LeadPost({ post }: { post: Post }) {
@@ -32,12 +48,10 @@ async function LeadPost({ post }: { post: Post }) {
               alt={post.title}
               fill
               sizes="(max-width: 768px) 100vw, 55vw"
-              className="object-cover object-[center_40%] hover:scale-[1.02] transition-transform duration-300"
+              className="object-cover object-[center_40%] hover:scale-[1.03] transition-transform duration-450"
             />
           ) : (
-            <div className="w-full h-full bg-chalk-2 flex items-center justify-center">
-              <MonoChip className="text-slate-400">NO PHOTO</MonoChip>
-            </div>
+            <HatchPlaceholder />
           )}
         </div>
       </Link>
@@ -89,12 +103,10 @@ async function SecondaryPost({ post }: { post: Post }) {
               alt={post.title}
               fill
               sizes="(max-width: 768px) 100vw, 30vw"
-              className="object-cover object-center hover:scale-[1.02] transition-transform duration-300"
+              className="object-cover object-center hover:scale-[1.03] transition-transform duration-450"
             />
           ) : (
-            <div className="w-full h-full bg-chalk-2 flex items-center justify-center">
-              <MonoChip className="text-slate-400">NO PHOTO</MonoChip>
-            </div>
+            <HatchPlaceholder />
           )}
         </div>
       </Link>
@@ -130,18 +142,23 @@ async function JournalGrid() {
   const [lead, ...rest] = posts;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-6 mt-2">
+    <Reveal
+      className="grid grid-cols-1 min-[861px]:grid-cols-[1.5fr_1fr_1fr] gap-6.5 mt-2"
+      y={44}
+      stagger={0.12}
+      duration={0.9}
+    >
       <LeadPost post={lead} />
       {rest.map((post) => (
         <SecondaryPost key={post.id} post={post} />
       ))}
-    </div>
+    </Reveal>
   );
 }
 
 function JournalSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-6 mt-2">
+    <div className="grid grid-cols-1 min-[861px]:grid-cols-[1.5fr_1fr_1fr] gap-6.5 mt-2">
       {[380, 220, 220].map((h, i) => (
         <div key={i} className="animate-pulse">
           <div className="bg-chalk-2 rounded-sm w-full" style={{ height: h }} />
@@ -167,7 +184,7 @@ export default function MainPageBlog() {
           </MonoChip>
           <h2
             className="font-display uppercase font-semibold text-granite-100 leading-none tracking-[0.02em]"
-            style={{ fontSize: 36 }}
+            style={{ fontSize: "clamp(28px, 4vw, 38px)" }}
           >
             Recent entries
           </h2>

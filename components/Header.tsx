@@ -54,7 +54,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="border-b border-border bg-background z-10 relative">
+    <header className="sticky top-0 z-50 border-b border-chalk-3 bg-[rgba(244,241,236,0.9)] backdrop-blur-[10px] backdrop-saturate-[1.8]">
       <div className="flex items-center justify-between px-4 md:px-14 py-3">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-3 shrink-0">

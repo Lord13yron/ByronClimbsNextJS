@@ -1,4 +1,5 @@
 import { Send } from "@/app/types/types";
+import Reveal from "./anim/Reveal";
 
 type SendHeatmapProps = {
   sends: Send[];
@@ -8,11 +9,6 @@ function getHeatmapData(sends: Send[]): number[][] {
   const now = new Date();
   const weeks = 26;
   const days = 7;
-
-  // Build a set of date strings that have sends
-  const sendDates = new Set(
-    sends.map((s) => new Date(s.created_at).toDateString()),
-  );
 
   // Count sends per day for heatmap intensity
   const sendCounts: Record<string, number> = {};
@@ -46,39 +42,51 @@ function getHeatmapData(sends: Send[]): number[][] {
 }
 
 const heatColors: Record<number, string> = {
-  0: "rgba(244, 241, 236, 0.08)",
+  0: "rgba(244, 241, 236, 0.06)",
   1: "var(--heat-1)",
   2: "var(--heat-2)",
   3: "var(--heat-3)",
   4: "var(--heat-4)",
 };
 
+const WEEKS = 26;
+const DAYS = 7;
+
 export default function SendHeatmap({ sends }: SendHeatmapProps) {
   const grid = getHeatmapData(sends);
 
+  // Column-major order so grid-auto-flow:column fills week-by-week.
+  const cells: number[] = [];
+  for (let col = 0; col < WEEKS; col++) {
+    for (let row = 0; row < DAYS; row++) {
+      cells.push(grid[row][col]);
+    }
+  }
+
   return (
-    <div>
-      <div className="flex flex-col gap-[3px]">
-        {grid.map((row, ri) => (
-          <div key={ri} className="flex gap-[3px]">
-            {row.map((v, ci) => (
-              <div
-                key={ci}
-                className="w-[11px] h-[11px] rounded-[1px] flex-shrink-0"
-                style={{ background: heatColors[v] }}
-              />
-            ))}
-          </div>
+    <div className="max-w-130">
+      <Reveal
+        className="grid gap-0.75 grid-flow-col grid-rows-7 auto-cols-fr"
+        scale={0.3}
+        stagger={0.004}
+        duration={0.5}
+      >
+        {cells.map((v, i) => (
+          <div
+            key={i}
+            className="aspect-square rounded-[2px]"
+            style={{ background: heatColors[v] }}
+          />
         ))}
-      </div>
-      <div className="flex items-center gap-[6px] mt-[10px]">
+      </Reveal>
+      <div className="flex items-center gap-1.5 mt-2.5">
         <span className="font-mono uppercase tracking-widest text-[9px] text-[rgba(244,241,236,0.45)]">
           LESS
         </span>
         {[0, 1, 2, 3, 4].map((v) => (
           <div
             key={v}
-            className="w-[11px] h-[11px] rounded-[1px] flex-shrink-0"
+            className="w-2.75 h-2.75 rounded-[2px] shrink-0"
             style={{ background: heatColors[v] }}
           />
         ))}
