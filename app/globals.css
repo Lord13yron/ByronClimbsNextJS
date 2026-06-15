@@ -157,3 +157,31 @@
     width: 100%;
   }
 }
+
+/* Blog masthead ambient motion. Disabled under reduced-motion. */
+@keyframes mast-glow {
+  from {
+    transform: translateY(-2%);
+  }
+  to {
+    transform: translateY(3%);
+  }
+}
+
+@keyframes mast-bob {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, 5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-ph,
+  [style*="mast-glow"],
+  [style*="mast-bob"] {
+    animation: none !important;
+  }
+}
