@@ -8,6 +8,7 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -15,6 +16,7 @@ import {
 import BrandMark from "./BrandMark";
 import MonoChip from "./ui/MonoChip";
 import { createClient } from "@/lib/supabase/supabaseClient";
+import { signOutUser } from "@/lib/auth-actions";
 
 function getInitials(username: string | null, email: string | null): string {
   const source = username || email || "";
@@ -36,6 +38,7 @@ const navItems = [
 export default function Header() {
   const pathname = usePathname();
   const [initials, setInitials] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
@@ -48,6 +51,7 @@ export default function Header() {
           .eq("id", user.id)
           .single();
         setInitials(getInitials(profile?.username ?? null, profile?.email ?? user.email ?? null));
+        setUsername(profile?.username ?? profile?.email ?? user.email ?? null);
       }
       setAuthChecked(true);
     });
@@ -124,8 +128,11 @@ export default function Header() {
                   <Menu className="w-4 h-4" />
                 </button>
               </DrawerTrigger>
-              <DrawerContent direction="left" className="bg-background w-72">
-                <DrawerHeader className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <DrawerContent
+                direction="left"
+                className="bg-background w-[88%] max-w-[360px]"
+              >
+                <DrawerHeader className="flex flex-row items-center justify-between px-4 py-3 border-b border-border">
                   <div className="flex items-center gap-2">
                     <BrandMark size={28} />
                     <DrawerTitle className="font-display uppercase text-[15px] tracking-[0.06em]">
@@ -139,7 +146,7 @@ export default function Header() {
                   </DrawerClose>
                 </DrawerHeader>
 
-                <nav className="flex flex-col p-2">
+                <nav className="flex flex-col gap-1 p-3">
                   {navItems.map((item) => {
                     const active =
                       item.href === "/"
@@ -149,7 +156,7 @@ export default function Header() {
                       <DrawerClose key={item.href} asChild>
                         <Link
                           href={item.href}
-                          className={`font-display uppercase text-[13px] font-semibold tracking-[0.05em] px-3 py-2.5 rounded-sm transition-colors ${
+                          className={`font-display uppercase text-[15px] font-semibold tracking-[0.05em] px-3 py-3 rounded-sm transition-colors ${
                             active
                               ? "text-ember bg-chalk-2"
                               : "text-granite-100 hover:bg-chalk-2"
@@ -160,15 +167,46 @@ export default function Header() {
                       </DrawerClose>
                     );
                   })}
-                  <DrawerClose asChild>
-                    <Link
-                      href="/account"
-                      className="font-display uppercase text-[13px] font-semibold tracking-[0.05em] px-3 py-2.5 rounded-sm text-granite-100 hover:bg-chalk-2 transition-colors mt-1 border-t border-border pt-3"
-                    >
-                      Profile
-                    </Link>
-                  </DrawerClose>
                 </nav>
+
+                {authChecked && (
+                  <DrawerFooter className="border-t border-border">
+                    {initials ? (
+                      <div className="flex items-center justify-between gap-3">
+                        <DrawerClose asChild>
+                          <Link
+                            href="/account"
+                            className="flex items-center gap-3 min-w-0"
+                          >
+                            <span className="flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-granite-200 text-chalk font-display font-bold text-[13px] border-[1.5px] border-ember">
+                              {initials}
+                            </span>
+                            <span className="font-display text-[14px] text-granite-100 truncate">
+                              {username}
+                            </span>
+                          </Link>
+                        </DrawerClose>
+                        <form action={signOutUser}>
+                          <button
+                            type="submit"
+                            className="font-display uppercase text-[12px] font-semibold tracking-[0.06em] text-slate-500 hover:text-granite-100 transition-colors"
+                          >
+                            Sign out
+                          </button>
+                        </form>
+                      </div>
+                    ) : (
+                      <DrawerClose asChild>
+                        <Link
+                          href="/account/signin"
+                          className="block w-full bg-granite-200 text-chalk font-display uppercase text-[13px] font-semibold tracking-[0.06em] py-3 rounded-sm text-center hover:bg-granite-100 transition-colors"
+                        >
+                          Sign in
+                        </Link>
+                      </DrawerClose>
+                    )}
+                  </DrawerFooter>
+                )}
               </DrawerContent>
             </Drawer>
           </div>
