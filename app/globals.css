@@ -178,10 +178,26 @@
   }
 }
 
+/* Masthead "Now Sending" live dot. */
+@keyframes ember-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.ember-pulse {
+  animation: ember-pulse 1.8s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .photo-ph,
   [style*="mast-glow"],
-  [style*="mast-bob"] {
+  [style*="mast-bob"],
+  .ember-pulse {
     animation: none !important;
   }
 }

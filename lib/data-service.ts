@@ -10,6 +10,7 @@ import {
 } from "@/app/types/types";
 import { createClient } from "./supabase/supabaseServer";
 import { getUser } from "./auth-actions";
+import { VGRADES, SPORTGRADES, hardestGrade } from "./grades";
 
 export async function getPosts() {
   const supabase = await createClient();
@@ -237,6 +238,70 @@ export async function getAdminStats() {
     totalUsers: totalUsers ?? 0,
     totalPosts: totalPosts ?? 0,
   };
+}
+
+export type OwnerSendStats = {
+  totalSends: number;
+  hardestBoulder: string | null;
+  hardestRoute: string | null;
+};
+
+// Masthead stat strip — counts the site owner's (admin's) sends. Auth-independent
+// so the strip renders identically for signed-out visitors. Returns zeroed/null
+// stats when no admin profile or no sends exist.
+export async function getOwnerSendStats(): Promise<OwnerSendStats> {
+  const empty: OwnerSendStats = {
+    totalSends: 0,
+    hardestBoulder: null,
+    hardestRoute: null,
+  };
+
+  try {
+    const supabase = await createClient();
+
+    const { data: owner } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin")
+      .limit(1)
+      .single();
+
+    if (!owner) return empty;
+
+    const [{ count }, { data: sends }] = await Promise.all([
+      supabase
+        .from("sends")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", owner.id),
+      supabase
+        .from("sends")
+        .select("climbs(grade, type)")
+        .eq("user_id", owner.id),
+    ]);
+
+    // Supabase types the joined relation as an array; flatten and drop nulls.
+    type ClimbGrade = { grade: string; type: string };
+    const climbs = (sends ?? [])
+      .flatMap((s: { climbs: ClimbGrade | ClimbGrade[] | null }) =>
+        Array.isArray(s.climbs) ? s.climbs : s.climbs ? [s.climbs] : [],
+      )
+      .filter((c): c is ClimbGrade => c != null);
+
+    const boulderGrades = climbs
+      .filter((c) => c.type === "boulder")
+      .map((c) => c.grade);
+    const routeGrades = climbs
+      .filter((c) => c.type !== "boulder")
+      .map((c) => c.grade);
+
+    return {
+      totalSends: count ?? 0,
+      hardestBoulder: hardestGrade(boulderGrades, VGRADES),
+      hardestRoute: hardestGrade(routeGrades, SPORTGRADES),
+    };
+  } catch {
+    return empty;
+  }
 }
 
 export type ActivityItem = {

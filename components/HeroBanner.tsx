@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/auth-actions";
 import { createClient } from "@/lib/supabase/supabaseServer";
+import { getOwnerSendStats } from "@/lib/data-service";
 import HeroContent from "./HeroContent";
 
 async function getLatestSendWithClimb() {
@@ -28,9 +29,12 @@ function formatDate(dateString: string) {
 }
 
 export default async function HeroBanner() {
-  const latestSend = await getLatestSendWithClimb();
+  const [latestSend, stats] = await Promise.all([
+    getLatestSendWithClimb(),
+    getOwnerSendStats(),
+  ]);
   const climb = latestSend?.climbs ?? null;
   const sendDate = latestSend ? formatDate(latestSend.created_at) : null;
 
-  return <HeroContent climb={climb} sendDate={sendDate} />;
+  return <HeroContent climb={climb} sendDate={sendDate} stats={stats} />;
 }
