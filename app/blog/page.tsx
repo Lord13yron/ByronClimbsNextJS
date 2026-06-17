@@ -1,12 +1,12 @@
-import { getPosts, getAllPostImages, getClimbs } from "@/lib/data-service";
+import { getPosts, getAllPostImages } from "@/lib/data-service";
 import Link from "next/link";
 import Image from "next/image";
 import TopoLine from "@/components/ui/TopoLine";
 import MonoChip from "@/components/ui/MonoChip";
 import DrawOn from "@/components/anim/DrawOn";
 import Reveal from "@/components/anim/Reveal";
-import Parallax from "@/components/anim/Parallax";
-import BlogMasthead from "@/components/blog/BlogMasthead";
+import FieldJournalMasthead from "@/components/blog/FieldJournalMasthead";
+import FeaturedEntry from "@/components/blog/FeaturedEntry";
 import ScrollProgress from "@/components/blog/ScrollProgress";
 import ArchiveNav from "@/components/blog/ArchiveNav";
 import { Post } from "@/app/types/types";
@@ -91,10 +91,9 @@ export default async function BlogPage({
   const { page: pageStr } = await searchParams;
   const page = Math.max(1, Number(pageStr) || 1);
 
-  const [allPosts, allImages, climbs] = await Promise.all([
+  const [allPosts, allImages] = await Promise.all([
     getPosts(),
     getAllPostImages(),
-    getClimbs().catch(() => []),
   ]);
   const imageByPost = new Map<number, string>();
   for (const img of allImages) {
@@ -102,9 +101,6 @@ export default async function BlogPage({
       imageByPost.set(img.post_id, img.url);
     }
   }
-
-  // Live masthead stats — real data, sourced like the landing-page logbook.
-  const cragsCount = new Set(climbs.map((c) => c.area).filter(Boolean)).size;
 
   const totalPages = Math.ceil(allPosts.length / PAGE_SIZE);
   const pagePosts = allPosts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -134,76 +130,20 @@ export default async function BlogPage({
       <ScrollProgress />
 
       {/* Masthead */}
-      <BlogMasthead entriesCount={allPosts.length} cragsCount={cragsCount} />
-
-      {/* Topo divider */}
-      <DrawOn className="max-w-7xl mx-auto px-4 md:px-14 text-chalk-3 opacity-60 pt-12 md:pt-16">
-        <TopoLine height={40} seed={4} />
-      </DrawOn>
+      <FieldJournalMasthead
+        entriesCount={allPosts.length}
+        latestDate={allPosts[0] ? formatDate(allPosts[0].created_at) : ""}
+      />
 
       {/* Featured entry */}
       {featured && (
-        <section className="max-w-7xl mx-auto px-4 md:px-14 pt-8 md:pt-12 pb-8">
-          <MonoChip as="p" className="text-ember mb-4">
-            — FEATURED · {formatDate(featured.created_at)}
-          </MonoChip>
-          <Reveal
-            className="grid grid-cols-1 min-[1001px]:grid-cols-[1.45fr_1fr] gap-8 min-[1001px]:gap-12 items-stretch"
-            y={46}
-            stagger={0.12}
-            duration={0.9}
-          >
-            <Link
-              href={`/blog/${featured.id}`}
-              className="group relative block min-h-85 overflow-hidden rounded-sm bg-chalk"
-            >
-              {imageByPost.get(featured.id) ? (
-                <Parallax yPercent={7} className="absolute inset-[-6%]">
-                  <div className="relative h-full w-full">
-                    <Image
-                      src={imageByPost.get(featured.id)!}
-                      alt={featured.title}
-                      fill
-                      sizes="(min-width: 1001px) 58vw, 100vw"
-                      className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
-                    />
-                  </div>
-                </Parallax>
-              ) : (
-                <div className="photo-ph absolute inset-0">
-                  <MonoChip>FIELD PHOTO</MonoChip>
-                </div>
-              )}
-            </Link>
-
-            <div className="flex flex-col justify-between py-1">
-              <div>
-                <MonoChip as="p" className="mb-4">
-                  {estimateReadTime(featured.content)} MIN READ
-                </MonoChip>
-                <Link href={`/blog/${featured.id}`}>
-                  <h2 className="font-display font-bold uppercase leading-[0.96] tracking-[0.005em] text-balance text-granite-100 transition-colors hover:text-ember text-[clamp(34px,4.4vw,58px)]">
-                    {featured.title}
-                  </h2>
-                </Link>
-                <p className="text-[16px] leading-[1.7] text-slate-700 mt-5 text-pretty">
-                  {getExcerpt(featured.content)}
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-dashed border-chalk-3 flex items-center justify-between gap-4">
-                <MonoChip className="text-slate-400">
-                  FILED {formatDate(featured.created_at)} · KELOWNA, BC
-                </MonoChip>
-                <Link
-                  href={`/blog/${featured.id}`}
-                  className="font-display uppercase text-[13px] text-ember border-b-[1.5px] border-ember pb-0.5 hover:text-ember-deep hover:border-ember-deep transition-colors whitespace-nowrap"
-                >
-                  Read entry →
-                </Link>
-              </div>
-            </div>
-          </Reveal>
-        </section>
+        <FeaturedEntry
+          title={featured.title}
+          date={formatDate(featured.created_at)}
+          excerpt={getExcerpt(featured.content)}
+          imageUrl={imageByPost.get(featured.id) ?? "/blog/sea-cliff-dws.jpg"}
+          href={`/blog/${featured.id}`}
+        />
       )}
 
       {/* Topo divider 2 */}
@@ -251,14 +191,14 @@ export default async function BlogPage({
                         {/* Thumbnail */}
                         <Link
                           href={`/blog/${post.id}`}
-                          className="group relative block h-34.5 overflow-hidden rounded-sm"
+                          className="group relative block min-[561px]:h-34.5 h-54 overflow-hidden rounded-sm"
                         >
                           {imageByPost.get(post.id) ? (
                             <Image
                               src={imageByPost.get(post.id)!}
                               alt={post.title}
                               fill
-                              sizes="184px"
+                              sizes="360px"
                               className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
                             />
                           ) : (

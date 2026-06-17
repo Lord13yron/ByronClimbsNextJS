@@ -13,7 +13,6 @@ import ScrollProgress from "@/components/blog/ScrollProgress";
 import ArticleHero from "@/components/blog/ArticleHero";
 import ReadingRail from "@/components/blog/ReadingRail";
 import Reveal from "@/components/anim/Reveal";
-import Parallax from "@/components/anim/Parallax";
 import DrawOn from "@/components/anim/DrawOn";
 
 function formatDate(iso: string) {
@@ -88,9 +87,8 @@ export default async function Page({
       imageByPost.set(img.post_id, img.url);
     }
   }
-  const heroImage = images[0]?.url;
   const media = [
-    ...images.slice(1).map((img) => ({
+    ...images.map((img) => ({
       type: "image" as const,
       ...img,
     })),
@@ -117,7 +115,6 @@ export default async function Page({
 
       {/* Cinematic hero */}
       <ArticleHero
-        image={heroImage}
         title={post.title}
         date={date}
         readTime={readTime}
@@ -158,28 +155,26 @@ export default async function Page({
                   )}
 
                   {inlineMedia[i] && (
-                    <figure className="relative mt-8 h-[clamp(280px,40vw,440px)] overflow-hidden rounded-sm bg-granite-200">
+                    <figure className="mt-8">
                       {inlineMedia[i].type === "image" ? (
-                        <Parallax
-                          yPercent={12}
-                          className="absolute inset-x-0 -top-[8%] h-[116%]"
-                        >
-                          <Image
-                            src={inlineMedia[i].url}
-                            alt={post.title}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 720px"
-                            className="object-cover object-center transition-transform duration-700 hover:scale-[1.04]"
-                          />
-                        </Parallax>
-                      ) : (
-                        <iframe
-                          src={`https://www.youtube.com/embed/${inlineMedia[i].url}`}
-                          title={post.title}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="absolute inset-0 h-full w-full"
+                        <Image
+                          src={inlineMedia[i].url}
+                          alt={post.title}
+                          width={0}
+                          height={0}
+                          sizes="(max-width: 768px) 100vw, 720px"
+                          className="mx-auto block h-auto max-h-[80vh] w-auto max-w-full rounded-sm"
                         />
+                      ) : (
+                        <div className="aspect-video overflow-hidden rounded-sm">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${inlineMedia[i].url}`}
+                            title={post.title}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="h-full w-full"
+                          />
+                        </div>
                       )}
                     </figure>
                   )}
@@ -210,40 +205,31 @@ export default async function Page({
       {galleryMedia.length > 0 && (
         <section className="mx-auto max-w-295 px-[clamp(20px,5vw,56px)] pb-[clamp(48px,6vw,76px)] pt-[clamp(20px,3vw,32px)]">
           <MonoChip className="mb-5 block text-ember">— FROM THE TRIP</MonoChip>
-          <Reveal
-            stagger={0.12}
-            className="grid grid-cols-1 gap-5 min-[760px]:grid-cols-2"
-          >
-            {galleryMedia.map((item, i) => (
+          <Reveal stagger={0.12} className="gap-5 min-[760px]:columns-2">
+            {galleryMedia.map((item) => (
               <figure
                 key={`${item.type}-${item.id}`}
-                className={`relative overflow-hidden rounded-sm bg-granite-200 ${
-                  i === 0
-                    ? "h-[clamp(280px,46vw,520px)] min-[760px]:col-span-2"
-                    : "h-[clamp(220px,30vw,340px)]"
-                }`}
+                className="mb-5 break-inside-avoid"
               >
                 {item.type === "image" ? (
-                  <Parallax
-                    yPercent={6}
-                    className="absolute inset-x-0 -top-[5%] h-[110%]"
-                  >
-                    <Image
-                      src={item.url}
-                      alt={post.title}
-                      fill
-                      sizes="(max-width: 760px) 100vw, 590px"
-                      className="object-cover object-center transition-transform duration-700 hover:scale-[1.05]"
-                    />
-                  </Parallax>
-                ) : (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${item.url}`}
-                    title={post.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="absolute inset-0 h-full w-full"
+                  <Image
+                    src={item.url}
+                    alt={post.title}
+                    width={0}
+                    height={0}
+                    sizes="(max-width: 760px) 100vw, 580px"
+                    className="mx-auto block h-auto max-h-[80vh] w-auto max-w-full rounded-sm"
                   />
+                ) : (
+                  <div className="aspect-video overflow-hidden rounded-sm">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${item.url}`}
+                      title={post.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="h-full w-full"
+                    />
+                  </div>
                 )}
               </figure>
             ))}

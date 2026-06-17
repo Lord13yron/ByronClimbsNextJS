@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRef, useState } from "react";
 import * as THREE from "three";
 import Link from "next/link";
@@ -12,7 +11,6 @@ import {
 } from "@/components/anim/gsap";
 
 type ArticleHeroProps = {
-  image?: string;
   title: string;
   date: string;
   readTime: number;
@@ -59,7 +57,6 @@ function dustTexture() {
  * are skipped — the bled photo + scrims still read as a full cinematic block.
  */
 export default function ArticleHero({
-  image,
   title,
   date,
   readTime,
@@ -67,8 +64,6 @@ export default function ArticleHero({
 }: ArticleHeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const photoWrapRef = useRef<HTMLDivElement>(null);
-  const kenRef = useRef<HTMLDivElement>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   // --- Ember dust (three.js) -------------------------------------------
@@ -231,29 +226,6 @@ export default function ArticleHero({
     if (!section || prefersReducedMotion()) return;
 
     const ctx = gsap.context(() => {
-      // Slow ken-burns + scroll parallax on the bled cover photo.
-      if (kenRef.current) {
-        gsap.to(kenRef.current, {
-          scale: 1.09,
-          duration: 16,
-          ease: "none",
-          yoyo: true,
-          repeat: -1,
-        });
-      }
-      if (photoWrapRef.current) {
-        gsap.to(photoWrapRef.current, {
-          yPercent: 10,
-          ease: "none",
-          scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: "bottom top",
-            scrub: true,
-          },
-        });
-      }
-
       // Masked title slide-up, then crumb/meta fade-in.
       const tl = gsap.timeline();
       tl.from(".hero-line", {
@@ -280,35 +252,8 @@ export default function ArticleHero({
   return (
     <section
       ref={sectionRef}
-      className="relative isolate flex min-h-[clamp(560px,90vh,820px)] flex-col justify-end overflow-hidden bg-granite-200"
+      className="relative isolate flex min-h-[clamp(360px,55vh,520px)] flex-col justify-end overflow-hidden bg-granite-200"
     >
-      {/* Bled cover photo */}
-      <div
-        ref={photoWrapRef}
-        aria-hidden="true"
-        className="pointer-events-none absolute"
-        style={{ left: "-4%", top: "-8%", width: "108%", height: "118%" }}
-      >
-        <div ref={kenRef} className="relative h-full w-full">
-          {image ? (
-            <Image
-              src={image}
-              alt=""
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-              style={{
-                objectPosition: "center 46%",
-                filter: "saturate(0.86) contrast(1.04) brightness(0.78)",
-              }}
-            />
-          ) : (
-            <div className="photo-ph h-full w-full" />
-          )}
-        </div>
-      </div>
-
       {/* Ember dust */}
       {!reducedMotion && (
         <canvas
@@ -330,19 +275,30 @@ export default function ArticleHero({
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(22,22,24,0.78) 0%, rgba(22,22,24,0.25) 26%, rgba(22,22,24,0.18) 48%, rgba(22,22,24,0.88) 100%)",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[96px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-24"
         style={{
           background: "linear-gradient(180deg, rgba(22,22,24,0.82), transparent)",
         }}
       />
+
+      {/* Oversized month-year ghost behind the title */}
+      <div
+        aria-hidden="true"
+        className="hero-rise pointer-events-none absolute inset-x-0 bottom-0 mx-auto w-full max-w-7xl select-none overflow-hidden"
+        style={{ padding: "0 clamp(20px,5vw,56px)" }}
+      >
+        <span
+          className="block font-display font-extrabold uppercase leading-none text-chalk"
+          style={{
+            fontSize: "clamp(120px,26vw,360px)",
+            opacity: 0.05,
+            transform: "translateY(20%)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {monthYear}
+        </span>
+      </div>
 
       {/* Content */}
       <div
