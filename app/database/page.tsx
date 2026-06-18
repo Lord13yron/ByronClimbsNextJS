@@ -2,7 +2,19 @@ import { SearchParams } from "../types/types";
 import { Suspense } from "react";
 import DatabaseTableSkeleton from "@/components/DatabaseTableSkeleton";
 import DatabaseWrapper from "@/components/DatabaseWrapper";
-import MonoChip from "@/components/ui/MonoChip";
+import DatabaseMasthead from "@/components/database/DatabaseMasthead";
+import FieldStats from "@/components/database/FieldStats";
+import MilestonesStrip from "@/components/database/MilestonesStrip";
+import ScrollProgressBar from "@/components/database/ScrollProgressBar";
+import TopoLine from "@/components/ui/TopoLine";
+import { getClimbs, getOwnerSends } from "@/lib/data-service";
+import {
+  getMastheadStats,
+  getGradeCounts,
+  getTopCrags,
+  getRegions,
+} from "@/lib/database-stats";
+import { resolveMilestones } from "@/lib/milestones";
 
 export const metadata = {
   title: "The Logbook",
@@ -19,71 +31,76 @@ export default async function DatabasePage({
 
   return (
     <div className="bg-background">
-      {/* Page header */}
-      <div className="px-4 md:px-14 py-8 md:py-14 max-w-7xl mx-auto w-full">
-        <MonoChip className="text-ember mb-3 block">— THE DATABASE</MonoChip>
-        <div className="flex flex-wrap justify-between items-end gap-6">
-          <div>
-            <h1
-              className="font-display uppercase font-bold text-granite-100 leading-[0.95] tracking-[0.01em]"
-              style={{
-                fontSize: "clamp(44px, 6vw, 72px)",
-                textWrap: "balance",
-              }}
-            >
-              The logbook
-            </h1>
-            <p
-              className="mt-3 text-[15px] text-slate-700 max-w-145 leading-[1.55] font-body"
-              style={{ textWrap: "pretty" }}
-            >
-              Climbs across the Okanagan, Sea-to-Sky, and a handful of road-trip
-              detours. Filter by what you&apos;d like to see — sends, favorites,
-              or everything I&apos;ve ever touched.
-            </p>
-          </div>
-          <div className="text-right">
-            <Suspense fallback={null}>
-              <DatabaseMeta />
-            </Suspense>
-          </div>
-        </div>
+      <ScrollProgressBar />
+
+      <Suspense fallback={<MastheadFallback />}>
+        <Masthead />
+      </Suspense>
+
+      <div className="text-chalk-3">
+        <TopoLine height={38} seed={2} />
       </div>
 
       {/* Controls + table */}
       <Suspense fallback={<DatabaseTableSkeleton />}>
         <DatabaseWrapper searchParams={Promise.resolve(params)} />
       </Suspense>
+
+      <div className="bg-chalk-2 text-chalk-3">
+        <TopoLine height={38} seed={5} />
+      </div>
+
+      <Suspense fallback={null}>
+        <FieldStatsSection />
+      </Suspense>
     </div>
   );
 }
 
-async function DatabaseMeta() {
-  const { getClimbs, getSendsForUser } = await import("@/lib/data-service");
-  const { getUser } = await import("@/lib/auth-actions");
+function MastheadFallback() {
+  return <div className="min-h-[clamp(520px,80vh,680px)] bg-granite-200" />;
+}
 
+async function Masthead() {
   try {
-    const [climbs, user] = await Promise.all([getClimbs(), getUser()]);
-    const now = new Date();
-    const lastUpdated = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`;
+    const [climbs, ownerSends] = await Promise.all([
+      getClimbs(),
+      getOwnerSends(),
+    ]);
+    const stats = getMastheadStats(climbs, ownerSends);
+    const skylineCounts = getGradeCounts(climbs, ownerSends, "boulder").map(
+      (g) => g.total,
+    );
+    return <DatabaseMasthead stats={stats} skylineCounts={skylineCounts} />;
+  } catch {
+    return <MastheadFallback />;
+  }
+}
 
-    if (!user) {
-      return (
-        <MonoChip className="text-slate-500 leading-[1.7] block">
-          LAST UPDATED {lastUpdated}
-          <br />
-          {climbs.length} ROUTES
-        </MonoChip>
-      );
-    }
+async function FieldStatsSection() {
+  try {
+    const [climbs, ownerSends] = await Promise.all([
+      getClimbs(),
+      getOwnerSends(),
+    ]);
+    const boulder = getGradeCounts(climbs, ownerSends, "boulder");
+    const sport = getGradeCounts(climbs, ownerSends, "sport");
+    const crags = getTopCrags(climbs, ownerSends, 6);
+    const regions = getRegions(climbs);
+    const { topSend } = getMastheadStats(climbs, ownerSends);
+    const milestones = resolveMilestones(climbs, ownerSends);
 
-    const sends = await getSendsForUser();
     return (
-      <MonoChip className="text-slate-500 leading-[1.7] block">
-        LAST UPDATED {lastUpdated}
-        <br />
-        {climbs.length} ROUTES · {sends.length} SENDS
-      </MonoChip>
+      <>
+        <FieldStats
+          boulder={boulder}
+          sport={sport}
+          crags={crags}
+          regions={regions}
+          topSend={topSend}
+        />
+        <MilestonesStrip milestones={milestones} />
+      </>
     );
   } catch {
     return null;

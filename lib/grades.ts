@@ -27,3 +27,15 @@ export function hardestGrade(grades: string[], scale: string[]): string | null {
   }
   return bestIndex === -1 ? null : scale[bestIndex];
 }
+
+// Numeric difficulty rank for sorting across disciplines. Boulders rank by their
+// V-scale index; sport routes rank by their YDS index, offset so the two scales
+// don't interleave (e.g. V0 and 5.10a stay distinct). Unknown grades sort last.
+export function gradeRank(grade: string, type: string): number {
+  if (type === "boulder") {
+    const i = VGRADES.indexOf(grade);
+    return i === -1 ? -1 : i;
+  }
+  const i = SPORTGRADES.indexOf(grade);
+  return i === -1 ? -1 : 100 + i;
+}

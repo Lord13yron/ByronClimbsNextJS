@@ -36,6 +36,8 @@ export type SearchParams = {
   type?: string;
   view?: string;
   q?: string;
+  grade?: string;
+  crag?: string;
 };
 
 export type Note = {

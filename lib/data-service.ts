@@ -11,6 +11,7 @@ import {
 import { createClient } from "./supabase/supabaseServer";
 import { getUser } from "./auth-actions";
 import { VGRADES, SPORTGRADES, hardestGrade } from "./grades";
+import { cache } from "react";
 
 export async function getPosts() {
   const supabase = await createClient();
@@ -94,16 +95,16 @@ export async function getVideosForPost(postId: number) {
   return data as ContentVideo[];
 }
 
-export async function getAllClimbImages(): Promise<
+export const getAllClimbImages = cache(async (): Promise<
   { climb_id: number; url: string }[]
-> {
+> => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("climb_images")
     .select("climb_id, url");
   if (error) throw new Error("Failed to fetch climb images");
   return data ?? [];
-}
+});
 
 export async function getImagesForClimb(climbId: number) {
   const supabase = await createClient();
@@ -131,7 +132,7 @@ export async function getVideosForClimb(climbId: number) {
   return data as ContentVideo[];
 }
 
-export async function getClimbs() {
+export const getClimbs = cache(async () => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("climbs")
@@ -142,7 +143,7 @@ export async function getClimbs() {
     throw new Error("Failed to fetch climbs", error);
   }
   return data as Climb[];
-}
+});
 
 export async function getClimbBySlug(climbSlug: string) {
   const supabase = await createClient();
@@ -172,7 +173,7 @@ export async function getClimbById(climbId: string) {
   return data as Climb;
 }
 
-export async function getSendsForUser() {
+export const getSendsForUser = cache(async () => {
   const supabase = await createClient();
   const user = await getUser();
   if (!user) {
@@ -187,9 +188,9 @@ export async function getSendsForUser() {
     throw new Error("Failed to fetch sends for user", error);
   }
   return data as Send[];
-}
+});
 
-export async function getFavoritesForUser() {
+export const getFavoritesForUser = cache(async () => {
   const supabase = await createClient();
   const user = await getUser();
   if (!user) {
@@ -204,7 +205,32 @@ export async function getFavoritesForUser() {
     throw new Error("Failed to fetch favorites for user", error);
   }
   return data as Favorite[];
-}
+});
+
+// The site owner's (admin's) sends — used as the canonical "sent" set for the
+// Database page's read-only visualizations (masthead, skyline, pyramid, crags,
+// milestones) so they render identically signed-out and signed-in. Returns []
+// when no admin profile exists or on any error.
+export const getOwnerSends = cache(async (): Promise<Send[]> => {
+  try {
+    const supabase = await createClient();
+    const { data: owner } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin")
+      .limit(1)
+      .single();
+    if (!owner) return [];
+
+    const { data } = await supabase
+      .from("sends")
+      .select("*")
+      .eq("user_id", owner.id);
+    return (data as Send[]) ?? [];
+  } catch {
+    return [];
+  }
+});
 
 export async function getAllImagesForLibrary(): Promise<string[]> {
   const supabase = await createClient();
