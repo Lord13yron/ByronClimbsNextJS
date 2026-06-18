@@ -58,7 +58,7 @@ export default async function DatabasePage({
 }
 
 function MastheadFallback() {
-  return <div className="min-h-[clamp(520px,80vh,680px)] bg-granite-200" />;
+  return <div className="min-h-[clamp(420px,58vh,540px)] bg-granite-200" />;
 }
 
 async function Masthead() {
@@ -68,10 +68,7 @@ async function Masthead() {
       getOwnerSends(),
     ]);
     const stats = getMastheadStats(climbs, ownerSends);
-    const skylineCounts = getGradeCounts(climbs, ownerSends, "boulder").map(
-      (g) => g.total,
-    );
-    return <DatabaseMasthead stats={stats} skylineCounts={skylineCounts} />;
+    return <DatabaseMasthead stats={stats} />;
   } catch {
     return <MastheadFallback />;
   }

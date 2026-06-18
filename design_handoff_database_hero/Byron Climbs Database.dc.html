@@ -13,7 +13,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   *{ box-sizing:border-box; }
   html,body{ margin:0; padding:0; }
@@ -91,17 +90,30 @@
     </div>
   </header>
 
-  <!-- ===== MASTHEAD : three.js grade skyline ===== -->
-  <section data-screen-label="Masthead" style="position:relative; overflow:hidden; background:#161618; min-height:clamp(520px,80vh,680px); display:flex; flex-direction:column; justify-content:flex-end;">
-    <div id="db-sky" style="position:absolute; inset:0; z-index:0;"></div>
-    <div class="db-drift" style="position:absolute; top:-8%; right:4%; width:52%; height:62%; z-index:1; pointer-events:none; background:radial-gradient(ellipse at center, rgba(200,84,30,0.20), transparent 64%); animation:dbDrift 9s ease-in-out infinite;"></div>
-    <div style="position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(180deg, rgba(22,22,24,0.88) 0%, rgba(22,22,24,0.30) 30%, rgba(22,22,24,0.12) 52%, rgba(22,22,24,0.82) 100%);"></div>
-    <div style="position:absolute; left:0; top:0; width:100%; height:88px; z-index:1; pointer-events:none; background:linear-gradient(180deg, rgba(22,22,24,0.85), transparent);"></div>
+  <!-- ===== MASTHEAD : field-journal header ===== -->
+  <section id="db-hero" data-screen-label="Masthead" style="position:relative; overflow:hidden; background:#161618; min-height:clamp(420px,58vh,540px); display:flex; flex-direction:column; justify-content:space-between;">
+    <div class="db-drift" style="position:absolute; top:-10%; right:2%; width:54%; height:70%; z-index:1; pointer-events:none; background:radial-gradient(ellipse at center, rgba(200,84,30,0.18), transparent 66%); animation:dbDrift 9s ease-in-out infinite;"></div>
+    <svg viewBox="0 0 1440 720" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; z-index:1; color:#F4F1EC; opacity:0.10; pointer-events:none;" aria-hidden="true">
+      <sc-for list="{{ heroTopo }}" as="d" hint-placeholder-count="14">
+        <path class="db-herotopo" d="{{ d }}" fill="none" stroke="currentColor" stroke-width="1.2"></path>
+      </sc-for>
+    </svg>
+    <div style="position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(180deg, rgba(22,22,24,0.25) 0%, transparent 42%, rgba(22,22,24,0.5) 100%);"></div>
 
-    <div style="position:relative; z-index:2; width:100%; max-width:1320px; margin:0 auto; padding:clamp(36px,7vw,60px) clamp(20px,5vw,56px) clamp(30px,5vw,48px);">
+    <div style="position:relative; z-index:2; width:100%; max-width:1320px; margin:0 auto; padding:clamp(20px,4vw,32px) clamp(20px,5vw,56px) 0;">
+      <!-- newspaper dateline -->
+      <div id="db-dateline" style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:11px 0; border-top:1px solid rgba(244,241,236,0.3); border-bottom:1px solid rgba(244,241,236,0.3);">
+        <span class="mono" style="color:rgba(244,241,236,0.72);">VOL. VII · NO. 179</span>
+        <span class="mono" style="color:rgba(244,241,236,0.72);">THE OKANAGAN RECORD</span>
+        <span class="mono" style="color:rgba(244,241,236,0.72);">KELOWNA · BC</span>
+        <span class="mono" style="color:rgba(244,241,236,0.72);">EST. 2019</span>
+      </div>
+    </div>
+
+    <div style="position:relative; z-index:2; width:100%; max-width:1320px; margin:0 auto; padding:0 clamp(20px,5vw,56px) clamp(30px,5vw,48px);">
       <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
         <span class="mono" id="db-eyebrow" style="color:#E37A3F;">— THE DATABASE</span>
-        <span style="flex:1; height:1px; background:linear-gradient(90deg, rgba(227,122,63,0.4), transparent); max-width:200px;"></span>
+        <span style="flex:1; height:1px; background:linear-gradient(90deg, rgba(227,122,63,0.55), transparent); max-width:200px;"></span>
       </div>
       <h1 class="disp" style="margin:0; text-transform:uppercase; font-weight:800; line-height:0.86; letter-spacing:0.01em; font-size:clamp(52px,9vw,120px); color:#F4F1EC; text-wrap:balance;">
         <span style="display:block; overflow:hidden; padding-bottom:0.03em;"><span class="db-line" style="display:block;">The logbook.</span></span>
@@ -837,6 +849,7 @@ class Component extends DCLogic {
     return {
       divTopo: this._topo1 || (this._topo1 = Array.from({ length: 5 }, (_, k) => this.topoPath(1440, 14 + k * 7, 9, k * 0.9 + 3, 30))),
       divTopo2: this._topo2 || (this._topo2 = Array.from({ length: 5 }, (_, k) => this.topoPath(1440, 14 + k * 7, 9, k * 1.4 + 6, 30))),
+      heroTopo: this._heroTopo || (this._heroTopo = Array.from({ length: 14 }, (_, k) => this.topoPath(1440, 24 + k * 50, 16, k * 0.8 + 2, 32))),
       pyramid, pyrFootnote, cragBars, regions, milestones,
       statusChips, gradeChips: gradeChipsR, activePills,
       hasActivePills: activePills.length > 0,
@@ -860,13 +873,10 @@ class Component extends DCLogic {
   componentDidMount() {
     const t0 = Date.now();
     const tick = () => {
-      if (window.gsap && window.ScrollTrigger && window.THREE) {
-        try { this.initSky(); } catch (e) { console.warn("sky failed", e); }
+      if (window.gsap && window.ScrollTrigger) {
         try { this.motion(); } catch (e) { console.warn("motion failed", e); }
       } else if (Date.now() - t0 < 6000) {
         setTimeout(tick, 70);
-      } else if (window.gsap && window.ScrollTrigger) {
-        try { this.motion(); } catch (e) {}
       }
     };
     tick();
@@ -881,137 +891,6 @@ class Component extends DCLogic {
         const kids = grid.children;
         window.gsap.fromTo(kids, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.42, stagger: 0.018, ease: "power2.out", overwrite: true });
       }
-    }
-  }
-
-  /* ===== THREE.JS GRADE SKYLINE ===== */
-  initSky() {
-    const THREE = window.THREE;
-    const mount = document.getElementById("db-sky");
-    if (!mount) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    this._reduce = reduce;
-
-    let w = mount.clientWidth || window.innerWidth;
-    let h = mount.clientHeight || 600;
-
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x161618, 0.038);
-    const camera = new THREE.PerspectiveCamera(52, w / h, 0.1, 160);
-    const camBaseY = 13;
-    camera.position.set(0, camBaseY, 30);
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
-    renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setClearColor(0x000000, 0);
-    mount.appendChild(renderer.domElement);
-    renderer.domElement.style.display = "block";
-
-    const mobile = w < 760;
-    // grade counts drive the skyline ridge
-    const counts = [39, 39, 32, 17, 19, 6, 10, 7, 3, 4, 3];
-    const maxC = 39;
-    const COLS = 11;                 // grades along X
-    const ROWS = mobile ? 7 : 13;    // depth
-    const N = COLS * ROWS;
-    const gap = 2.4;
-    const bw = 1.5;                  // bar footprint
-
-    const group = new THREE.Group();
-    scene.add(group);
-
-    const geo = new THREE.BoxGeometry(bw, 1, bw);
-    const mat = new THREE.MeshBasicMaterial({ color: 0xC8541E, wireframe: true, transparent: true, opacity: 0.0 });
-    const mesh = new THREE.InstancedMesh(geo, mat, N);
-    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-
-    // solid translucent fill underneath the wire
-    const matFill = new THREE.MeshBasicMaterial({ color: 0x1F1F21, transparent: true, opacity: 0.0 });
-    const meshFill = new THREE.InstancedMesh(geo, matFill, N);
-    meshFill.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-
-    const colA = new THREE.Color(0xE37A3F); // ember-soft (low grades, front)
-    const colB = new THREE.Color(0x8E3A12); // ember-deep (high grades)
-    const cells = [];
-    let i = 0;
-    for (let r = 0; r < ROWS; r++) {
-      for (let col = 0; col < COLS; col++) {
-        const x = (col - (COLS - 1) / 2) * gap;
-        const z = (r - (ROWS - 1) / 2) * gap;
-        const baseH = 1.2 + (counts[col] / maxC) * 12;
-        const col3 = colA.clone().lerp(colB, col / (COLS - 1));
-        mesh.setColorAt(i, col3);
-        meshFill.setColorAt(i, col3.clone().multiplyScalar(0.5));
-        cells.push({ x, z, baseH, phase: col * 0.5 + r * 0.35 });
-        i++;
-      }
-    }
-    group.add(meshFill);
-    group.add(mesh);
-
-    const dummy = new THREE.Object3D();
-    const applyHeights = (t, fade) => {
-      for (let k = 0; k < N; k++) {
-        const c = cells[k];
-        const wob = reduce ? 1 : (0.86 + 0.14 * Math.sin(t * 0.9 + c.phase));
-        const hgt = c.baseH * wob * fade;
-        dummy.position.set(c.x, hgt / 2, c.z);
-        dummy.scale.set(1, hgt, 1);
-        dummy.updateMatrix();
-        mesh.setMatrixAt(k, dummy.matrix);
-        meshFill.setMatrixAt(k, dummy.matrix);
-      }
-      mesh.instanceMatrix.needsUpdate = true;
-      meshFill.instanceMatrix.needsUpdate = true;
-    };
-
-    // pointer parallax
-    let tmx = 0, tmy = 0;
-    const onMove = (e) => {
-      const rct = mount.getBoundingClientRect();
-      tmx = ((e.clientX - rct.left) / rct.width - 0.5) * 2;
-      tmy = ((e.clientY - rct.top) / rct.height - 0.5) * 2;
-    };
-    if (!mobile && !reduce) window.addEventListener("pointermove", onMove, { passive: true });
-
-    const clock = new THREE.Clock();
-    let raf = 0, fade = 0;
-    const render = () => {
-      const t = clock.getElapsedTime();
-      fade = Math.min(1, fade + 0.018);
-      mat.opacity = 0.62 * fade;
-      matFill.opacity = 0.32 * fade;
-      applyHeights(t, fade);
-      group.rotation.y = (reduce ? 0.35 : t * 0.045) + tmx * 0.28;
-      const ty = camBaseY - tmy * 2.4;
-      camera.position.y += (ty - camera.position.y) * 0.05;
-      camera.lookAt(0, 2.5, 0);
-      renderer.render(scene, camera);
-      if (!reduce) raf = requestAnimationFrame(render);
-    };
-    render();
-    if (reduce) { fade = 1; mat.opacity = 0.62; matFill.opacity = 0.32; applyHeights(1.2, 1); group.rotation.y = 0.35; renderer.render(scene, camera); }
-
-    let rt = 0;
-    window.addEventListener("resize", () => {
-      clearTimeout(rt);
-      rt = setTimeout(() => {
-        w = mount.clientWidth || window.innerWidth;
-        h = mount.clientHeight || 600;
-        camera.aspect = w / h; camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
-      }, 150);
-    }, { passive: true });
-
-    if (!reduce && "IntersectionObserver" in window) {
-      const io = new IntersectionObserver((es) => {
-        es.forEach((en) => {
-          if (en.isIntersecting) { if (!raf) { clock.start(); raf = requestAnimationFrame(render); } }
-          else if (raf) { cancelAnimationFrame(raf); raf = 0; }
-        });
-      }, { threshold: 0 });
-      io.observe(mount);
     }
   }
 
@@ -1055,12 +934,14 @@ class Component extends DCLogic {
 
     this.drawPaths(q("#db-div1 .db-topo"), { duration: reduce ? 0.01 : 1.4, stagger: reduce ? 0 : 0.1, trigger: document.getElementById("db-div1") });
     this.drawPaths(q("#db-div2 .db-topo2"), { duration: reduce ? 0.01 : 1.4, stagger: reduce ? 0 : 0.1, trigger: document.getElementById("db-div2") });
+    this.drawPaths(q("#db-hero .db-herotopo"), { duration: reduce ? 0.01 : 1.9, stagger: reduce ? 0 : 0.12, delay: 0.3 });
 
     // headline
     if (!reduce) {
       const tl = g.timeline({ defaults: { ease: "power3.out" } });
-      tl.from(q(".db-line"), { yPercent: 120, duration: 0.95 }, 0.12)
-        .from(document.getElementById("db-eyebrow"), { opacity: 0, x: -14, duration: 0.6 }, 0.1)
+      tl.from(document.getElementById("db-dateline"), { opacity: 0, y: -10, duration: 0.6 }, 0.05)
+        .from(q(".db-line"), { yPercent: 120, duration: 0.95 }, 0.18)
+        .from(document.getElementById("db-eyebrow"), { opacity: 0, x: -14, duration: 0.6 }, 0.16)
         .from(document.getElementById("db-sub"), { y: 16, opacity: 0, duration: 0.7 }, "-=0.5")
         .from(q("#db-count > *"), { y: 16, opacity: 0, duration: 0.6, stagger: 0.1 }, "-=0.45");
     }
