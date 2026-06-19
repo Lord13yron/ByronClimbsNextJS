@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Parallax from "@/components/anim/Parallax";
+import { splitHeadline } from "@/lib/utils";
 import {
   gsap,
   prefersReducedMotion,
@@ -18,25 +19,6 @@ type FeaturedEntryProps = {
   imageUrl: string;
   href: string;
 };
-
-/**
- * Splits a title into two roughly balanced display lines (by char length).
- * A single-word title stays on one line.
- */
-function splitHeadline(title: string): string[] {
-  const words = title.trim().split(/\s+/);
-  if (words.length < 2) return [title.trim()];
-
-  const total = title.length;
-  let line1 = "";
-  let i = 0;
-  while (i < words.length - 1 && line1.length + words[i].length < total / 2) {
-    line1 += (line1 ? " " : "") + words[i];
-    i++;
-  }
-  const line2 = words.slice(i).join(" ");
-  return [line1, line2];
-}
 
 /**
  * Full-bleed, image-led featured panel bound to the newest post. Entrance and

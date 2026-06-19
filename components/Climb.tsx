@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import {
   getClimbById,
   getClimbs,
@@ -10,14 +11,6 @@ import {
 import TickBox from "./TickBox";
 import FavoriteIcon from "./FavoriteIcon";
 import { SquarePen } from "lucide-react";
-import Image from "next/image";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "./ui/carousel";
 import Notes from "./Notes";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import Link from "next/link";
@@ -25,6 +18,11 @@ import DeleteClimb from "./DeleteClimb";
 import GradeChip from "./ui/GradeChip";
 import TypeGlyph from "./ui/TypeGlyph";
 import MonoChip from "./ui/MonoChip";
+import TopoLine from "./ui/TopoLine";
+import ClimbCarousel from "./ClimbCarousel";
+import BetaVideo from "./BetaVideo";
+import Reveal from "./anim/Reveal";
+import DrawOn from "./anim/DrawOn";
 
 type ClimbProps = {
   databaseId: string;
@@ -38,14 +36,20 @@ function formatDate(dateString: string) {
 
 export default async function Climb({ databaseId, isAdmin }: ClimbProps) {
   const climb = await getClimbById(databaseId);
-  const images = await getImagesForClimb(climb.id);
-  const videos = await getVideosForClimb(climb.id);
-  const sends = await getSendsForUser();
-  const notes = await getNotesForClimb(climb.id);
-  const favorites = await getFavoritesForUser();
-  const allClimbs = await getClimbs();
+  // Independent of each other — fetch in parallel so the render waits on the
+  // single slowest call (~10s) instead of the sum of all of them (~18s).
+  const [images, videos, sends, notes, favorites, allClimbs] =
+    await Promise.all([
+      getImagesForClimb(climb.id),
+      getVideosForClimb(climb.id),
+      getSendsForUser(),
+      getNotesForClimb(climb.id),
+      getFavoritesForUser(),
+      getClimbs(),
+    ]);
 
   const isSent = sends.some((s) => s.climb_id === climb.id);
+  const isFavorited = favorites.some((f) => f.climb_id === climb.id);
   const sendDate = sends.find((s) => s.climb_id === climb.id)?.created_at;
 
   const siblingClimbs = allClimbs
@@ -57,76 +61,112 @@ export default async function Climb({ databaseId, isAdmin }: ClimbProps) {
   return (
     <div className="bg-background">
       {/* Breadcrumb */}
-      {/* <div className="px-4 md:px-14 pt-5 md:pt-6 max-w-[1280px] mx-auto">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Link href="/database">
-            <MonoChip className="text-slate-500 hover:text-granite-100 transition-colors">
-              DATABASE
-            </MonoChip>
-          </Link>
-          <MonoChip className="text-chalk-3">›</MonoChip>
-          <MonoChip className="text-slate-500 uppercase">{climb.city}</MonoChip>
-          <MonoChip className="text-chalk-3">›</MonoChip>
-          <MonoChip className="text-slate-500 uppercase">{climb.area}</MonoChip>
-          {climb.subArea && (
-            <>
-              <MonoChip className="text-chalk-3">›</MonoChip>
-              <MonoChip className="text-slate-500 uppercase">{climb.subArea}</MonoChip>
-            </>
-          )}
-          <MonoChip className="text-chalk-3">›</MonoChip>
-          <MonoChip className="text-ember uppercase">{climb.name}</MonoChip>
-        </div>
-      </div> */}
+      <div className="px-4 md:px-14 pt-5 md:pt-6 max-w-7xl mx-auto">
+        <Reveal x={-20} duration={0.6}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link href="/database" className="inline-flex">
+              <MonoChip className="text-slate-400 hover:text-ember transition-colors">
+                DATABASE
+              </MonoChip>
+            </Link>
+            <MonoChip className="text-chalk-3">/</MonoChip>
+            <MonoChip className="text-slate-400">{climb.city}</MonoChip>
+            <MonoChip className="text-chalk-3">/</MonoChip>
+            <MonoChip className="text-slate-400">{climb.area}</MonoChip>
+            {climb.subArea && (
+              <>
+                <MonoChip className="text-chalk-3">/</MonoChip>
+                <MonoChip className="text-slate-400">{climb.subArea}</MonoChip>
+              </>
+            )}
+            <MonoChip className="text-chalk-3">/</MonoChip>
+            <MonoChip className="text-ember">{climb.name}</MonoChip>
+          </div>
+        </Reveal>
+      </div>
 
       {/* Title block */}
       <section className="px-4 md:px-14 py-6 md:py-8 max-w-7xl mx-auto">
         <div className="flex flex-wrap justify-between items-end gap-6">
           <div>
-            <div className="flex items-center gap-3.5 mb-3.5">
-              <GradeChip grade={grade} variant={isSent ? "ember" : "outline"} />
-              <div className="flex items-center gap-2 text-slate-700">
-                <TypeGlyph type={climb.type} size={14} />
-                <MonoChip className="text-slate-700 uppercase">
-                  {climb.type}
-                </MonoChip>
+            <Reveal y={16} stagger={0.08} duration={0.55} className="mb-3.5">
+              <div className="flex items-center gap-3.5">
+                <GradeChip
+                  grade={grade}
+                  variant={isSent ? "ember" : "outline"}
+                  size="lg"
+                />
+                <div className="flex items-center gap-2 text-slate-700">
+                  <TypeGlyph type={climb.type} size={14} />
+                  <MonoChip className="text-slate-700 uppercase">
+                    {climb.type}
+                  </MonoChip>
+                </div>
               </div>
-            </div>
-            <h1
-              className="font-display uppercase font-bold text-granite-100 leading-[0.92] tracking-[0.01em]"
-              style={{ fontSize: "clamp(48px, 7vw, 96px)" }}
-            >
-              {climb.name}
-            </h1>
+            </Reveal>
+
+            <Reveal className="overflow-hidden" y={100} duration={0.95}>
+              <h1
+                className="font-display uppercase font-bold text-granite-100 leading-[0.88] tracking-[0.005em] text-balance"
+                style={{ fontSize: "clamp(44px, 7vw, 96px)" }}
+              >
+                {climb.name}
+              </h1>
+            </Reveal>
+
             {/* Coord strip */}
-            <div className="flex flex-wrap gap-4 mt-4">
+            <Reveal
+              className="flex flex-wrap items-stretch gap-4 mt-4"
+              y={12}
+              stagger={0.06}
+            >
               {[
                 { label: "CITY", value: climb.city.toUpperCase() },
                 { label: "AREA", value: climb.area.toUpperCase() },
                 ...(climb.subArea
                   ? [{ label: "SECTOR", value: climb.subArea.toUpperCase() }]
                   : []),
-              ].map((item) => (
-                <div key={item.label} className="flex flex-col gap-0.5">
-                  <MonoChip className="text-[9px] text-slate-400">
-                    {item.label}
-                  </MonoChip>
-                  <span className="font-mono uppercase text-[11px] tracking-widest font-medium text-granite-100">
-                    {item.value}
-                  </span>
-                </div>
+              ].map((item, idx) => (
+                <Fragment key={item.label}>
+                  {idx > 0 && (
+                    <div className="w-px self-stretch bg-chalk-3" aria-hidden />
+                  )}
+                  <div className="flex flex-col gap-1.5">
+                    <MonoChip className="text-slate-400">{item.label}</MonoChip>
+                    <span className="font-display uppercase font-semibold tracking-[0.03em] text-[clamp(16px,1.8vw,20px)] text-granite-100">
+                      {item.value}
+                    </span>
+                  </div>
+                </Fragment>
               ))}
-            </div>
+            </Reveal>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <Reveal
+            className="flex items-center gap-2 flex-wrap"
+            y={12}
+            stagger={0.08}
+            duration={0.55}
+          >
             {!isAdmin && (
               <>
-                <div className="flex items-center gap-2 font-display uppercase text-[13px] font-semibold tracking-[0.06em] px-4 py-2.5 border rounded-sm transition-colors">
-                  <TickBox climbId={climb.id} sends={sends} />
+                <div
+                  className={`flex items-center gap-2 font-display uppercase text-[13px] font-semibold tracking-[0.06em] px-4 py-2.5 border rounded-sm transition-colors hover:border-ember ${
+                    isSent
+                      ? "bg-ember text-chalk border-ember"
+                      : "bg-transparent text-granite-100 border-chalk-3"
+                  }`}
+                >
+                  <TickBox climbId={climb.id} sends={sends} size={4} />
                   <span>{isSent ? "Sent" : "Log Send"}</span>
                 </div>
-                <div className="flex items-center gap-2 font-display uppercase text-[13px] font-semibold tracking-[0.06em] px-4 py-2.5 border border-chalk-3 rounded-sm hover:border-ember transition-colors">
+                <div
+                  className={`flex items-center gap-2 font-display uppercase text-[13px] font-semibold tracking-[0.06em] px-4 py-2.5 border rounded-sm transition-colors hover:border-ember ${
+                    isFavorited
+                      ? "bg-granite-100 text-chalk border-granite-100"
+                      : "bg-transparent text-granite-100 border-chalk-3"
+                  }`}
+                >
                   <FavoriteIcon climbId={climb.id} favorites={favorites} />
                   <span>Save</span>
                 </div>
@@ -149,52 +189,20 @@ export default async function Climb({ databaseId, isAdmin }: ClimbProps) {
                 <DeleteClimb climb={climb} size={4} />
               </div>
             )}
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Hero image + session stats */}
       <section className="px-4 md:px-14 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-6">
+        <Reveal
+          className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-6"
+          y={30}
+          duration={0.8}
+        >
           {/* Image */}
-          <div
-            className="relative rounded-sm overflow-hidden"
-            style={{ height: 460 }}
-          >
-            {images.length > 0 ? (
-              <Carousel className="w-full h-full">
-                <CarouselContent className="h-full">
-                  {images.map((img, i) => (
-                    <CarouselItem key={i} className="h-full">
-                      <div
-                        className="relative w-full h-full"
-                        style={{ height: 460 }}
-                      >
-                        <Image
-                          src={img.url}
-                          alt={`${climb.name} — photo ${i + 1}`}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 65vw"
-                          className="object-cover object-[center_40%]"
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                {images.length > 1 && <CarouselPrevious className="left-3" />}
-                {images.length > 1 && <CarouselNext className="right-3" />}
-              </Carousel>
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center"
-                style={{
-                  background:
-                    "repeating-linear-gradient(45deg, var(--chalk-2), var(--chalk-2) 10px, var(--chalk) 10px, var(--chalk) 20px)",
-                }}
-              >
-                <MonoChip className="text-slate-400">NO PHOTO</MonoChip>
-              </div>
-            )}
+          <div className="relative rounded-sm overflow-hidden bg-granite-200">
+            <ClimbCarousel images={images} climbName={climb.name} />
           </div>
 
           {/* Session stats card */}
@@ -204,26 +212,14 @@ export default async function Climb({ databaseId, isAdmin }: ClimbProps) {
             </MonoChip>
             <div className="grid grid-cols-2 gap-4 pb-4 border-b border-[rgba(244,241,236,0.15)]">
               {[
-                {
-                  label: "GRADE",
-                  value: grade,
-                  ember: false,
-                },
+                { label: "GRADE", value: grade, ember: false },
                 {
                   label: "SENT",
                   value: isSent && sendDate ? formatDate(sendDate) : "—",
                   ember: isSent,
                 },
-                {
-                  label: "AREA",
-                  value: climb.area.toUpperCase(),
-                  ember: false,
-                },
-                {
-                  label: "TYPE",
-                  value: climb.type.toUpperCase(),
-                  ember: false,
-                },
+                { label: "AREA", value: climb.area.toUpperCase(), ember: false },
+                { label: "TYPE", value: climb.type.toUpperCase(), ember: false },
               ].map((stat) => (
                 <div key={stat.label}>
                   <MonoChip className="text-[rgba(244,241,236,0.55)]">
@@ -238,77 +234,64 @@ export default async function Climb({ databaseId, isAdmin }: ClimbProps) {
               ))}
             </div>
 
-            {/* Beta tags from notes */}
             {notes.length > 0 && (
               <div className="pt-4">
                 <MonoChip className="text-[rgba(244,241,236,0.55)] mb-2.5 block">
                   NOTES
                 </MonoChip>
-                <p className="text-[13px] leading-[1.55] text-[rgba(244,241,236,0.7)] font-body line-clamp-4">
+                <p className="text-[13px] leading-[1.55] text-[rgba(244,241,236,0.78)] font-body line-clamp-4">
                   {notes[0].note}
                 </p>
               </div>
             )}
           </div>
-        </div>
+        </Reveal>
       </section>
+
+      {/* Topo divider */}
+      <div className="px-4 md:px-14 max-w-7xl mx-auto my-8 text-[#CFC7B8]">
+        <DrawOn duration={1.4} stagger={0.1}>
+          <TopoLine seed={3} height={34} />
+        </DrawOn>
+      </div>
 
       {/* Video section */}
       {videos.length > 0 && (
-        <section className="px-4 md:px-14 max-w-7xl mx-auto mt-6">
-          <MonoChip className="text-slate-500 mb-3 block">
-            — BETA VIDEO
-          </MonoChip>
-          <Carousel className="w-full max-w-3xl">
-            <CarouselContent>
-              {videos.map((video, i) => (
-                <CarouselItem key={i}>
-                  <iframe
-                    width="100%"
-                    height="400"
-                    src={`https://www.youtube.com/embed/${video.url}`}
-                    title={`Video ${i + 1}`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="rounded-sm"
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            {videos.length > 1 && <CarouselPrevious />}
-            {videos.length > 1 && <CarouselNext />}
-          </Carousel>
+        <section className="px-4 md:px-14 max-w-7xl mx-auto">
+          <MonoChip className="text-ember mb-3 block">— BETA VIDEO</MonoChip>
+          <Reveal y={30} duration={0.8}>
+            <BetaVideo videos={videos} posterSrc={images[0]?.url} />
+          </Reveal>
         </section>
       )}
 
+      {/* Topo divider */}
+      <div className="px-4 md:px-14 max-w-7xl mx-auto my-8 text-[#CFC7B8]">
+        <DrawOn duration={1.4} stagger={0.1}>
+          <TopoLine seed={7} height={34} />
+        </DrawOn>
+      </div>
+
       {/* Notes + Related climbs */}
-      <section className="px-4 md:px-14 max-w-7xl mx-auto mt-12 pb-16 md:pb-24">
+      <section className="px-4 md:px-14 max-w-7xl mx-auto pb-16 md:pb-24">
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-10 md:gap-12">
           {/* Notes / journal entry */}
           <div>
-            {!isAdmin && <Notes notes={notes} climb={climb} />}
-            {isAdmin && notes.length > 0 && (
-              <div>
-                <MonoChip className="text-ember mb-3 block">— NOTES</MonoChip>
-                {notes.map((note) => (
-                  <p
-                    key={note.id}
-                    className="text-[16px] leading-[1.7] text-granite-100 mb-4 font-body"
-                  >
-                    {note.note}
-                  </p>
-                ))}
-              </div>
-            )}
+            <Notes notes={notes} climb={climb} readOnly={isAdmin} />
           </div>
 
           {/* Related climbs */}
           {siblingClimbs.length > 0 && (
             <aside>
-              <MonoChip className="text-slate-500 mb-3.5 block">
+              <MonoChip className="text-slate-400 mb-3.5 block">
                 — ALSO IN {climb.area.toUpperCase()}
               </MonoChip>
-              <div>
+              <Reveal
+                className="border-t border-chalk-3"
+                x={18}
+                stagger={0.08}
+                duration={0.6}
+              >
                 {siblingClimbs.map((other, i) => {
                   const otherGrade =
                     other.type === "boulder" ? `V${other.grade}` : other.grade;
@@ -317,7 +300,7 @@ export default async function Climb({ databaseId, isAdmin }: ClimbProps) {
                     <Link
                       key={other.id}
                       href={`/database/${other.id}-${other.slug}`}
-                      className={`flex items-center gap-3 py-3.5 hover:bg-chalk-2 -mx-2 px-2 rounded-sm transition-colors ${
+                      className={`group flex items-center gap-3 py-3.5 hover:bg-chalk-2 -mx-2 px-2 rounded-sm transition-colors ${
                         i < siblingClimbs.length - 1
                           ? "border-b border-chalk-2"
                           : ""
@@ -325,23 +308,19 @@ export default async function Climb({ databaseId, isAdmin }: ClimbProps) {
                     >
                       <GradeChip
                         grade={otherGrade}
-                        variant={otherSent ? "ember" : "outline"}
+                        variant={otherSent ? "ember" : "solid"}
+                        size="md"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="font-display uppercase text-[15px] text-granite-100 truncate">
+                        <div className="font-display uppercase text-[16px] text-granite-100 truncate transition-colors group-hover:text-ember">
                           {other.name}
                         </div>
                         <MonoChip className="text-slate-500 mt-0.5 block">
-                          {other.city}
+                          {other.area} · {otherGrade}
                         </MonoChip>
                       </div>
                       {otherSent && (
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 14 14"
-                          fill="none"
-                        >
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                           <rect
                             x="0.5"
                             y="0.5"
@@ -361,7 +340,7 @@ export default async function Climb({ databaseId, isAdmin }: ClimbProps) {
                     </Link>
                   );
                 })}
-              </div>
+              </Reveal>
             </aside>
           )}
         </div>

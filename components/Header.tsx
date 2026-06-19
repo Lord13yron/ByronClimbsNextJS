@@ -48,6 +48,7 @@ export default function Header() {
   const [initials, setInitials] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
@@ -56,12 +57,13 @@ export default function Header() {
       if (user) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("username, email, avatar_url")
+          .select("username, email, avatar_url, role")
           .eq("id", user.id)
           .single();
         setInitials(getInitials(profile?.username ?? null, profile?.email ?? user.email ?? null));
         setUsername(profile?.username ?? profile?.email ?? user.email ?? null);
         setAvatarUrl(profile?.avatar_url ?? null);
+        setIsAdmin(profile?.role === "admin");
       }
       setAuthChecked(true);
     });
@@ -131,6 +133,19 @@ export default function Header() {
                     <DropdownMenuLabel className="font-display text-[11px] uppercase tracking-[0.06em] text-slate-500 truncate">
                       {username}
                     </DropdownMenuLabel>
+                  )}
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href="/admin"
+                          className="font-display uppercase text-[13px] font-semibold tracking-[0.06em] text-ember focus:bg-granite-200 focus:text-ember-soft cursor-pointer"
+                        >
+                          Admin
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-granite-200/60" />
+                    </>
                   )}
                   <DropdownMenuItem asChild>
                     <Link
@@ -217,6 +232,16 @@ export default function Header() {
 
                 {authChecked && (
                   <DrawerFooter className="border-t border-border">
+                    {initials && isAdmin && (
+                      <DrawerClose asChild>
+                        <Link
+                          href="/admin"
+                          className="block w-full border-b border-border pb-3 mb-1 font-display uppercase text-[15px] font-semibold tracking-[0.05em] text-ember hover:text-ember-soft transition-colors"
+                        >
+                          Admin
+                        </Link>
+                      </DrawerClose>
+                    )}
                     {initials ? (
                       <div className="flex items-center justify-between gap-3">
                         <DrawerClose asChild>

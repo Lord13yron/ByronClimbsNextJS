@@ -94,7 +94,7 @@ export default function FieldJournalMasthead({
 
       {/* 2 — Title block */}
       <div className={`pt-[clamp(20px,4.5vh,48px)] ${PAD_X}`}>
-        <h1 className="font-display font-extrabold uppercase leading-[0.88] tracking-[0.005em] text-granite-100">
+        <h1 className="font-display font-extrabold uppercase leading-[0.88] tracking-[0.005em] text-center text-granite-100">
           <span className="block overflow-hidden">
             <span
               data-hero-line

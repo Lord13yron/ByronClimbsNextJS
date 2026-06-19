@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { Label } from "@/components/ui/label";
-import { FilePlusCorner } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 import { createNote } from "@/lib/actions";
 import { Climb } from "@/app/types/types";
@@ -25,7 +25,13 @@ export default function AddNote({ climb }: AddNoteProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <FilePlusCorner />
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 font-display uppercase text-[13px] font-semibold tracking-[0.06em] cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          Add note
+        </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">
         <form action={createNote}>

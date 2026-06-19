@@ -113,20 +113,13 @@ export default async function Page({
     <div className="bg-chalk">
       <ScrollProgress />
 
-      {/* Cinematic hero */}
+      {/* Editorial field-journal hero */}
       <ArticleHero
         title={post.title}
         date={date}
         readTime={readTime}
         monthYear={monthYear}
       />
-
-      {/* Topo divider */}
-      <div className="mx-auto max-w-7xl px-4 text-chalk-3/60 md:px-14">
-        <DrawOn>
-          <TopoLine height={40} seed={7} />
-        </DrawOn>
-      </div>
 
       {/* Article body — reading rail + reading column */}
       <section className="py-[clamp(34px,5vw,56px)]">
