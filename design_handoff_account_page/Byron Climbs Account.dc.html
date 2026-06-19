@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ background:#F4F1EC; }
+  #acx{ font-family:'Inter',system-ui,sans-serif; color:#1F1F21; -webkit-font-smoothing:antialiased; }
+  #acx .disp{ font-family:'Saira Condensed','Saira Condensed Fallback',sans-serif; }
+  #acx .mono{ font-family:'JetBrains Mono',ui-monospace,monospace; text-transform:uppercase; letter-spacing:0.18em; font-size:10px; line-height:1; color:#6E6E74; }
+  #acx a{ text-decoration:none; color:inherit; }
+  #acx button{ font-family:inherit; cursor:pointer; }
+  .nav-desk{ display:flex; }
+  .only-sm{ display:none; }
+  .ac-cols{ display:grid; grid-template-columns:1.45fr 1fr; gap:22px; align-items:start; }
+  .ac-breakdown{ display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:start; }
+  .ac-stats{ display:flex; gap:clamp(22px,3.4vw,46px); align-items:flex-end; flex-wrap:wrap; }
+  .ac-listrow{ transition:background 0.15s ease, border-color 0.15s ease; }
+  .ac-listrow:hover{ background:#ECE7DE; border-color:#C8541E; }
+  .ac-favrow{ transition:transform 0.16s ease, border-color 0.16s ease; }
+  .ac-favrow:hover{ transform:translateX(3px); border-color:#C8541E; }
+  .ac-cragrow:hover .ac-cragname{ color:#C8541E; }
+  @media (max-width:920px){ .ac-cols{ grid-template-columns:1fr; gap:18px; } .ac-breakdown{ grid-template-columns:1fr; gap:18px; } }
+  @media (max-width:760px){
+    .nav-desk{ display:none !important; }
+    .only-sm{ display:inline-flex !important; }
+  }
+  @media (max-width:620px){
+    .ac-stats{ flex-wrap:nowrap !important; gap:12px !important; justify-content:space-between; }
+    #ac-stats .disp{ font-size:30px !important; }
+    #ac-stats .mono{ letter-spacing:0.06em; }
+  }
+  @media (max-width:420px){
+    .ac-stats{ gap:8px !important; }
+    #ac-stats .disp{ font-size:25px !important; }
+    #ac-stats .mono{ font-size:8.5px; letter-spacing:0.04em; }
+  }
+  @keyframes acDrift{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
+  @media (prefers-reduced-motion: reduce){ .ac-drift{ animation:none !important; } }
+</style>
+</helmet>
+
+<div id="acx">
+
+  <!-- scroll progress -->
+  <div id="ac-prog" style="position:fixed; top:0; left:0; height:2px; width:0%; background:#C8541E; z-index:90; transition:width 0.08s linear;"></div>
+
+  <!-- ===== HEADER ===== -->
+  <header data-screen-label="Header" style="position:sticky; top:0; z-index:50; background:rgba(244,241,236,0.9); backdrop-filter:saturate(180%) blur(10px); -webkit-backdrop-filter:saturate(180%) blur(10px); border-bottom:1px solid #DCD5C8;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px clamp(20px,5vw,56px); max-width:1320px; margin:0 auto;">
+      <a href="Byron Climbs Landing.dc.html" style="display:flex; align-items:center; gap:12px;">
+        <svg width="34" height="34" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <circle cx="20" cy="20" r="18" stroke="#1F1F21" stroke-width="1.5"></circle>
+          <circle cx="20" cy="20" r="13" stroke="#1F1F21" stroke-width="0.8" opacity="0.5"></circle>
+          <path d="M8 28 L16 16 L20 21 L26 12 L32 28 Z" fill="#1F1F21"></path>
+          <circle cx="26" cy="12" r="1.6" fill="#C8541E"></circle>
+        </svg>
+        <span style="display:flex; flex-direction:column; line-height:1;">
+          <span class="disp" style="text-transform:uppercase; font-weight:700; font-size:19px; letter-spacing:0.06em; color:#1F1F21;">Byron Climbs</span>
+          <span class="mono" style="margin-top:5px; font-size:9px;">EST. 2019 · KELOWNA, BC</span>
+        </span>
+      </a>
+      <nav class="nav-desk" style="align-items:center; gap:2px; white-space:nowrap;">
+        <a href="Byron Climbs Landing.dc.html" class="disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:8px 14px; color:#6E6E74; border-bottom:2px solid transparent;" style-hover="color:#1F1F21;">Home</a>
+        <a href="Byron Climbs Blog.dc.html" class="disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:8px 14px; color:#6E6E74; border-bottom:2px solid transparent;" style-hover="color:#1F1F21;">Field Notes</a>
+        <a href="Byron Climbs Database.dc.html" class="disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:8px 14px; color:#6E6E74; border-bottom:2px solid transparent;" style-hover="color:#1F1F21;">Database</a>
+        <a href="Byron Climbs Landing.dc.html" class="disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:8px 14px; color:#6E6E74; border-bottom:2px solid transparent;" style-hover="color:#1F1F21;">About</a>
+      </nav>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <a href="#" class="nav-desk" style="align-items:center; gap:9px;">
+          <span style="width:30px; height:30px; border-radius:3px; background:#1F1F21; display:flex; align-items:center; justify-content:center;">
+            <span class="disp" style="color:#F4F1EC; font-weight:700; font-size:14px; letter-spacing:0.04em;">{{ avatarLetter }}</span>
+          </span>
+          <span class="disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.05em; color:#1F1F21; border-bottom:2px solid #C8541E; padding-bottom:6px;">Account</span>
+        </a>
+        <button class="only-sm" aria-label="Menu" style="align-items:center; justify-content:center; border:1px solid #DCD5C8; background:transparent; padding:7px; border-radius:3px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F1F21" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"></path></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== HERO : field-journal masthead ===== -->
+  <section data-screen-label="Account Hero" style="position:relative; overflow:hidden; background:#161618; min-height:clamp(420px,58vh,540px); display:flex; flex-direction:column; justify-content:flex-end;">
+    <div class="ac-drift" style="position:absolute; top:-10%; right:2%; width:54%; height:70%; z-index:1; pointer-events:none; background:radial-gradient(ellipse at center, rgba(200,84,30,0.18), transparent 66%); animation:acDrift 9s ease-in-out infinite;"></div>
+    <svg viewBox="0 0 1440 720" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; z-index:1; color:#F4F1EC; opacity:0.10; pointer-events:none;" aria-hidden="true">
+      <sc-for list="{{ heroTopo }}" as="d" hint-placeholder-count="14">
+        <path class="ac-herotopo" d="{{ d }}" fill="none" stroke="currentColor" stroke-width="1.2"></path>
+      </sc-for>
+    </svg>
+    <div style="position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(180deg, rgba(22,22,24,0.25) 0%, transparent 42%, rgba(22,22,24,0.5) 100%);"></div>
+
+    <!-- newspaper dateline -->
+    <div style="position:relative; z-index:2; width:100%; max-width:1320px; margin:0 auto; padding:0 clamp(20px,5vw,56px) clamp(30px,5vw,48px);">
+      <div style="display:flex; align-items:center; gap:14px; margin-bottom:22px;">
+        <span class="mono" id="ac-eyebrow" style="color:#E37A3F;">— ACCOUNT</span>
+        <span style="flex:1; height:1px; background:linear-gradient(90deg, rgba(227,122,63,0.4), transparent); max-width:200px;"></span>
+      </div>
+
+      <h1 class="disp" id="ac-h1" style="margin:0; text-transform:uppercase; font-weight:800; line-height:0.86; letter-spacing:0.01em; font-size:clamp(48px,9vw,118px); color:#F4F1EC;">
+        <span style="display:block; overflow:hidden; padding-bottom:0.03em;"><span class="ac-line" style="display:block; color:rgba(244,241,236,0.62); font-size:0.42em; letter-spacing:0.02em;">Welcome back,</span></span>
+        <span style="display:block; overflow:hidden; padding-bottom:0.04em;">
+          <span class="ac-line" style="display:flex; align-items:baseline; gap:0.22em; flex-wrap:wrap;">
+            <!-- username, view mode -->
+            <sc-if value="{{ notEditing }}" hint-placeholder-val="{{ true }}">
+              <span style="display:inline-flex; align-items:baseline; gap:0.2em;">
+                <span style="color:#F4F1EC;">{{ username }}.</span>
+                <button onClick="{{ startEdit }}" aria-label="Edit username" style="all:unset; cursor:pointer; opacity:0.34; transition:opacity 0.15s ease, color 0.15s ease; color:#E37A3F; align-self:center;" style-hover="opacity:1;">
+                  <svg width="0.5em" height="0.5em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                </button>
+              </span>
+            </sc-if>
+            <!-- username, edit mode -->
+            <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+              <span style="display:inline-flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                <input id="ac-name-input" value="{{ draftName }}" onInput="{{ onDraft }}" maxlength="20" class="disp" style="background:rgba(244,241,236,0.08); border:none; border-bottom:3px solid #C8541E; outline:none; color:#F4F1EC; text-transform:uppercase; font-weight:800; font-size:0.92em; letter-spacing:0.01em; width:min(7em,62vw); padding:0 0.08em 0.04em;">
+                <span style="display:inline-flex; gap:8px; align-self:center;">
+                  <button onClick="{{ saveName }}" class="disp" style="all:unset; cursor:pointer; text-transform:uppercase; font-weight:600; font-size:14px; letter-spacing:0.06em; color:#161618; background:#E37A3F; padding:8px 18px; border-radius:3px;">Save</button>
+                  <button onClick="{{ cancelEdit }}" class="disp" style="all:unset; cursor:pointer; text-transform:uppercase; font-weight:600; font-size:14px; letter-spacing:0.06em; color:rgba(244,241,236,0.7); border:1px solid rgba(244,241,236,0.3); padding:7px 16px; border-radius:3px;">Cancel</button>
+                </span>
+              </span>
+            </sc-if>
+          </span>
+        </span>
+      </h1>
+
+      <div id="ac-meta" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:24px;">
+        <span style="display:inline-flex; align-items:center; gap:8px; background:rgba(244,241,236,0.08); border:1px solid rgba(244,241,236,0.16); padding:7px 12px; border-radius:3px;">
+          <span style="width:7px; height:7px; border-radius:50%; background:#5FB87A; box-shadow:0 0 0 3px rgba(95,184,122,0.18);"></span>
+          <span class="mono" style="color:rgba(244,241,236,0.72);">SIGNED IN</span>
+        </span>
+        <span class="mono" style="color:rgba(244,241,236,0.5); background:rgba(244,241,236,0.06); padding:8px 12px; border-radius:3px;">MEMBER SINCE 2019</span>
+        <span style="display:inline-flex; align-items:center; gap:7px; border:1px solid rgba(227,122,63,0.5); padding:7px 12px; border-radius:3px;">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="#E37A3F"><path d="M8 1 L10 6 L15 6.5 L11 10 L12.2 15 L8 12.2 L3.8 15 L5 10 L1 6.5 L6 6 Z"></path></svg>
+          <span class="mono" style="color:#E37A3F;">ADMIN PRIVILEGES</span>
+        </span>
+        <a href="#" class="disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.04em; color:#E37A3F; border-bottom:1px solid #E37A3F; padding-bottom:2px;">Admin dashboard →</a>
+        <span style="flex:1;"></span>
+        <button class="disp" style="all:unset; cursor:pointer; text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.05em; color:#F4F1EC; border:1px solid rgba(244,241,236,0.3); padding:9px 18px; border-radius:3px; transition:background 0.15s ease, border-color 0.15s ease;" style-hover="border-color:#F4F1EC; background:rgba(244,241,236,0.08);">Sign out</button>
+      </div>
+
+      <!-- stat counters -->
+      <div id="ac-stats" class="ac-stats" style="margin-top:clamp(34px,5vw,52px); padding-top:clamp(26px,3vw,34px); border-top:1px solid rgba(244,241,236,0.14);">
+        <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="4">
+          <div>
+            <div class="disp" style="font-size:clamp(40px,5.4vw,60px); line-height:0.88; color:{{ s.color }};">{{ s.prefix }}<span data-count="{{ s.value }}">{{ s.value }}</span></div>
+            <span class="mono" style="display:block; margin-top:10px; color:rgba(244,241,236,0.5);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- topo divider -->
+  <div id="ac-div1" style="background:#F4F1EC; padding:34px clamp(20px,5vw,56px) 0;">
+    <svg viewBox="0 0 1440 48" preserveAspectRatio="none" style="display:block; width:100%; max-width:1320px; margin:0 auto; height:38px; color:#CFC7B8;" aria-hidden="true">
+      <sc-for list="{{ divTopo }}" as="d" hint-placeholder-count="5">
+        <path class="ac-topo" d="{{ d }}" fill="none" stroke="currentColor" stroke-width="1"></path>
+      </sc-for>
+    </svg>
+  </div>
+
+  <!-- ===== LATEST SENDS + FAVORITES ===== -->
+  <section data-screen-label="Latest & Favorites" style="background:#F4F1EC; padding:clamp(28px,4vw,44px) clamp(20px,5vw,56px) clamp(48px,7vw,76px);">
+    <div style="max-width:1320px; margin:0 auto;">
+      <div class="ac-cols">
+
+        <!-- Latest sends -->
+        <div style="background:#ECE7DE; border:1px solid #DCD5C8; border-radius:4px; padding:clamp(18px,2.4vw,26px);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap; margin-bottom:18px;">
+            <div>
+              <span class="mono" style="color:#C8541E; display:block; margin-bottom:9px;">— THE LOGBOOK</span>
+              <h2 class="disp" style="margin:0; text-transform:uppercase; font-weight:700; font-size:clamp(26px,3.2vw,38px); line-height:0.94; color:#1F1F21;">Latest sends</h2>
+            </div>
+            <a href="Byron Climbs Database.dc.html" class="disp" style="text-transform:uppercase; font-weight:600; font-size:12px; letter-spacing:0.05em; color:#1F1F21; border-bottom:1px solid #1F1F21; padding-bottom:2px;">View all →</a>
+          </div>
+          <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;">
+            <sc-for list="{{ recents }}" as="c" hint-placeholder-count="8">
+              <li class="ac-listrow" style="background:#F4F1EC; border:1px solid #DCD5C8; border-radius:3px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:14px;">
+                <div style="display:flex; align-items:center; gap:13px; min-width:0;">
+                  <span class="disp" style="flex-shrink:0; font-weight:700; font-size:15px; letter-spacing:0.04em; color:#F4F1EC; background:#C8541E; width:42px; text-align:center; padding:5px 0; border-radius:3px;">{{ c.gradeLabel }}</span>
+                  <div style="min-width:0;">
+                    <h3 class="disp" style="margin:0; text-transform:uppercase; font-size:17px; line-height:1.06; color:#1F1F21; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.name }}</h3>
+                    <span class="mono" style="display:block; margin-top:5px; color:#8C8C92;">{{ c.sub }}</span>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+                  <sc-if value="{{ c.fav }}" hint-placeholder-val="{{ false }}">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="#C8541E"><path d="M8 14 L2.5 8.5 C0.5 6.5 1 3.5 3.4 2.8 C5 2.3 6.4 3.2 8 5 C9.6 3.2 11 2.3 12.6 2.8 C15 3.5 15.5 6.5 13.5 8.5 Z"></path></svg>
+                  </sc-if>
+                  <span style="display:flex; align-items:center; gap:5px;">
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6 L5 9 L10 3" stroke="#C8541E" stroke-width="2" stroke-linecap="square"></path></svg>
+                    <span class="mono" style="color:#C8541E; font-size:9px;">SENT</span>
+                  </span>
+                </div>
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+
+        <!-- Favorites -->
+        <div style="background:#1F1F21; border:1px solid #1F1F21; border-radius:4px; padding:clamp(18px,2.4vw,26px); position:relative; overflow:hidden;">
+          <div style="position:absolute; top:-30%; right:-12%; width:60%; height:70%; pointer-events:none; background:radial-gradient(ellipse at center, rgba(200,84,30,0.22), transparent 66%);"></div>
+          <div style="position:relative; display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap; margin-bottom:18px;">
+            <div>
+              <span class="mono" style="color:#E37A3F; display:block; margin-bottom:9px;">— STARRED</span>
+              <h2 class="disp" style="margin:0; text-transform:uppercase; font-weight:700; font-size:clamp(26px,3.2vw,38px); line-height:0.94; color:#F4F1EC;">Favorites</h2>
+            </div>
+            <span class="mono" style="color:rgba(244,241,236,0.5);">{{ favCount }} SAVED</span>
+          </div>
+          <ul style="position:relative; list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;">
+            <sc-for list="{{ favorites }}" as="c" hint-placeholder-count="6">
+              <li class="ac-favrow" style="background:rgba(244,241,236,0.05); border:1px solid rgba(244,241,236,0.12); border-radius:3px; padding:11px 13px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                <div style="min-width:0;">
+                  <h3 class="disp" style="margin:0; text-transform:uppercase; font-size:16px; line-height:1.06; color:#F4F1EC; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.name }}</h3>
+                  <span class="mono" style="display:block; margin-top:5px; color:rgba(244,241,236,0.45);">{{ c.where }}</span>
+                </div>
+                <span class="disp" style="flex-shrink:0; font-weight:700; font-size:15px; letter-spacing:0.04em; color:#E37A3F; border:1px solid rgba(227,122,63,0.5); padding:4px 11px; border-radius:3px;">{{ c.gradeLabel }}</span>
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- topo divider 2 -->
+  <div id="ac-div2" style="background:#ECE7DE; padding:30px clamp(20px,5vw,56px) 0;">
+    <svg viewBox="0 0 1440 48" preserveAspectRatio="none" style="display:block; width:100%; max-width:1320px; margin:0 auto; height:38px; color:#C9C1B2;" aria-hidden="true">
+      <sc-for list="{{ divTopo2 }}" as="d" hint-placeholder-count="5">
+        <path class="ac-topo2" d="{{ d }}" fill="none" stroke="currentColor" stroke-width="1"></path>
+      </sc-for>
+    </svg>
+  </div>
+
+  <!-- ===== BREAKDOWN ===== -->
+  <section data-screen-label="Breakdown" style="background:#ECE7DE; padding:clamp(26px,4vw,40px) clamp(20px,5vw,56px) clamp(48px,7vw,72px);">
+    <div style="max-width:1320px; margin:0 auto;">
+      <div style="margin-bottom:24px;">
+        <span class="mono" style="color:#C8541E; display:block; margin-bottom:10px;">— BY THE NUMBERS</span>
+        <h2 class="disp" style="margin:0; text-transform:uppercase; font-weight:700; font-size:clamp(28px,3.6vw,42px); line-height:0.96; color:#1F1F21;">The shape of the grind</h2>
+      </div>
+
+      <!-- Boulder + Sport grade donuts -->
+      <div class="ac-breakdown">
+
+        <!-- BOULDER donut -->
+        <div class="ac-donut-card" style="background:#F4F1EC; border:1px solid #DCD5C8; border-radius:4px; padding:clamp(18px,2.4vw,26px);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:12px;">
+            <div>
+              <span class="mono" style="color:#C8541E; display:block; margin-bottom:7px;">— BOULDER</span>
+              <h3 class="disp" style="margin:0; text-transform:uppercase; font-weight:700; font-size:23px; line-height:1; color:#1F1F21;">By grade · Boulder</h3>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="#8C8C92" aria-hidden="true" style="margin-top:2px; flex-shrink:0;"><path d="M2 13 L4 8 L7 5 L10 7 L13 4 L14 13 Z" opacity="0.85"></path></svg>
+          </div>
+          <div style="position:relative; width:100%; max-width:440px; margin:6px auto 0; aspect-ratio:340/210;">
+            <svg viewBox="0 0 340 210" style="width:100%; height:100%; display:block; overflow:visible;">
+              <circle cx="170" cy="105" r="70" fill="none" stroke="#ECE7DE" stroke-width="26"></circle>
+              <sc-for list="{{ boulderDonut }}" as="d" hint-placeholder-count="9">
+                <circle class="ac-seg" data-count="{{ d.count }}" data-label="{{ d.gradeLabel }}" cx="170" cy="105" r="70" fill="none" stroke="{{ d.color }}" stroke-width="26" stroke-dasharray="{{ d.dashArray }}" stroke-dashoffset="{{ d.dashLen }}" transform="{{ d.transform }}" style="cursor:pointer; transition:opacity 0.14s ease;"></circle>
+              </sc-for>
+              <sc-for list="{{ boulderDonut }}" as="d" hint-placeholder-count="9">
+                <polyline class="ac-anno" data-label="{{ d.gradeLabel }}" points="{{ d.leader }}" fill="none" stroke="{{ d.color }}" stroke-width="1.3" stroke-linejoin="round" style="transition:opacity 0.14s ease;"></polyline>
+                <circle class="ac-anno" data-label="{{ d.gradeLabel }}" cx="{{ d.dotX }}" cy="{{ d.dotY }}" r="2.1" fill="{{ d.color }}" style="transition:opacity 0.14s ease;"></circle>
+              </sc-for>
+            </svg>
+            <div style="position:absolute; inset:0; pointer-events:none;">
+              <sc-for list="{{ boulderDonut }}" as="d" hint-placeholder-count="9">
+                <div class="ac-anno-lab" data-label="{{ d.gradeLabel }}" style="position:absolute; left:{{ d.labLeft }}%; top:{{ d.labTop }}%; transform:{{ d.labTransform }}; display:flex; align-items:center; justify-content:{{ d.labJustify }}; gap:5px; white-space:nowrap; transition:opacity 0.14s ease;">
+                  <span class="disp" style="font-weight:700; font-size:13px; color:#1F1F21;">{{ d.gradeLabel }}</span>
+                  <span class="mono" style="font-size:11px; color:#8C8C92;">{{ d.count }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none;">
+              <span class="ac-donut-num disp" style="font-size:clamp(32px,6vw,42px); line-height:0.9; color:#1F1F21;">{{ boulderTotal }}</span>
+              <span class="ac-donut-label mono" style="margin-top:6px; color:#8C8C92;">SENDS</span>
+            </div>
+          </div>
+          <p class="mono" style="margin:18px 0 0; padding-top:16px; border-top:1px solid #DCD5C8; color:#8C8C92; line-height:1.7; letter-spacing:0.12em;">{{ boulderFootnote }}</p>
+        </div>
+
+        <!-- SPORT donut -->
+        <div class="ac-donut-card" style="background:#F4F1EC; border:1px solid #DCD5C8; border-radius:4px; padding:clamp(18px,2.4vw,26px);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:12px;">
+            <div>
+              <span class="mono" style="color:#C8541E; display:block; margin-bottom:7px;">— SPORT</span>
+              <h3 class="disp" style="margin:0; text-transform:uppercase; font-weight:700; font-size:23px; line-height:1; color:#1F1F21;">By grade · Sport</h3>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#8C8C92" stroke-width="1.4" aria-hidden="true" style="margin-top:2px; flex-shrink:0;"><circle cx="8" cy="3.5" r="1.4"></circle><path d="M8 5 L8 14 M5 8 L8 6.5 L11 8 M5 11.5 L8 10 L11 11.5"></path></svg>
+          </div>
+          <sc-if value="{{ sportHasData }}" hint-placeholder-val="{{ false }}">
+            <div style="position:relative; width:100%; max-width:440px; margin:6px auto 0; aspect-ratio:340/210;">
+              <svg viewBox="0 0 340 210" style="width:100%; height:100%; display:block; overflow:visible;">
+                <circle cx="170" cy="105" r="70" fill="none" stroke="#ECE7DE" stroke-width="26"></circle>
+                <sc-for list="{{ sportDonut }}" as="d" hint-placeholder-count="5">
+                  <circle class="ac-seg" data-count="{{ d.count }}" data-label="{{ d.gradeLabel }}" cx="170" cy="105" r="70" fill="none" stroke="{{ d.color }}" stroke-width="26" stroke-dasharray="{{ d.dashArray }}" stroke-dashoffset="{{ d.dashLen }}" transform="{{ d.transform }}" style="cursor:pointer; transition:opacity 0.14s ease;"></circle>
+                </sc-for>
+                <sc-for list="{{ sportDonut }}" as="d" hint-placeholder-count="5">
+                  <polyline class="ac-anno" data-label="{{ d.gradeLabel }}" points="{{ d.leader }}" fill="none" stroke="{{ d.color }}" stroke-width="1.3" stroke-linejoin="round" style="transition:opacity 0.14s ease;"></polyline>
+                  <circle class="ac-anno" data-label="{{ d.gradeLabel }}" cx="{{ d.dotX }}" cy="{{ d.dotY }}" r="2.1" fill="{{ d.color }}" style="transition:opacity 0.14s ease;"></circle>
+                </sc-for>
+              </svg>
+              <div style="position:absolute; inset:0; pointer-events:none;">
+                <sc-for list="{{ sportDonut }}" as="d" hint-placeholder-count="5">
+                  <div class="ac-anno-lab" data-label="{{ d.gradeLabel }}" style="position:absolute; left:{{ d.labLeft }}%; top:{{ d.labTop }}%; transform:{{ d.labTransform }}; display:flex; align-items:center; justify-content:{{ d.labJustify }}; gap:5px; white-space:nowrap; transition:opacity 0.14s ease;">
+                    <span class="disp" style="font-weight:700; font-size:13px; color:#1F1F21;">{{ d.gradeLabel }}</span>
+                    <span class="mono" style="font-size:11px; color:#8C8C92;">{{ d.count }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none;">
+                <span class="ac-donut-num disp" style="font-size:clamp(32px,6vw,42px); line-height:0.9; color:#1F1F21;">{{ sportTotal }}</span>
+                <span class="ac-donut-label mono" style="margin-top:6px; color:#8C8C92;">SENDS</span>
+              </div>
+            </div>
+            <p class="mono" style="margin:18px 0 0; padding-top:16px; border-top:1px solid #DCD5C8; color:#8C8C92; line-height:1.7; letter-spacing:0.12em;">{{ sportFootnote }}</p>
+          </sc-if>
+          <sc-if value="{{ sportEmpty }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:14px; min-height:clamp(190px,40vw,236px);">
+              <span style="width:64px; height:64px; border-radius:50%; border:1.5px dashed #DCD5C8; display:flex; align-items:center; justify-content:center;">
+                <svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="#C0B7A6" stroke-width="1.3"><circle cx="8" cy="3.5" r="1.6"></circle><path d="M8 5.2 L8 14 M5 8 L8 6.5 L11 8 M5 11.5 L8 10 L11 11.5"></path></svg>
+              </span>
+              <span class="disp" style="text-transform:uppercase; font-size:20px; color:#B5B2AB; line-height:1;">No sport sends yet</span>
+              <span class="mono" style="color:#8C8C92; line-height:1.7; max-width:240px;">LOG A ROPE CLIMB AND YOUR YDS PYRAMID SHOWS UP HERE.</span>
+            </div>
+          </sc-if>
+        </div>
+
+      </div>
+
+      <!-- Sends over time -->
+      <div id="ac-timeline" style="background:#F4F1EC; border:1px solid #DCD5C8; border-radius:4px; padding:clamp(18px,2.4vw,26px); margin-top:22px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap; margin-bottom:22px;">
+          <div>
+            <span class="mono" style="color:#C8541E; display:block; margin-bottom:7px;">— TIMELINE</span>
+            <h3 class="disp" style="margin:0; text-transform:uppercase; font-weight:700; font-size:23px; line-height:1; color:#1F1F21;">Sends over time</h3>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+            <span class="mono" style="color:#8C8C92;">{{ timelineRange }}</span>
+            <div style="display:flex; border:1px solid #DCD5C8; border-radius:3px; overflow:hidden;">
+              <sc-for list="{{ yearBtns }}" as="y" hint-placeholder-count="2">
+                <button onClick="{{ y.onClick }}" class="mono" style="{{ y.style }}">{{ y.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:flex-end; gap:clamp(4px,1.4vw,14px); height:200px; padding-bottom:30px; border-bottom:1px solid #DCD5C8; position:relative;">
+          <sc-for list="{{ timeline }}" as="m" hint-placeholder-count="12">
+            <div style="flex:1; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative;">
+              <span class="mono ac-tcount" style="font-size:10px; color:#1F1F21; margin-bottom:5px; opacity:{{ m.labelOpacity }};">{{ m.n }}</span>
+              <div class="ac-tbar" data-h="{{ m.heightPct }}" style="width:100%; max-width:46px; height:{{ m.heightPct }}; min-height:{{ m.minH }}; background:{{ m.color }}; border-radius:2px 2px 0 0; transform-origin:bottom;"></div>
+              <span class="mono" style="position:absolute; bottom:-22px; font-size:9px; color:#8C8C92;">{{ m.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <p class="mono" style="margin:18px 0 0; color:#8C8C92; line-height:1.7; letter-spacing:0.12em;">{{ timelineFootnote }}</p>
+      </div>
+
+      <!-- Top crags -->
+      <div id="ac-crag" style="background:#F4F1EC; border:1px solid #DCD5C8; border-radius:4px; padding:clamp(18px,2.4vw,26px); margin-top:22px;">
+        <div style="margin-bottom:18px;">
+          <span class="mono" style="color:#C8541E; display:block; margin-bottom:7px;">— GROUND COVERED</span>
+          <h3 class="disp" style="margin:0; text-transform:uppercase; font-weight:700; font-size:23px; line-height:1; color:#1F1F21;">Top crags</h3>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px clamp(20px,4vw,48px);">
+          <sc-for list="{{ cragBars }}" as="c" hint-placeholder-count="6">
+            <div class="ac-cragrow" style="display:block;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:6px;">
+                <span class="ac-cragname disp" style="text-transform:uppercase; font-size:15px; font-weight:600; letter-spacing:0.03em; color:#1F1F21; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; transition:color 0.15s ease;">{{ c.area }}</span>
+                <span class="mono" style="color:#8C8C92; white-space:nowrap; flex-shrink:0;">{{ c.metaLabel }}</span>
+              </div>
+              <span style="display:block; position:relative; height:10px; background:#ECE7DE; border-radius:2px; overflow:hidden;">
+                <span class="ac-cbar" style="position:absolute; left:0; top:0; height:100%; width:{{ c.w }}; transform:scaleX(0); transform-origin:left; background:linear-gradient(90deg,#C8541E,#E37A3F); border-radius:2px;"></span>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+        <p class="mono" style="margin:20px 0 0; padding-top:16px; border-top:1px solid #DCD5C8; color:#8C8C92; line-height:1.7; letter-spacing:0.12em;">{{ cragFootnote }}</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer style="background:#0E0E10; color:#F4F1EC; padding:40px clamp(20px,5vw,56px);">
+    <div style="max-width:1320px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <svg width="30" height="30" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <circle cx="20" cy="20" r="18" stroke="#F4F1EC" stroke-width="1.5"></circle>
+          <circle cx="20" cy="20" r="13" stroke="#F4F1EC" stroke-width="0.8" opacity="0.5"></circle>
+          <path d="M8 28 L16 16 L20 21 L26 12 L32 28 Z" fill="#F4F1EC"></path>
+          <circle cx="26" cy="12" r="1.6" fill="#C8541E"></circle>
+        </svg>
+        <span class="disp" style="text-transform:uppercase; font-weight:700; font-size:17px; letter-spacing:0.06em;">Byron Climbs</span>
+      </div>
+      <span class="mono" style="color:rgba(244,241,236,0.45);">© 2026 BYRON HAYES · KELOWNA, BC · LOGGED BETWEEN SESSIONS</span>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CLIMBS = [
+  {id:23,n:"Intricate simplicity",g:10,c:"Kelowna",a:"Boulderfields",s:"Chutes & ladders",se:0,f:1},
+  {id:21,n:"The mistress",g:10,c:"Vernon",a:"Cougar Canyon",s:"Moss Hollow",se:0,f:1},
+  {id:155,n:"The seam",g:10,c:"Squamish",a:"Grand Wall",s:"Superfly",se:0,f:1},
+  {id:154,n:"Tatonka",g:9,c:"Squamish",a:"Apron",s:"Descent trail",se:0,f:0},
+  {id:250,n:"Did i mention extension?",g:9,c:"Kelowna",a:"Boulderfields",s:"Danger",se:0,f:1},
+  {id:252,n:"Tiger style",g:9,c:"Kelowna",a:"Boulderfields",s:"Driven",se:0,f:1},
+  {id:156,n:"Resurrection",g:9,c:"Squamish",a:"North Wall",s:"The farm",se:0,f:1},
+  {id:14,n:"Empire Strikes Back",g:8,c:"Kelowna",a:"Boulderfields",s:"Evil Empire",se:1,f:0},
+  {id:251,n:"The mini egg",g:8,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:0,f:1},
+  {id:36,n:"Toughie",g:8,c:"Penticton",a:"The Slayers",s:"The slayers",se:1,f:0},
+  {id:130,n:"Big crimpin\u2019",g:7,c:"Kelowna",a:"Boulderfields",s:"Evil empire",se:1,f:0},
+  {id:253,n:"Shadowboxing",g:7,c:"Kelowna",a:"Boulderfields",s:"Driven",se:0,f:1},
+  {id:86,n:"Shark biscuit",g:7,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:113,n:"Surf arete",g:7,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:92,n:"V-power",g:7,c:"Kelowna",a:"Boulderfields",s:"F1",se:1,f:0},
+  {id:205,n:"Down under",g:7,c:"Vernon",a:"Cougar Canyon",s:"Down under",se:1,f:0},
+  {id:34,n:"The pinch",g:7,c:"Bangor",a:"Gorlan",s:"Pinch block",se:0,f:1},
+  {id:19,n:"Dangleberries",g:6,c:"Kelowna",a:"Boulderfields",s:"Dominator",se:1,f:0},
+  {id:18,n:"Evil Empire",g:6,c:"Kelowna",a:"Boulderfields",s:"Evil Empire",se:1,f:0},
+  {id:99,n:"Full chub morning wheezer",g:6,c:"Kelowna",a:"Boulderfields",s:"F1",se:1,f:0},
+  {id:37,n:"Majestic",g:6,c:"Squamish",a:"Britannia Beach",s:"Britannia beach",se:0,f:1},
+  {id:201,n:"Asa",g:6,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:158,n:"The wee chipee",g:6,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:216,n:"Johnny's problem",g:6,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:16,n:"Le toit de cul du chien",g:6,c:"Fontainebleau",a:"Fontainebleau",s:"Cul de chien",se:1,f:0},
+  {id:38,n:"Minor threat",g:6,c:"Squamish",a:"Grand Wall",s:"Easy chair",se:0,f:1},
+  {id:225,n:"Scotty rod holder",g:6,c:"Penticton",a:"The Slayers",s:"The slayers",se:1,f:0},
+  {id:159,n:"Thunderbow",g:5,c:"Vernon",a:"Cougar Canyon",s:"Thunderbow",se:1,f:0},
+  {id:246,n:"Bucket list",g:5,c:"Kelowna",a:"Pebble Beach",s:"Pebble overhang",se:1,f:0},
+  {id:185,n:"Pocket pool",g:5,c:"Kelowna",a:"Pebble Beach",s:"Pebble overhang",se:1,f:0},
+  {id:245,n:"Escape plan",g:5,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:180,n:"Buddha's belly variation",g:5,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:35,n:"Donny",g:5,c:"Penticton",a:"The Slayers",s:"The slayers",se:1,f:0},
+  {id:29,n:"4 horsemen",g:4,c:"Kelowna",a:"Boulderfields",s:"Dominator",se:0,f:0},
+  {id:115,n:"Apple pie",g:4,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:136,n:"Cave dweller",g:4,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:1,f:0},
+  {id:124,n:"Dark prince righter",g:4,c:"Kelowna",a:"Boulderfields",s:"Dark prince",se:1,f:0},
+  {id:249,n:"Low life variation",g:4,c:"Kelowna",a:"Boulderfields",s:"Dominator",se:1,f:0},
+  {id:91,n:"Nelly\u2019s thin thins",g:4,c:"Kelowna",a:"Boulderfields",s:"F1",se:1,f:0},
+  {id:160,n:"Nothing like viper",g:4,c:"Kelowna",a:"Boulderfields",s:"Nothing like viper",se:1,f:0},
+  {id:114,n:"Pumpkin pie",g:4,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:137,n:"Ribrageous",g:4,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:1,f:0},
+  {id:106,n:"Slashed snake bite",g:4,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:112,n:"Surf\u2019s up",g:4,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:190,n:"Jaws",g:4,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:89,n:"Static dyno",g:4,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:88,n:"Ellison traverse",g:4,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:213,n:"Short traverse #1",g:4,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:215,n:"Short traverse #2",g:4,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:209,n:"The ellison traverse",g:4,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:17,n:"Easy in an Easy Chair",g:4,c:"Squamish",a:"Grand Wall",s:"Easy Chair",se:1,f:0},
+  {id:224,n:"Skull traverse",g:4,c:"Penticton",a:"The Slayers",s:"The slayers",se:1,f:0},
+  {id:144,n:"Animal house",g:3,c:"Kelowna",a:"Boulderfields",s:"Just go climb",se:1,f:0},
+  {id:30,n:"Butterscotch ripple",g:3,c:"Kelowna",a:"Boulderfields",s:"Distillery",se:1,f:0},
+  {id:255,n:"Calabogie dreaming",g:3,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:1,f:0},
+  {id:132,n:"Connoisseur pinch",g:3,c:"Kelowna",a:"Boulderfields",s:"Evil empire",se:1,f:0},
+  {id:125,n:"Dark prince left",g:3,c:"Kelowna",a:"Boulderfields",s:"Dark prince",se:1,f:0},
+  {id:119,n:"Lazy ladybug",g:3,c:"Kelowna",a:"Boulderfields",s:"Ladybug",se:1,f:0},
+  {id:248,n:"Low life",g:3,c:"Kelowna",a:"Boulderfields",s:"Dominator",se:1,f:0},
+  {id:105,n:"Meat pickle",g:3,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:142,n:"My latest mistake",g:3,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:1,f:0},
+  {id:150,n:"We\u2019ve got time",g:3,c:"Kelowna",a:"Boulderfields",s:"Golden hour",se:1,f:0},
+  {id:152,n:"Whips and chains",g:3,c:"Kelowna",a:"Boulderfields",s:"Dominator",se:1,f:0},
+  {id:164,n:"Word to your mother",g:3,c:"Kelowna",a:"Boulderfields",s:"Chutes & ladders",se:1,f:0},
+  {id:198,n:"Johnny's jam",g:3,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:219,n:"Ass bomb",g:3,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:247,n:"One eyed monster low",g:3,c:"Kelowna",a:"Pebble Beach",s:"Pebble overhang",se:1,f:0},
+  {id:232,n:"Too low traverse",g:3,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:169,n:"Punk-ass kid",g:3,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:98,n:"1/2 chub morning wheezer",g:2,c:"Kelowna",a:"Boulderfields",s:"F1",se:1,f:0},
+  {id:143,n:"Cow bear",g:2,c:"Kelowna",a:"Boulderfields",s:"Driven",se:1,f:0},
+  {id:141,n:"Fill the gap",g:2,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:1,f:0},
+  {id:116,n:"Ladybug strikes back",g:2,c:"Kelowna",a:"Boulderfields",s:"Ladybug",se:1,f:0},
+  {id:122,n:"Manger danger",g:2,c:"Kelowna",a:"Boulderfields",s:"Dark prince",se:1,f:0},
+  {id:153,n:"Matt\u2019s crack",g:2,c:"Kelowna",a:"Boulderfields",s:"Dominator",se:1,f:0},
+  {id:117,n:"New kid on the block",g:2,c:"Kelowna",a:"Boulderfields",s:"Ladybug",se:1,f:0},
+  {id:131,n:"Old man mountain",g:2,c:"Kelowna",a:"Boulderfields",s:"Evil empire",se:1,f:0},
+  {id:95,n:"Push it to the max",g:2,c:"Kelowna",a:"Boulderfields",s:"F1",se:1,f:0},
+  {id:162,n:"Straight off the streets",g:2,c:"Kelowna",a:"Boulderfields",s:"Nothing like viper",se:1,f:0},
+  {id:157,n:"Littlun",g:2,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:197,n:"Old grey balls low",g:2,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:203,n:"Stop short",g:2,c:"Vernon",a:"Cougar Canyon",s:"Thunderbow",se:1,f:0},
+  {id:191,n:"The executioner",g:2,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:195,n:"Wisdom tooth",g:2,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:207,n:"Slabuse",g:2,c:"Vernon",a:"Ellison Park",s:"Gettin' hitched",se:1,f:0},
+  {id:212,n:"The contrivance",g:2,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:31,n:"Spaghetti",g:2,c:"Fontainebleau",a:"Fontainebleau",s:"Canche aux merciers",se:1,f:0},
+  {id:33,n:"Bangor",g:2,c:"Bangor",a:"Gorlan",s:"First block",se:1,f:0},
+  {id:189,n:"Bro-down, show-down",g:2,c:"Kelowna",a:"Pebble Beach",s:"South beach",se:1,f:0},
+  {id:235,n:"Alpine nicknjan",g:2,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:244,n:"Fear of a darkened room",g:2,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:237,n:"Solitary confinement",g:2,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:179,n:"Buddha's belly",g:2,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:174,n:"Dirty deeds",g:2,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:178,n:"Middle monk",g:2,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:182,n:"Nacho man",g:2,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:170,n:"No can do",g:2,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:175,n:"Pay dirt",g:2,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:165,n:"Stairway to nowhere",g:2,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:177,n:"The juice is loose",g:2,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:222,n:"Marie",g:2,c:"Penticton",a:"The Slayers",s:"The slayers",se:1,f:0},
+  {id:111,n:"And another one",g:1,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:123,n:"Baby jesus can\u2019t crimp",g:1,c:"Kelowna",a:"Boulderfields",s:"Dark prince",se:1,f:0},
+  {id:139,n:"Baby slab",g:1,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:1,f:0},
+  {id:93,n:"Bravo",g:1,c:"Kelowna",a:"Boulderfields",s:"F1",se:1,f:0},
+  {id:254,n:"Fields dreaming",g:1,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:1,f:0},
+  {id:102,n:"Fluffy kitty",g:1,c:"Kelowna",a:"Boulderfields",s:"Feel good",se:1,f:0},
+  {id:145,n:"Fool\u2019s gold",g:1,c:"Kelowna",a:"Boulderfields",s:"Golden hour",se:1,f:0},
+  {id:146,n:"Gold dust",g:1,c:"Kelowna",a:"Boulderfields",s:"Golden hour",se:1,f:0},
+  {id:126,n:"Lighting strikes",g:1,c:"Kelowna",a:"Boulderfields",s:"Dark prince",se:1,f:0},
+  {id:118,n:"Lola ladybug",g:1,c:"Kelowna",a:"Boulderfields",s:"Ladybug",se:1,f:0},
+  {id:148,n:"Okee dokee",g:1,c:"Kelowna",a:"Boulderfields",s:"Golden hour",se:1,f:0},
+  {id:104,n:"Old school",g:1,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:140,n:"Onedercling",g:1,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:1,f:0},
+  {id:109,n:"Round one",g:1,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:107,n:"Surf highball",g:1,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:103,n:"Swell",g:1,c:"Kelowna",a:"Boulderfields",s:"Feel good",se:1,f:0},
+  {id:110,n:"The chipper",g:1,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:108,n:"The circuit",g:1,c:"Kelowna",a:"Boulderfields",s:"Surf",se:1,f:0},
+  {id:97,n:"The pant pisser",g:1,c:"Kelowna",a:"Boulderfields",s:"F1",se:1,f:0},
+  {id:127,n:"Thunder rolls",g:1,c:"Kelowna",a:"Boulderfields",s:"Dark prince",se:1,f:0},
+  {id:151,n:"Tie my rope",g:1,c:"Kelowna",a:"Boulderfields",s:"Dominator",se:1,f:0},
+  {id:204,n:"Seams right",g:1,c:"Vernon",a:"Cougar Canyon",s:"Thunderbow",se:1,f:0},
+  {id:193,n:"The short one",g:1,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:199,n:"The warm up cave",g:1,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:214,n:"Mr. squeezy",g:1,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:217,n:"Old school",g:1,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:218,n:"The circuit",g:1,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:211,n:"To the lip",g:1,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:210,n:"Trending left",g:1,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:188,n:"Just a brother day",g:1,c:"Kelowna",a:"Pebble Beach",s:"South beach",se:1,f:0},
+  {id:187,n:"One eyed monster",g:1,c:"Kelowna",a:"Pebble Beach",s:"Pebble overhang",se:1,f:0},
+  {id:186,n:"S on my d",g:1,c:"Kelowna",a:"Pebble Beach",s:"Pebble overhang",se:1,f:0},
+  {id:239,n:"Conjugal visit",g:1,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:243,n:"Highway 1 to moose jaw",g:1,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:236,n:"Long arm of the law",g:1,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:229,n:"Low profile",g:1,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:234,n:"Rat trap diner",g:1,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:172,n:"Bully",g:1,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:181,n:"Hyde",g:1,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:138,n:"Baby slab arete",g:0,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:1,f:0},
+  {id:128,n:"Calm before the storm left",g:0,c:"Kelowna",a:"Boulderfields",s:"Dark prince",se:1,f:0},
+  {id:129,n:"Calm before the storm right",g:0,c:"Kelowna",a:"Boulderfields",s:"Dark prince",se:1,f:0},
+  {id:120,n:"Darwin",g:0,c:"Kelowna",a:"Boulderfields",s:"Dark prince",se:1,f:0},
+  {id:121,n:"Douglass",g:0,c:"Kelowna",a:"Boulderfields",s:"Dark prince",se:1,f:0},
+  {id:149,n:"Easy peezy",g:0,c:"Kelowna",a:"Boulderfields",s:"Golden hour",se:1,f:0},
+  {id:90,n:"Exit ramp",g:0,c:"Kelowna",a:"Boulderfields",s:"F1",se:1,f:0},
+  {id:147,n:"Goldie hawn",g:0,c:"Kelowna",a:"Boulderfields",s:"Golden hour",se:1,f:0},
+  {id:96,n:"Little chubby",g:0,c:"Kelowna",a:"Boulderfields",s:"F1",se:1,f:0},
+  {id:94,n:"Sausage pickle 2000.com",g:0,c:"Kelowna",a:"Boulderfields",s:"F1",se:1,f:0},
+  {id:161,n:"Street shoes",g:0,c:"Kelowna",a:"Boulderfields",s:"Nothing like viper",se:1,f:0},
+  {id:135,n:"T-rex",g:0,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:1,f:0},
+  {id:134,n:"Triceratops",g:0,c:"Kelowna",a:"Boulderfields",s:"Cave dweller",se:1,f:0},
+  {id:100,n:"Walking on sunshine",g:0,c:"Kelowna",a:"Boulderfields",s:"Feel good",se:1,f:0},
+  {id:192,n:"Mini-me",g:0,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:196,n:"Old grey balls",g:0,c:"Vernon",a:"Cougar Canyon",s:"Moss hollow",se:1,f:0},
+  {id:202,n:"The reach around",g:0,c:"Vernon",a:"Cougar Canyon",s:"Thunderbow",se:1,f:0},
+  {id:206,n:"Slability",g:0,c:"Vernon",a:"Ellison Park",s:"Gettin' hitched",se:1,f:0},
+  {id:208,n:"Sport start",g:0,c:"Vernon",a:"Ellison Park",s:"Lakeside",se:1,f:0},
+  {id:32,n:"Tir a l'arc",g:0,c:"Fontainebleau",a:"Fontainebleau",s:"Canche aux merciers",se:1,f:0},
+  {id:238,n:"Dental dam",g:0,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:233,n:"Flying low",g:0,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:242,n:"Girl drink drunk tank",g:0,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:231,n:"Low blow",g:0,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:230,n:"Low key",g:0,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:240,n:"Prison romance",g:0,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:241,n:"Sissy shiv",g:0,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:228,n:"The down low",g:0,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:227,n:"The low down",g:0,c:"Penticton",a:"Skaha",s:"Chillhaus",se:1,f:0},
+  {id:183,n:"Danger zone",g:0,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:166,n:"Hammer time",g:0,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:173,n:"Joe dirt",g:0,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:171,n:"No brains",g:0,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:176,n:"Over easy",g:0,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:184,n:"Ripply cheeks",g:0,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:168,n:"Trouble for midgets",g:0,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:167,n:"Whizz kid",g:0,c:"Kelowna",a:"The Ruins",s:"The ruins",se:1,f:0},
+  {id:221,n:"Aretes for days",g:0,c:"Penticton",a:"The Slayers",s:"The slayers",se:1,f:0},
+  {id:220,n:"Corner crack",g:0,c:"Penticton",a:"The Slayers",s:"The slayers",se:1,f:0}
+];
+
+const EMBER = "#C8541E";
+const C_CIRC = 2 * Math.PI * 70; // donut circumference, r=70
+// distinct-but-cohesive earthy "field guide" palette — one hue per grade slice
+const SLICE_COLORS = [
+  "#C8541E", // terracotta
+  "#E0883A", // ochre
+  "#B7973F", // brass
+  "#7E8B4A", // olive
+  "#4F7C5E", // pine
+  "#3E7E86", // teal
+  "#4C6E9C", // slate blue
+  "#7E5E96", // plum
+  "#9C4B52", // brick rose
+];
+
+class Component extends DCLogic {
+  state = { username: "Byron", editing: false, draft: "Byron", year: "2026", loaded: false };
+
+  componentWillMount() {
+    try {
+      const saved = window.localStorage.getItem("byron_username");
+      if (saved) this.state = Object.assign({}, this.state, { username: saved, draft: saved });
+    } catch (e) {}
+  }
+
+  topoPath(width, baseY, amp, seed, n) {
+    let s = "";
+    for (let i = 0; i <= n; i++) {
+      const x = (i / n) * width;
+      const y = baseY + Math.sin(i * 0.7 + seed) * amp + Math.cos(i * 1.3 + seed * 2) * amp * 0.42;
+      s += (i === 0 ? "M " + x.toFixed(1) + " " + y.toFixed(1) : " L " + x.toFixed(1) + " " + y.toFixed(1));
+    }
+    return s;
+  }
+
+  saveUsername() {
+    const v = (this.state.draft || "").trim() || "Climber";
+    try { window.localStorage.setItem("byron_username", v); } catch (e) {}
+    this.setState({ username: v, editing: false });
+  }
+
+  hexLerp(a, b, t) {
+    const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+    const ar = (pa >> 16) & 255, ag = (pa >> 8) & 255, ab = pa & 255;
+    const br = (pb >> 16) & 255, bg = (pb >> 8) & 255, bb = pb & 255;
+    const r = Math.round(ar + (br - ar) * t), g = Math.round(ag + (bg - ag) * t), bl = Math.round(ab + (bb - ab) * t);
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + bl).toString(16).slice(1);
+  }
+
+  // build donut segments + leader-line labels (viewBox 0 0 340 210)
+  buildDonut(items, total) {
+    const cx = 170, cy = 105, R = 70;   // ring center / radius
+    const ringOuter = R + 14;           // where the leader touches the slice (~84)
+    const stub = R + 27;                // radial stub end (~97)
+    const segs = [];
+    let cum = 0;
+    items.forEach((it, i) => {
+      const pct = total ? it.count / total : 0;
+      const arc = pct * C_CIRC;
+      const dash = Math.max(0, arc - 2.4);
+      const midFrac = cum + pct / 2;
+      const ang = (-90 + midFrac * 360) * Math.PI / 180;
+      const cosA = Math.cos(ang), sinA = Math.sin(ang);
+      const side = cosA >= 0 ? 1 : -1;
+      segs.push({
+        gradeLabel: it.label, count: it.count,
+        color: SLICE_COLORS[i % SLICE_COLORS.length],
+        dashArray: dash.toFixed(2) + " " + C_CIRC.toFixed(2),
+        dashLen: dash.toFixed(2),
+        transform: "rotate(" + (-90 + cum * 360).toFixed(3) + " " + cx + " " + cy + ")",
+        side: side,
+        ax: cx + ringOuter * cosA, ay: cy + ringOuter * sinA,
+        sx: cx + stub * cosA, sy: cy + stub * sinA,
+      });
+      cum += pct;
+    });
+
+    // spread labels vertically on each side so they never collide
+    [1, -1].forEach((sd) => {
+      const list = segs.filter((s) => s.side === sd).sort((a, b) => a.sy - b.sy);
+      const gap = 17, top = 12, bot = 198;
+      list.forEach((s) => { s.ly = Math.min(bot, Math.max(top, s.sy)); });
+      for (let i = 1; i < list.length; i++) {
+        if (list[i].ly - list[i - 1].ly < gap) list[i].ly = list[i - 1].ly + gap;
+      }
+      if (list.length && list[list.length - 1].ly > bot) {
+        list[list.length - 1].ly = bot;
+        for (let i = list.length - 2; i >= 0; i--) {
+          if (list[i + 1].ly - list[i].ly < gap) list[i].ly = list[i + 1].ly - gap;
+        }
+      }
+      const elbowX = cx + sd * 118, textX = cx + sd * 124;
+      list.forEach((s) => {
+        s.textAnchor = sd === 1 ? "start" : "end";
+        s.lx = textX;
+        s.leader = [
+          s.ax.toFixed(1) + "," + s.ay.toFixed(1),
+          s.sx.toFixed(1) + "," + s.sy.toFixed(1),
+          elbowX.toFixed(1) + "," + s.ly.toFixed(1),
+          textX.toFixed(1) + "," + s.ly.toFixed(1),
+        ].join(" ");
+        s.dotX = textX; s.dotY = s.ly;
+        // HTML label overlay position (viewBox 340x210 maps 1:1 to the square-corrected box)
+        s.labLeft = (textX / 340 * 100).toFixed(2);
+        s.labTop = (s.ly / 210 * 100).toFixed(2);
+        s.labTransform = sd === 1 ? "translate(7px,-50%)" : "translate(-7px,-50%) translateX(-100%)";
+        s.labJustify = sd === 1 ? "flex-start" : "flex-end";
+      });
+    });
+    return segs;
+  }
+
+  renderVals() {
+    const st = this.state;
+    const set = (patch) => () => this.setState(patch);
+
+    // ---- aggregates ----
+    const sends = CLIMBS.filter((c) => c.se);
+    const favs = CLIMBS.filter((c) => c.f);
+    const totalSends = sends.length;
+    const topGrade = sends.reduce((m, c) => Math.max(m, c.g), 0);
+    const cragSet = {};
+    CLIMBS.forEach((c) => { cragSet[c.a] = true; });
+    const cragCount = Object.keys(cragSet).length;
+
+    // ---- hero stats ----
+    const heroStats = [
+      { value: totalSends, prefix: "", color: "#F4F1EC", label: "SENDS LOGGED" },
+      { value: favs.length, prefix: "", color: "#F4F1EC", label: "FAVORITES" },
+      { value: topGrade, prefix: "V", color: "#E37A3F", label: "TOP SEND" },
+      { value: cragCount, prefix: "", color: "#F4F1EC", label: "CRAGS VISITED" },
+    ];
+
+    // ---- recents (latest sends, id desc as recency proxy) ----
+    const recents = sends.slice().sort((a, b) => b.id - a.id).slice(0, 8).map((c) => ({
+      name: c.n, gradeLabel: "V" + c.g, sub: c.a + " \u00B7 " + c.s, fav: !!c.f,
+    }));
+
+    // ---- favorites ----
+    const favorites = favs.slice().sort((a, b) => b.g - a.g || a.n.localeCompare(b.n)).slice(0, 6).map((c) => ({
+      name: c.n, gradeLabel: "V" + c.g, where: c.a + " \u00B7 " + c.c.toUpperCase(),
+    }));
+
+    // ---- BOULDER donut: sends by V-grade (high -> low) ----
+    const byGrade = {};
+    sends.forEach((c) => { byGrade[c.g] = (byGrade[c.g] || 0) + 1; });
+    const bItems = [];
+    for (let g = topGrade; g >= 0; g--) {
+      const count = byGrade[g] || 0;
+      if (count) bItems.push({ label: "V" + g, count: count });
+    }
+    const boulderDonut = this.buildDonut(bItems, totalSends);
+    const boulderTotal = totalSends;
+    const boulderFootnote = totalSends + " SENT \u00B7 TOP V" + topGrade + " \u00B7 " + favs.length + " STARRED";
+
+    // ---- SPORT donut: no rope sends in the log yet ----
+    const sportSends = CLIMBS.filter((c) => c.se && c.t === "sport");
+    const sportTotal = sportSends.length;
+    const sportDonut = [];
+    const sportFootnote = "";
+
+    // ---- TIMELINE: sends over time (representative monthly activity) ----
+    const TL = {
+      "2025": [0, 0, 2, 5, 9, 14, 18, 16, 12, 8, 3, 1],
+      "2026": [1, 2, 6, 11, 17, 21, 14, 5, 0, 0, 0, 0],
+    };
+    const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    const counts = TL[st.year] || TL["2026"];
+    const maxM = Math.max.apply(null, counts.concat([1]));
+    const maxIdx = counts.indexOf(Math.max.apply(null, counts));
+    const yearSum = counts.reduce((a, b) => a + b, 0);
+    const timeline = counts.map((n, i) => ({
+      label: MONTHS[i], n: n,
+      heightPct: (n / maxM * 100).toFixed(2) + "%",
+      minH: n > 0 ? "4px" : "0px",
+      color: (n === maxM && n > 0) ? EMBER : "#1F1F21",
+      labelOpacity: n > 0 ? "1" : "0",
+    }));
+    const nz = counts.map((n, i) => (n > 0 ? i : -1)).filter((i) => i >= 0);
+    let timelineRange = st.year;
+    if (nz.length >= 2) timelineRange = MONTHS[nz[0]] + " \u2192 " + MONTHS[nz[nz.length - 1]] + " " + st.year;
+    else if (nz.length === 1) timelineRange = MONTHS[nz[0]] + " " + st.year;
+    const timelineFootnote = yearSum + " SENDS IN " + st.year + " \u00B7 BUSIEST MONTH " + MONTHS[maxIdx];
+    const ybBase = "all:unset; cursor:pointer; font-family:'JetBrains Mono',ui-monospace,monospace; text-transform:uppercase; letter-spacing:0.08em; font-size:11px; padding:7px 14px; transition:all 0.15s ease;";
+    const yearBtns = ["2025", "2026"].map((y) => ({
+      label: y,
+      onClick: () => this.setState({ year: y }),
+      style: ybBase + (st.year === y ? "background:#1F1F21; color:#F4F1EC;" : "background:#F4F1EC; color:#6E6E74;"),
+    }));
+
+    // ---- top crags (by sends) ----
+    const cragMap = {};
+    sends.forEach((c) => {
+      if (!cragMap[c.a]) cragMap[c.a] = { area: c.a, city: c.c, n: 0 };
+      cragMap[c.a].n++;
+    });
+    const cragsAll = Object.values(cragMap).sort((a, b) => b.n - a.n);
+    const maxCrag = cragsAll.length ? cragsAll[0].n : 1;
+    const cragBars = cragsAll.slice(0, 6).map((c) => ({
+      area: c.area, metaLabel: c.n + " \u00B7 " + c.city.toUpperCase(),
+      w: (c.n / maxCrag * 100).toFixed(2) + "%",
+    }));
+    const cragFootnote = cragCount + " CRAGS \u00B7 OKANAGAN, SEA-TO-SKY, FONT & NORTH WALES";
+
+    return {
+      // header / hero identity
+      avatarLetter: (st.username || "C").charAt(0).toUpperCase(),
+      username: st.username,
+      notEditing: !st.editing,
+      isEditing: st.editing,
+      draftName: st.draft,
+      startEdit: () => this.setState({ editing: true, draft: st.username }),
+      onDraft: (e) => this.setState({ draft: e.target.value }),
+      saveName: () => this.saveUsername(),
+      cancelEdit: () => this.setState({ editing: false }),
+      // stats + dividers
+      heroStats,
+      heroTopo: this._ht || (this._ht = Array.from({ length: 14 }, (_, k) => this.topoPath(1440, 24 + k * 50, 16, k * 0.8 + 2, 32))),
+      divTopo: this._t1 || (this._t1 = Array.from({ length: 5 }, (_, k) => this.topoPath(1440, 14 + k * 7, 9, k * 0.9 + 3, 30))),
+      divTopo2: this._t2 || (this._t2 = Array.from({ length: 5 }, (_, k) => this.topoPath(1440, 14 + k * 7, 9, k * 1.4 + 6, 30))),
+      // sections
+      recents, favorites, favCount: favs.length,
+      boulderDonut, boulderTotal, boulderFootnote,
+      sportDonut, sportTotal, sportFootnote,
+      sportHasData: sportTotal > 0, sportEmpty: sportTotal === 0,
+      timeline, timelineRange, timelineFootnote, yearBtns,
+      cragBars, cragFootnote,
+    };
+  }
+
+  componentDidMount() {
+    const t0 = Date.now();
+    const tick = () => {
+      if (window.gsap && window.ScrollTrigger) {
+        try { this.motion(); } catch (e) { console.warn("motion failed", e); }
+      } else if (Date.now() - t0 < 6000) {
+        setTimeout(tick, 70);
+      } else {
+        this.revealStatic();
+      }
+    };
+    tick();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.editing && prevState && !prevState.editing) {
+      const inp = document.getElementById("ac-name-input");
+      if (inp) { try { inp.focus(); inp.select(); } catch (e) {} }
+    }
+    if (prevState && prevState.year !== this.state.year) this.animateTimeline(false);
+  }
+
+  animateTimeline(firstTime) {
+    const g = window.gsap;
+    if (!g) return;
+    const bars = Array.from(document.querySelectorAll("#ac-timeline .ac-tbar"));
+    if (!bars.length) return;
+    const reduce = this._reduce;
+    bars.forEach((bar, i) => {
+      g.fromTo(bar, { scaleY: 0 }, {
+        scaleY: 1, duration: reduce ? 0.01 : 0.7, ease: "power3.out", delay: reduce ? 0 : i * 0.04,
+        overwrite: true,
+        scrollTrigger: firstTime ? { trigger: document.getElementById("ac-timeline"), start: "top 86%", once: true } : undefined,
+      });
+    });
+  }
+
+  revealStatic() {
+    const root = document.getElementById("acx");
+    if (!root) return;
+    root.querySelectorAll(".ac-seg").forEach((s) => { s.style.strokeDashoffset = "0"; });
+    root.querySelectorAll(".ac-cbar").forEach((b) => { b.style.transform = "scaleX(1)"; });
+    root.querySelectorAll("#ac-timeline .ac-tbar").forEach((b) => { b.style.transform = "scaleY(1)"; });
+  }
+
+  /* ===== GSAP CHOREOGRAPHY ===== */
+  drawPaths(paths, opts) {
+    const g = window.gsap;
+    paths.forEach((p, i) => {
+      let len = 1000;
+      try { len = p.getTotalLength() || 1000; } catch (e) {}
+      g.set(p, { strokeDasharray: len, strokeDashoffset: len });
+      g.to(p, {
+        strokeDashoffset: 0, duration: opts.duration || 1.4, ease: "power1.inOut",
+        delay: (opts.delay || 0) + i * (opts.stagger || 0.1),
+        scrollTrigger: opts.trigger ? { trigger: opts.trigger, start: "top 90%", once: true } : undefined,
+      });
+    });
+  }
+
+  motion() {
+    const g = window.gsap;
+    g.registerPlugin(window.ScrollTrigger);
+    const root = document.getElementById("acx");
+    if (!root) return;
+    const q = (s) => Array.from(root.querySelectorAll(s));
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this._reduce = reduce;
+
+    const prog = document.getElementById("ac-prog");
+    if (prog) window.ScrollTrigger.create({ start: 0, end: "max", onUpdate: (self) => { prog.style.width = (self.progress * 100).toFixed(2) + "%"; } });
+
+    // counters (hero stats only)
+    q("#ac-stats [data-count]").forEach((el) => {
+      const target = parseInt(el.getAttribute("data-count"), 10) || 0;
+      const o = { v: 0 }; el.textContent = "0";
+      g.to(o, {
+        v: target, duration: reduce ? 0.01 : 1.6, ease: "power2.out", snap: { v: 1 },
+        scrollTrigger: { trigger: el, start: "top 98%", once: true },
+        onUpdate() { el.textContent = Math.round(o.v); },
+      });
+    });
+
+    this.drawPaths(q("#ac-div1 .ac-topo"), { duration: reduce ? 0.01 : 1.4, stagger: reduce ? 0 : 0.1, trigger: document.getElementById("ac-div1") });
+    this.drawPaths(q("#ac-div2 .ac-topo2"), { duration: reduce ? 0.01 : 1.4, stagger: reduce ? 0 : 0.1, trigger: document.getElementById("ac-div2") });
+
+    // headline reveal
+    this.drawPaths(q(".ac-herotopo"), { duration: reduce ? 0.01 : 1.9, stagger: reduce ? 0 : 0.08, delay: 0.3 });
+    if (!reduce) {
+      const tl = g.timeline({ defaults: { ease: "power3.out" } });
+      tl.from(q(".ac-line"), { yPercent: 115, duration: 0.9, stagger: 0.08 }, 0.16)
+        .from(document.getElementById("ac-eyebrow"), { opacity: 0, x: -14, duration: 0.6 }, 0.12)
+        .from(q("#ac-meta > *"), { opacity: 0, y: 12, duration: 0.5, stagger: 0.06 }, "-=0.35")
+        .from(q("#ac-stats > *"), { y: 18, opacity: 0, duration: 0.6, stagger: 0.1 }, "-=0.3");
+    }
+
+    // donut segments draw-in + hover, per card (plain DOM, no React re-render)
+    q(".ac-donut-card").forEach((card) => {
+      const segs = Array.from(card.querySelectorAll(".ac-seg"));
+      const numEl = card.querySelector(".ac-donut-num");
+      const labEl = card.querySelector(".ac-donut-label");
+      segs.forEach((s, i) => {
+        const dash = parseFloat(s.getAttribute("stroke-dasharray")) || 0;
+        g.set(s, { strokeDashoffset: dash });
+        g.to(s, {
+          strokeDashoffset: 0, duration: reduce ? 0.01 : 1.1, ease: "power2.out",
+          delay: reduce ? 0 : i * 0.09,
+          scrollTrigger: { trigger: card, start: "top 84%", once: true },
+        });
+      });
+      if (numEl && labEl) {
+        const baseNum = numEl.textContent, baseLab = labEl.textContent;
+        const annos = Array.from(card.querySelectorAll(".ac-anno, .ac-anno-lab"));
+        segs.forEach((s) => {
+          s.addEventListener("mouseenter", () => {
+            const lab = s.getAttribute("data-label");
+            segs.forEach((o) => { o.style.opacity = o === s ? "1" : "0.28"; });
+            annos.forEach((a) => { a.style.opacity = a.getAttribute("data-label") === lab ? "1" : "0.22"; });
+            numEl.textContent = s.getAttribute("data-count");
+            labEl.textContent = s.getAttribute("data-label");
+          });
+          s.addEventListener("mouseleave", () => {
+            segs.forEach((o) => { o.style.opacity = "1"; });
+            annos.forEach((a) => { a.style.opacity = "1"; });
+            numEl.textContent = baseNum; labEl.textContent = baseLab;
+          });
+        });
+      }
+    });
+
+    // crag bars grow
+    q("#ac-crag .ac-cbar").forEach((bar, i) => {
+      g.to(bar, {
+        scaleX: 1, duration: reduce ? 0.01 : 0.9, ease: "power3.out", delay: reduce ? 0 : i * 0.06,
+        scrollTrigger: { trigger: document.getElementById("ac-crag"), start: "top 86%", once: true },
+      });
+    });
+
+    // timeline bars grow
+    this.animateTimeline(true);
+
+    // section list reveals — per-element triggers are robust to stale layout
+    if (!reduce) {
+      q(".ac-listrow").forEach((el, i) => {
+        g.from(el, { y: 18, opacity: 0, duration: 0.5, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 95%", once: true } });
+      });
+      q(".ac-favrow").forEach((el, i) => {
+        g.from(el, { x: 16, opacity: 0, duration: 0.5, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 95%", once: true } });
+      });
+    }
+
+    window.ScrollTrigger.refresh();
+    // recompute trigger positions once fonts/images settle
+    if (window.requestAnimationFrame) requestAnimationFrame(() => window.ScrollTrigger.refresh());
+    window.addEventListener("load", () => window.ScrollTrigger.refresh());
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => window.ScrollTrigger.refresh());
+    // failsafe: content must never stay hidden if a trigger misfires
+    setTimeout(() => {
+      q(".ac-listrow, .ac-favrow").forEach((e) => {
+        if (getComputedStyle(e).opacity === "0") g.set(e, { opacity: 1, x: 0, y: 0, clearProps: "transform" });
+      });
+      // donut arcs must never stay hidden if their trigger misfired
+      q(".ac-seg").forEach((s) => {
+        if ((parseFloat(s.style.strokeDashoffset) || 0) > 0.5) g.set(s, { strokeDashoffset: 0 });
+      });
+    }, 3500);
+  }
+
+}
+
+</script>
+</body>
+</html>

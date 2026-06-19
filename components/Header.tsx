@@ -13,6 +13,14 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "./ui/drawer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import BrandMark from "./BrandMark";
 import MonoChip from "./ui/MonoChip";
 import { createClient } from "@/lib/supabase/supabaseClient";
@@ -39,6 +47,7 @@ export default function Header() {
   const pathname = usePathname();
   const [initials, setInitials] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
@@ -47,11 +56,12 @@ export default function Header() {
       if (user) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("username, email")
+          .select("username, email, avatar_url")
           .eq("id", user.id)
           .single();
         setInitials(getInitials(profile?.username ?? null, profile?.email ?? user.email ?? null));
         setUsername(profile?.username ?? profile?.email ?? user.email ?? null);
+        setAvatarUrl(profile?.avatar_url ?? null);
       }
       setAuthChecked(true);
     });
@@ -100,13 +110,49 @@ export default function Header() {
         <div className="flex items-center gap-3">
           {authChecked && (
             initials ? (
-              <Link
-                href="/account"
-                className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-granite-200 text-chalk font-display font-bold text-[13px] border-[1.5px] border-ember hover:border-ember-soft transition-colors"
-                aria-label="Profile"
-              >
-                {initials}
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-granite-200 text-chalk font-display font-bold text-[13px] border-[1.5px] border-ember hover:border-ember-soft transition-colors focus-visible:outline-none focus-visible:border-ember-soft overflow-hidden"
+                    aria-label="Account menu"
+                  >
+                    {avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={avatarUrl} alt="" aria-hidden="true" className="w-full h-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    ) : initials}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="min-w-48 rounded-sm border border-granite-200/60 bg-granite-100 p-1 shadow-lg"
+                >
+                  {username && (
+                    <DropdownMenuLabel className="font-display text-[11px] uppercase tracking-[0.06em] text-slate-500 truncate">
+                      {username}
+                    </DropdownMenuLabel>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/account"
+                      className="font-display uppercase text-[13px] font-semibold tracking-[0.06em] text-slate-400 focus:bg-granite-200 focus:text-chalk cursor-pointer"
+                    >
+                      Account
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-granite-200/60" />
+                  <form action={signOutUser}>
+                    <DropdownMenuItem asChild>
+                      <button
+                        type="submit"
+                        className="w-full text-left font-display uppercase text-[13px] font-semibold tracking-[0.06em] text-slate-400 focus:bg-granite-200 focus:text-ember-soft cursor-pointer"
+                      >
+                        Sign out
+                      </button>
+                    </DropdownMenuItem>
+                  </form>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Link
                 href="/account/signin"
@@ -178,8 +224,11 @@ export default function Header() {
                             href="/account"
                             className="flex items-center gap-3 min-w-0"
                           >
-                            <span className="flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-granite-200 text-chalk font-display font-bold text-[13px] border-[1.5px] border-ember">
-                              {initials}
+                            <span className="flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-granite-200 text-chalk font-display font-bold text-[13px] border-[1.5px] border-ember overflow-hidden">
+                              {avatarUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={avatarUrl} alt="" aria-hidden="true" className="w-full h-full object-cover" />
+                              ) : initials}
                             </span>
                             <span className="font-display text-[14px] text-granite-100 truncate">
                               {username}

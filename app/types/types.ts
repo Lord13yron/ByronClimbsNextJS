@@ -72,7 +72,7 @@ export type ContentVideo = {
 export type UserProfile = {
   id: string;
   created_at: string;
-  avartar_url: string;
+  avatar_url: string | null;
   email: string;
   role: "user" | "admin";
   username: string;

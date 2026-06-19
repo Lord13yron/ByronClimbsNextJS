@@ -75,21 +75,19 @@ export default function FieldJournalMasthead({
   };
 
   return (
-    <section
-      ref={ref}
-      className="flex flex-col overflow-hidden bg-chalk pt-[clamp(20px,4vh,40px)]"
-    >
+    <section ref={ref} className="flex flex-col overflow-hidden bg-chalk">
       {/* 1 — Top meta strip */}
-      <div
+      <div className="flex items-center justify-between px-4 md:px-14 py-3 border-b border-chalk-3">
+        {/* <div
         className={`flex items-center justify-between gap-4 border-b border-chalk-3 py-3 ${PAD_X}`}
-      >
-        <MonoChip className="tracking-[0.12em]">
+      > */}
+        <MonoChip className="text-[10px] tracking-[0.13em]">
           The Field Journal — Vol. 07
         </MonoChip>
-        <MonoChip className="hidden tracking-[0.12em] md:block">
+        <MonoChip className="text-[10px] hidden tracking-[0.13em] lg:block">
           Trip Reports · Training Notes · The Occasional Rant About Footwork
         </MonoChip>
-        <MonoChip className="tracking-[0.12em] whitespace-nowrap">
+        <MonoChip className="text-[10px] tracking-[0.13em] whitespace-nowrap">
           {String(entriesCount).padStart(2, "0")} Entries
         </MonoChip>
       </div>

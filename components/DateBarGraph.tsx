@@ -1,8 +1,13 @@
 "use client";
 
 import { Climb } from "@/app/types/types";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import MonoChip from "./ui/MonoChip";
+import {
+  gsap,
+  prefersReducedMotion,
+  useIsomorphicLayoutEffect,
+} from "./anim/gsap";
 import {
   Select,
   SelectContent,
@@ -24,6 +29,27 @@ type DateBarGraphProps = {
 
 export default function DateBarGraph({ sends }: DateBarGraphProps) {
   const [selectedYear, setSelectedYear] = useState<string>("2026");
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Bars grow up from the baseline when scrolled into view; re-grow on year change.
+  useIsomorphicLayoutEffect(() => {
+    const el = rootRef.current;
+    if (!el || prefersReducedMotion()) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".tl-bar",
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          duration: 0.9,
+          ease: "power3.out",
+          stagger: 0.04,
+          scrollTrigger: { trigger: el, start: "top 86%", once: true },
+        },
+      );
+    }, el);
+    return () => ctx.revert();
+  }, [selectedYear]);
 
   const { chartData, dateRange } = useMemo(() => {
     const counts: number[] = Array(12).fill(0);
@@ -55,7 +81,7 @@ export default function DateBarGraph({ sends }: DateBarGraphProps) {
   const max = Math.max(...chartData.map((d) => d.n), 1);
 
   return (
-    <div className="bg-chalk border border-chalk-3 rounded-md p-5.5">
+    <div ref={rootRef} className="bg-chalk border border-chalk-3 rounded-md p-5.5">
       {/* Header */}
       <div className="flex justify-between items-end mb-5 flex-wrap gap-3">
         <div>
@@ -97,22 +123,27 @@ export default function DateBarGraph({ sends }: DateBarGraphProps) {
               key={i}
               className="flex-1 flex flex-col items-center h-full relative"
             >
-              <div className="flex-1 w-full flex items-end">
+              <div className="flex-1 w-full flex items-end relative">
                 <div
-                  className="w-full relative"
+                  className="tl-bar w-full"
                   style={{
                     height: `${heightPct}%`,
+                    transformOrigin: "bottom",
                     background: isMax
                       ? "var(--ember)"
                       : "var(--granite-200)",
                   }}
-                >
-                  {d.n > 0 && (
-                    <MonoChip className="absolute -top-4.5 left-1/2 -translate-x-1/2 text-[10px] text-granite-100 whitespace-nowrap">
+                />
+                {d.n > 0 && (
+                  <div
+                    className="absolute left-1/2 -translate-x-1/2"
+                    style={{ bottom: `calc(${heightPct}% + 6px)` }}
+                  >
+                    <MonoChip className="text-[10px] text-granite-100 whitespace-nowrap">
                       {d.n}
                     </MonoChip>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
               <MonoChip className="absolute -bottom-5.5 text-[9px] text-slate-500">
                 {d.m}
