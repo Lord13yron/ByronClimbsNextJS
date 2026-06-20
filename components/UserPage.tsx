@@ -1,18 +1,28 @@
-import { getUser, signOutUser } from "@/lib/auth-actions";
-import Link from "next/link";
-import { Button } from "./ui/button";
+import { getUser } from "@/lib/auth-actions";
+import {
+  getClimbs,
+  getSendsForUser,
+  getFavoritesForUser,
+} from "@/lib/data-service";
+import { getMastheadStats, getTopCrags } from "@/lib/database-stats";
+import { Climb } from "@/app/types/types";
+import AccountHero from "./AccountHero";
 import RecentSends from "./RecentSends";
-import { getClimbs, getSendsForUser } from "@/lib/data-service";
+import AccountFavorites from "./AccountFavorites";
+import AccountTopCrags from "./AccountTopCrags";
 import GradePieChart from "./GradePieChart";
 import DateBarGraph from "./DateBarGraph";
 import TopoLine from "./ui/TopoLine";
 import MonoChip from "./ui/MonoChip";
-import UsernameEditor from "./UsernameEditor";
+import DrawOn from "./anim/DrawOn";
+import ScrollRefresh from "./anim/ScrollRefresh";
+import ScrollProgressBar from "./database/ScrollProgressBar";
 
 export default async function UserPage() {
   const user = await getUser();
   const sendsForUser = await getSendsForUser();
   const climbs = await getClimbs();
+  const favorites = await getFavoritesForUser();
 
   const sends = climbs
     .filter((climb) => sendsForUser.some((send) => send.climb_id === climb.id))
@@ -44,58 +54,94 @@ export default async function UserPage() {
     [] as { grade: string; count: number }[],
   );
 
+  // Favorites joined to their climbs for the dark card, de-duplicated by climb
+  // (the favorites table can hold multiple rows for the same climb).
+  const favoriteClimbs = Array.from(
+    new Map(
+      favorites
+        .map((fav) => climbs.find((climb) => climb.id === fav.climb_id))
+        .filter((climb): climb is Climb => Boolean(climb))
+        .map((climb) => [climb.id, climb]),
+    ).values(),
+  );
+
+  const stats = getMastheadStats(climbs, sendsForUser);
+  const topCrags = getTopCrags(climbs, sendsForUser);
+
+  // Crags the user has actually visited (sent at), not the full database.
+  const cragsVisited = new Set(
+    sends.map((climb) => climb.area).filter(Boolean),
+  ).size;
+
   const username = user?.username ?? "climber";
+  const role = user?.role ?? "user";
+  const memberSince = user?.created_at
+    ? new Date(user.created_at).getFullYear()
+    : new Date().getFullYear();
 
   return (
     <div className="bg-chalk min-h-screen">
-      {/* MASTHEAD */}
-      <section className="max-w-7xl mx-auto px-4 py-10 md:px-14 md:py-16">
-        <MonoChip className="text-ember mb-3 block">— ACCOUNT</MonoChip>
-        <div className="flex justify-between items-end gap-6 flex-wrap">
-          <div>
-            <h1 className="font-display uppercase text-[56px] md:text-[108px] text-granite-100 m-0 leading-[0.92] tracking-[0.01em]">
-              Welcome,
-            </h1>
-            <UsernameEditor username={username} />
-            {user?.role === "admin" && (
-              <>
-                <MonoChip className="mt-4 text-slate-500 block">
-                  YOU HAVE ADMIN PRIVILEGES.
-                </MonoChip>
-                <Link
-                  href="/admin"
-                  className="font-display uppercase text-[13px] text-ember border-b border-ember pb-0.5 mt-2.5 inline-block tracking-[0.01em]"
-                >
-                  Go to admin dashboard →
-                </Link>
-              </>
-            )}
-          </div>
-          <form action={signOutUser}>
-            <Button type="submit" variant="default">
-              Sign Out
-            </Button>
-          </form>
+      <ScrollProgressBar />
+      <ScrollRefresh />
+
+      {/* HERO */}
+      <AccountHero
+        username={username}
+        avatarUrl={user?.avatar_url ?? null}
+        role={role}
+        memberSince={memberSince}
+        sendsCount={sends.length}
+        favoritesCount={favorites.length}
+        cragsVisited={cragsVisited}
+        topSend={stats.topSend}
+      />
+
+      {/* TOPO DIVIDER */}
+      <DrawOn className="max-w-7xl mx-auto px-4 md:px-14 text-chalk-3 opacity-60">
+        <TopoLine height={32} seed={4} />
+      </DrawOn>
+
+      {/* LATEST SENDS + FAVORITES */}
+      <section className="max-w-7xl mx-auto px-4 py-8 md:px-14 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.45fr_1fr] gap-[clamp(18px,2.4vw,22px)]">
+          <RecentSends sends={sends} />
+          <AccountFavorites climbs={favoriteClimbs} />
         </div>
       </section>
 
       {/* TOPO DIVIDER */}
-      <div className="max-w-7xl mx-auto px-4 md:px-14 text-chalk-3 opacity-60">
-        <TopoLine height={32} seed={4} />
-      </div>
+      <DrawOn className="max-w-7xl mx-auto px-4 md:px-14 text-chalk-3 opacity-70">
+        <TopoLine height={32} seed={9} />
+      </DrawOn>
 
-      {/* RECENT SENDS */}
-      <section className="max-w-7xl mx-auto px-4 py-8 md:px-14 md:py-12">
-        <RecentSends sends={sends} />
-      </section>
+      {/* BY THE NUMBERS */}
+      <section className="bg-chalk-2">
+        <div className="mx-auto w-full max-w-7xl px-4 py-[clamp(26px,4vw,40px)] pb-[clamp(48px,7vw,72px)] md:px-14">
+          <MonoChip className="mb-2 block text-ember">— BY THE NUMBERS</MonoChip>
+          <h2
+            className="mb-8 font-display font-bold uppercase text-granite-100"
+            style={{ fontSize: "clamp(28px,3.6vw,42px)", lineHeight: 1 }}
+          >
+            The shape of the grind
+          </h2>
 
-      {/* CHARTS */}
-      <section className="max-w-7xl mx-auto px-4 pb-16 md:px-14 md:pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <GradePieChart data={boulderGradeData} type="boulder" />
-          <GradePieChart data={sportGradeData} type="sport" />
-          <div className="md:col-span-2">
-            <DateBarGraph sends={sends} />
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <GradePieChart
+              data={boulderGradeData}
+              type="boulder"
+              footnote={`${boulderSends.length} BOULDER SENDS LOGGED`}
+            />
+            <GradePieChart
+              data={sportGradeData}
+              type="sport"
+              footnote={`${sportSends.length} SPORT SENDS LOGGED`}
+            />
+            <div className="md:col-span-2">
+              <DateBarGraph sends={sends} />
+            </div>
+            <div className="md:col-span-2">
+              <AccountTopCrags crags={topCrags} />
+            </div>
           </div>
         </div>
       </section>

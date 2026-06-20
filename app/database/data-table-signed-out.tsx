@@ -3,49 +3,34 @@
 import {
   ColumnDef,
   SortingState,
-  flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from "lucide-react";
+import Link from "next/link";
+import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
+import { Climb } from "../types/types";
+import { cn } from "@/lib/utils";
+import MonoChip from "@/components/ui/MonoChip";
+import TypeGlyph from "@/components/ui/TypeGlyph";
+import { Pagination } from "./data-table";
 
-const DESKTOP_ONLY_COLUMNS = new Set(["location", "city", "type"]);
+const DEFAULT_SORT: SortingState = [{ id: "grade", desc: true }];
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+// Signed-out list: GRADE · ROUTE · AREA · CITY · TYPE (no Status column).
+const ROW_GRID =
+  "grid items-center gap-3.5 px-4 grid-cols-[52px_minmax(0,1fr)] " +
+  "md:gap-[18px] md:grid-cols-[72px_minmax(0,1.5fr)_minmax(0,1.05fr)_92px_104px]";
+
+interface DataTableProps {
+  columns: ColumnDef<Climb>[];
+  data: Climb[];
 }
 
-export function DataTableSignedOut<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+export function DataTableSignedOut({ columns, data }: DataTableProps) {
+  const [sorting, setSorting] = useState<SortingState>(DEFAULT_SORT);
   const table = useReactTable({
     data,
     columns,
@@ -54,150 +39,113 @@ export function DataTableSignedOut<TData, TValue>({
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     state: { sorting },
+    initialState: { pagination: { pageSize: 12 } },
   });
 
   return (
     <div>
-      {/* Table */}
-      <div className="border border-chalk-3 rounded-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-chalk-2 hover:bg-chalk-2 border-b border-chalk-3">
-                {headerGroup.headers.map((header) => {
-                  const isDesktopOnly = DESKTOP_ONLY_COLUMNS.has(header.column.id);
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className={`py-3 px-4.5 font-normal ${isDesktopOnly ? "hidden md:table-cell" : ""}`}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, i) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className={`border-b border-chalk-2 hover:bg-chalk-2 transition-colors duration-150 ${
-                    i % 2 === 0 ? "bg-chalk" : "bg-[rgba(236,231,222,0.4)]"
-                  }`}
+      <div className="overflow-hidden rounded-sm border border-chalk-3">
+        {/* Header */}
+        <div className={cn(ROW_GRID, "border-b border-chalk-3 bg-chalk-2 py-3")}>
+          <SortButton column={table.getColumn("grade")} label="Grade" />
+          <SortButton column={table.getColumn("name")} label="Route" />
+          <ColLabel className="hidden md:block">Area</ColLabel>
+          <ColLabel className="hidden md:block">City</ColLabel>
+          <ColLabel className="hidden md:block">Type</ColLabel>
+        </div>
+
+        {/* Rows */}
+        {table.getRowModel().rows.map((row) => {
+          const c = row.original;
+          return (
+            <div
+              key={c.id}
+              className={cn(
+                ROW_GRID,
+                "border-b border-chalk-2 py-2.5 transition-colors hover:bg-chalk-2",
+              )}
+            >
+              <span className="rounded-sm bg-granite-100 py-0.75 text-center font-display text-[14px] font-bold tracking-[0.05em] text-chalk">
+                {c.type === "boulder" ? `V${c.grade}` : c.grade}
+              </span>
+
+              <span className="min-w-0">
+                <Link
+                  href={`/database/${c.id}-${c.slug}`}
+                  className="block truncate font-display text-[17px] uppercase leading-[1.08] text-granite-100 transition-colors hover:text-ember"
                 >
-                  {row.getVisibleCells().map((cell) => {
-                    const isDesktopOnly = DESKTOP_ONLY_COLUMNS.has(cell.column.id);
-                    return (
-                      <TableCell
-                        key={cell.id}
-                        className={`py-4 px-4.5 ${isDesktopOnly ? "hidden md:table-cell" : ""}`}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center font-mono text-[10px] uppercase tracking-widest text-slate-500"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                  {c.name}
+                </Link>
+                <MonoChip className="mt-1 block truncate md:hidden">
+                  {c.area}
+                  {c.subArea ? ` · ${c.subArea}` : ""}
+                </MonoChip>
+              </span>
+
+              <span className="hidden min-w-0 md:block">
+                <span className="block truncate font-display text-[14px] uppercase leading-none tracking-[0.02em] text-granite-100">
+                  {c.area}
+                </span>
+                {c.subArea && (
+                  <MonoChip className="mt-1 block truncate">
+                    {c.subArea}
+                  </MonoChip>
+                )}
+              </span>
+
+              <MonoChip className="hidden truncate text-slate-700 md:block">
+                {c.city}
+              </MonoChip>
+
+              <span className="hidden min-w-0 items-center gap-1.5 text-slate-700 md:flex">
+                <TypeGlyph type={c.type} size={13} />
+                <MonoChip className="truncate text-slate-700">{c.type}</MonoChip>
+              </span>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between px-0 py-3">
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-slate-500">
-              Rows per page
-            </p>
-            <Select
-              value={`${table.getState().pagination.pageSize}`}
-              onValueChange={(value) => {
-                table.setPageSize(Number(value));
-              }}
-            >
-              <SelectTrigger className="h-8 w-17.5">
-                <SelectValue
-                  placeholder={table.getState().pagination.pageSize}
-                />
-              </SelectTrigger>
-              <SelectContent side="top">
-                {[10, 20, 25, 30, 40, 50].map((pageSize) => (
-                  <SelectItem key={pageSize} value={`${pageSize}`}>
-                    {pageSize}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex w-25 items-center justify-center font-mono text-[10px] uppercase tracking-widest text-slate-500">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="hidden size-8 lg:flex"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Go to first page</span>
-              <ChevronsLeft />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Go to previous page</span>
-              <ChevronLeft />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Go to next page</span>
-              <ChevronRight />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="hidden size-8 lg:flex"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Go to last page</span>
-              <ChevronsRight />
-            </Button>
-          </div>
-        </div>
-      </div>
+      <Pagination table={table} dataLength={data.length} />
     </div>
+  );
+}
+
+function SortButton({
+  column,
+  label,
+}: {
+  column: ReturnType<ReturnType<typeof useReactTable<Climb>>["getColumn"]>;
+  label: string;
+}) {
+  if (!column) return null;
+  const sorted = column.getIsSorted();
+  const Icon =
+    sorted === "asc" ? ChevronUp : sorted === "desc" ? ChevronDown : ChevronsUpDown;
+  return (
+    <button
+      onClick={() => column.toggleSorting(sorted === "asc")}
+      className={cn(
+        "flex cursor-pointer items-center gap-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors",
+        sorted ? "text-ember" : "text-slate-400 hover:text-granite-100",
+      )}
+    >
+      {label}
+      <Icon className="h-2.5 w-2.5" />
+    </button>
+  );
+}
+
+function ColLabel({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <MonoChip className={cn("tracking-[0.14em] text-slate-400", className)}>
+      {children}
+    </MonoChip>
   );
 }

@@ -1,19 +1,17 @@
+import { Fragment } from "react";
 import {
   getClimbById,
   getImagesForClimb,
   getVideosForClimb,
 } from "@/lib/data-service";
-import Image from "next/image";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "./ui/carousel";
 import GradeChip from "./ui/GradeChip";
 import TypeGlyph from "./ui/TypeGlyph";
 import MonoChip from "./ui/MonoChip";
+import TopoLine from "./ui/TopoLine";
+import ClimbCarousel from "./ClimbCarousel";
+import BetaVideo from "./BetaVideo";
+import Reveal from "./anim/Reveal";
+import DrawOn from "./anim/DrawOn";
 import Link from "next/link";
 
 type ClimbProps = {
@@ -22,103 +20,113 @@ type ClimbProps = {
 
 export default async function ClimbSignedOut({ databaseId }: ClimbProps) {
   const climb = await getClimbById(databaseId);
-  const images = await getImagesForClimb(climb.id);
-  const videos = await getVideosForClimb(climb.id);
+  const [images, videos] = await Promise.all([
+    getImagesForClimb(climb.id),
+    getVideosForClimb(climb.id),
+  ]);
 
   const grade = climb.type === "boulder" ? `V${climb.grade}` : climb.grade;
 
   return (
     <div className="bg-background">
+      {/* Breadcrumb */}
+      <div className="px-4 md:px-14 pt-5 md:pt-6 max-w-7xl mx-auto">
+        <Reveal x={-20} duration={0.6}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link href="/database" className="inline-flex">
+              <MonoChip className="text-slate-400 hover:text-ember transition-colors">
+                DATABASE
+              </MonoChip>
+            </Link>
+            <MonoChip className="text-chalk-3">/</MonoChip>
+            <MonoChip className="text-slate-400">{climb.city}</MonoChip>
+            <MonoChip className="text-chalk-3">/</MonoChip>
+            <MonoChip className="text-slate-400">{climb.area}</MonoChip>
+            {climb.subArea && (
+              <>
+                <MonoChip className="text-chalk-3">/</MonoChip>
+                <MonoChip className="text-slate-400">{climb.subArea}</MonoChip>
+              </>
+            )}
+            <MonoChip className="text-chalk-3">/</MonoChip>
+            <MonoChip className="text-ember">{climb.name}</MonoChip>
+          </div>
+        </Reveal>
+      </div>
+
       {/* Title block */}
       <section className="px-4 md:px-14 py-6 md:py-8 max-w-7xl mx-auto">
         <div className="flex flex-wrap justify-between items-end gap-6">
           <div>
-            <div className="flex items-center gap-3.5 mb-3.5">
-              <GradeChip grade={grade} variant="outline" />
-              <div className="flex items-center gap-2 text-slate-700">
-                <TypeGlyph type={climb.type} size={14} />
-                <MonoChip className="text-slate-700 uppercase">
-                  {climb.type}
-                </MonoChip>
+            <Reveal y={16} stagger={0.08} duration={0.55} className="mb-3.5">
+              <div className="flex items-center gap-3.5">
+                <GradeChip grade={grade} variant="outline" size="lg" />
+                <div className="flex items-center gap-2 text-slate-700">
+                  <TypeGlyph type={climb.type} size={14} />
+                  <MonoChip className="text-slate-700 uppercase">
+                    {climb.type}
+                  </MonoChip>
+                </div>
               </div>
-            </div>
-            <h1
-              className="font-display uppercase font-bold text-granite-100 leading-[0.92] tracking-[0.01em]"
-              style={{ fontSize: "clamp(48px, 7vw, 96px)" }}
+            </Reveal>
+
+            <Reveal className="overflow-hidden" y={100} duration={0.95}>
+              <h1
+                className="font-display uppercase font-bold text-granite-100 leading-[0.88] tracking-[0.005em] text-balance"
+                style={{ fontSize: "clamp(44px, 7vw, 96px)" }}
+              >
+                {climb.name}
+              </h1>
+            </Reveal>
+
+            <Reveal
+              className="flex flex-wrap items-stretch gap-4 mt-4"
+              y={12}
+              stagger={0.06}
             >
-              {climb.name}
-            </h1>
-            <div className="flex flex-wrap gap-4 mt-4">
               {[
                 { label: "CITY", value: climb.city.toUpperCase() },
                 { label: "AREA", value: climb.area.toUpperCase() },
                 ...(climb.subArea
                   ? [{ label: "SECTOR", value: climb.subArea.toUpperCase() }]
                   : []),
-              ].map((item) => (
-                <div key={item.label} className="flex flex-col gap-0.5">
-                  <MonoChip className="text-[9px] text-slate-400">
-                    {item.label}
-                  </MonoChip>
-                  <span className="font-mono uppercase text-[11px] tracking-widest font-medium text-granite-100">
-                    {item.value}
-                  </span>
-                </div>
+              ].map((item, idx) => (
+                <Fragment key={item.label}>
+                  {idx > 0 && (
+                    <div className="w-px self-stretch bg-chalk-3" aria-hidden />
+                  )}
+                  <div className="flex flex-col gap-1.5">
+                    <MonoChip className="text-slate-400">{item.label}</MonoChip>
+                    <span className="font-display uppercase font-semibold tracking-[0.03em] text-[clamp(16px,1.8vw,20px)] text-granite-100">
+                      {item.value}
+                    </span>
+                  </div>
+                </Fragment>
               ))}
-            </div>
+            </Reveal>
           </div>
 
-          <Link
-            href="/login"
-            className="flex items-center gap-2 font-display uppercase text-[13px] font-semibold tracking-[0.06em] px-4 py-2.5 border border-chalk-3 rounded-sm hover:border-ember transition-colors"
-          >
-            Sign in to log sends
-          </Link>
+          <Reveal y={12} duration={0.55}>
+            <Link
+              href="/login"
+              className="flex items-center gap-2 font-display uppercase text-[13px] font-semibold tracking-[0.06em] px-4 py-2.5 border border-chalk-3 rounded-sm hover:border-ember transition-colors"
+            >
+              Sign in to log sends
+            </Link>
+          </Reveal>
         </div>
       </section>
 
       {/* Hero image + session stats */}
       <section className="px-4 md:px-14 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-6">
+        <Reveal
+          className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-6"
+          y={30}
+          duration={0.8}
+        >
           {/* Image */}
-          <div
-            className="relative rounded-sm overflow-hidden"
-            style={{ height: 460 }}
-          >
-            {images.length > 0 ? (
-              <Carousel className="w-full h-full">
-                <CarouselContent className="h-full">
-                  {images.map((img, i) => (
-                    <CarouselItem key={i} className="h-full">
-                      <div
-                        className="relative w-full h-full"
-                        style={{ height: 460 }}
-                      >
-                        <Image
-                          src={img.url}
-                          alt={`${climb.name} — photo ${i + 1}`}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 65vw"
-                          className="object-cover object-[center_40%]"
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                {images.length > 1 && <CarouselPrevious className="left-3" />}
-                {images.length > 1 && <CarouselNext className="right-3" />}
-              </Carousel>
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center"
-                style={{
-                  background:
-                    "repeating-linear-gradient(45deg, var(--chalk-2), var(--chalk-2) 10px, var(--chalk) 10px, var(--chalk) 20px)",
-                }}
-              >
-                <MonoChip className="text-slate-400">NO PHOTO</MonoChip>
-              </div>
-            )}
+          <div className="relative rounded-sm overflow-hidden bg-granite-200">
+            <ClimbCarousel images={images} climbName={climb.name} />
           </div>
 
           {/* Stats card */}
@@ -158,35 +166,24 @@ export default async function ClimbSignedOut({ databaseId }: ClimbProps) {
               </Link>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Video section */}
       {videos.length > 0 && (
-        <section className="px-4 md:px-14 max-w-7xl mx-auto mt-6">
-          <MonoChip className="text-slate-500 mb-3 block">
-            — BETA VIDEO
-          </MonoChip>
-          <Carousel className="w-full max-w-3xl">
-            <CarouselContent>
-              {videos.map((video, i) => (
-                <CarouselItem key={i}>
-                  <iframe
-                    width="100%"
-                    height="400"
-                    src={`https://www.youtube.com/embed/${video.url}`}
-                    title={`Video ${i + 1}`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="rounded-sm"
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            {videos.length > 1 && <CarouselPrevious />}
-            {videos.length > 1 && <CarouselNext />}
-          </Carousel>
-        </section>
+        <>
+          <div className="px-4 md:px-14 max-w-7xl mx-auto my-8 text-[#CFC7B8]">
+            <DrawOn duration={1.4} stagger={0.1}>
+              <TopoLine seed={3} height={34} />
+            </DrawOn>
+          </div>
+          <section className="px-4 md:px-14 max-w-7xl mx-auto">
+            <MonoChip className="text-ember mb-3 block">— BETA VIDEO</MonoChip>
+            <Reveal y={30} duration={0.8}>
+              <BetaVideo videos={videos} posterSrc={images[0]?.url} />
+            </Reveal>
+          </section>
+        </>
       )}
 
       <div className="pb-16 md:pb-24" />

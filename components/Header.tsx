@@ -8,13 +8,23 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "./ui/drawer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import BrandMark from "./BrandMark";
 import MonoChip from "./ui/MonoChip";
 import { createClient } from "@/lib/supabase/supabaseClient";
+import { signOutUser } from "@/lib/auth-actions";
 
 function getInitials(username: string | null, email: string | null): string {
   const source = username || email || "";
@@ -36,6 +46,9 @@ const navItems = [
 export default function Header() {
   const pathname = usePathname();
   const [initials, setInitials] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
@@ -44,17 +57,20 @@ export default function Header() {
       if (user) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("username, email")
+          .select("username, email, avatar_url, role")
           .eq("id", user.id)
           .single();
         setInitials(getInitials(profile?.username ?? null, profile?.email ?? user.email ?? null));
+        setUsername(profile?.username ?? profile?.email ?? user.email ?? null);
+        setAvatarUrl(profile?.avatar_url ?? null);
+        setIsAdmin(profile?.role === "admin");
       }
       setAuthChecked(true);
     });
   }, []);
 
   return (
-    <header className="border-b border-border bg-background z-10 relative">
+    <header className="sticky top-0 z-50 border-b border-chalk-3 bg-[rgba(244,241,236,0.9)] backdrop-blur-[10px] backdrop-saturate-[1.8]">
       <div className="flex items-center justify-between px-4 md:px-14 py-3">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-3 shrink-0">
@@ -96,13 +112,62 @@ export default function Header() {
         <div className="flex items-center gap-3">
           {authChecked && (
             initials ? (
-              <Link
-                href="/account"
-                className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-granite-200 text-chalk font-display font-bold text-[13px] border-[1.5px] border-ember hover:border-ember-soft transition-colors"
-                aria-label="Profile"
-              >
-                {initials}
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-granite-200 text-chalk font-display font-bold text-[13px] border-[1.5px] border-ember hover:border-ember-soft transition-colors focus-visible:outline-none focus-visible:border-ember-soft overflow-hidden"
+                    aria-label="Account menu"
+                  >
+                    {avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={avatarUrl} alt="" aria-hidden="true" className="w-full h-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    ) : initials}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="min-w-48 rounded-sm border border-granite-200/60 bg-granite-100 p-1 shadow-lg"
+                >
+                  {username && (
+                    <DropdownMenuLabel className="font-display text-[11px] uppercase tracking-[0.06em] text-slate-500 truncate">
+                      {username}
+                    </DropdownMenuLabel>
+                  )}
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href="/admin"
+                          className="font-display uppercase text-[13px] font-semibold tracking-[0.06em] text-ember focus:bg-granite-200 focus:text-ember-soft cursor-pointer"
+                        >
+                          Admin
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-granite-200/60" />
+                    </>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/account"
+                      className="font-display uppercase text-[13px] font-semibold tracking-[0.06em] text-slate-400 focus:bg-granite-200 focus:text-chalk cursor-pointer"
+                    >
+                      Account
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-granite-200/60" />
+                  <form action={signOutUser}>
+                    <DropdownMenuItem asChild>
+                      <button
+                        type="submit"
+                        className="w-full text-left font-display uppercase text-[13px] font-semibold tracking-[0.06em] text-slate-400 focus:bg-granite-200 focus:text-ember-soft cursor-pointer"
+                      >
+                        Sign out
+                      </button>
+                    </DropdownMenuItem>
+                  </form>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Link
                 href="/account/signin"
@@ -124,8 +189,11 @@ export default function Header() {
                   <Menu className="w-4 h-4" />
                 </button>
               </DrawerTrigger>
-              <DrawerContent direction="left" className="bg-background w-72">
-                <DrawerHeader className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <DrawerContent
+                direction="left"
+                className="bg-background w-[88%] max-w-[360px]"
+              >
+                <DrawerHeader className="flex flex-row items-center justify-between px-4 py-3 border-b border-border">
                   <div className="flex items-center gap-2">
                     <BrandMark size={28} />
                     <DrawerTitle className="font-display uppercase text-[15px] tracking-[0.06em]">
@@ -139,7 +207,7 @@ export default function Header() {
                   </DrawerClose>
                 </DrawerHeader>
 
-                <nav className="flex flex-col p-2">
+                <nav className="flex flex-col gap-1 p-3">
                   {navItems.map((item) => {
                     const active =
                       item.href === "/"
@@ -149,7 +217,7 @@ export default function Header() {
                       <DrawerClose key={item.href} asChild>
                         <Link
                           href={item.href}
-                          className={`font-display uppercase text-[13px] font-semibold tracking-[0.05em] px-3 py-2.5 rounded-sm transition-colors ${
+                          className={`font-display uppercase text-[15px] font-semibold tracking-[0.05em] px-3 py-3 rounded-sm transition-colors ${
                             active
                               ? "text-ember bg-chalk-2"
                               : "text-granite-100 hover:bg-chalk-2"
@@ -160,15 +228,59 @@ export default function Header() {
                       </DrawerClose>
                     );
                   })}
-                  <DrawerClose asChild>
-                    <Link
-                      href="/account"
-                      className="font-display uppercase text-[13px] font-semibold tracking-[0.05em] px-3 py-2.5 rounded-sm text-granite-100 hover:bg-chalk-2 transition-colors mt-1 border-t border-border pt-3"
-                    >
-                      Profile
-                    </Link>
-                  </DrawerClose>
                 </nav>
+
+                {authChecked && (
+                  <DrawerFooter className="border-t border-border">
+                    {initials && isAdmin && (
+                      <DrawerClose asChild>
+                        <Link
+                          href="/admin"
+                          className="block w-full border-b border-border pb-3 mb-1 font-display uppercase text-[15px] font-semibold tracking-[0.05em] text-ember hover:text-ember-soft transition-colors"
+                        >
+                          Admin
+                        </Link>
+                      </DrawerClose>
+                    )}
+                    {initials ? (
+                      <div className="flex items-center justify-between gap-3">
+                        <DrawerClose asChild>
+                          <Link
+                            href="/account"
+                            className="flex items-center gap-3 min-w-0"
+                          >
+                            <span className="flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-granite-200 text-chalk font-display font-bold text-[13px] border-[1.5px] border-ember overflow-hidden">
+                              {avatarUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={avatarUrl} alt="" aria-hidden="true" className="w-full h-full object-cover" />
+                              ) : initials}
+                            </span>
+                            <span className="font-display text-[14px] text-granite-100 truncate">
+                              {username}
+                            </span>
+                          </Link>
+                        </DrawerClose>
+                        <form action={signOutUser}>
+                          <button
+                            type="submit"
+                            className="font-display uppercase text-[12px] font-semibold tracking-[0.06em] text-slate-500 hover:text-granite-100 transition-colors"
+                          >
+                            Sign out
+                          </button>
+                        </form>
+                      </div>
+                    ) : (
+                      <DrawerClose asChild>
+                        <Link
+                          href="/account/signin"
+                          className="block w-full bg-granite-200 text-chalk font-display uppercase text-[13px] font-semibold tracking-[0.06em] py-3 rounded-sm text-center hover:bg-granite-100 transition-colors"
+                        >
+                          Sign in
+                        </Link>
+                      </DrawerClose>
+                    )}
+                  </DrawerFooter>
+                )}
               </DrawerContent>
             </Drawer>
           </div>

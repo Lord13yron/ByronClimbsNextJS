@@ -19,45 +19,51 @@ export default function UsernameEditor({ username }: Props) {
 
   if (!editing) {
     return (
-      <div className="font-display uppercase text-[56px] md:text-[108px] text-granite-100 leading-[0.92] tracking-[0.01em] flex items-baseline gap-3">
+      <span className="inline-flex items-baseline gap-3 text-chalk">
         <span>{username}.</span>
         <button
           onClick={() => setEditing(true)}
           aria-label="Edit username"
-          className="opacity-30 hover:opacity-100 hover:text-ember transition-all cursor-pointer shrink-0"
+          className="shrink-0 cursor-pointer text-ember-soft opacity-[0.34] transition-opacity hover:opacity-100"
         >
-          <Pencil className="w-5 h-5 md:w-7 md:h-7" />
+          <Pencil className="h-7 w-7 md:h-10 md:w-10" />
         </button>
-      </div>
+      </span>
     );
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-2 mt-1">
-      <div className="flex items-center gap-2 flex-wrap">
+    <form action={formAction} className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2.5">
         <Input
           name="username"
           defaultValue={username}
           maxLength={20}
           autoFocus
-          className="w-44 h-8 text-sm font-mono"
           disabled={isPending}
+          className="h-12 w-64 rounded-none border-0 border-b-[3px] border-ember bg-[rgba(244,241,236,0.08)] px-3 font-mono text-base text-chalk shadow-none focus-visible:ring-0"
         />
-        <Button type="submit" size="sm" disabled={isPending}>
+        <Button
+          type="submit"
+          size="sm"
+          disabled={isPending}
+          className="bg-ember text-chalk hover:bg-ember/90"
+        >
           {isPending ? "Saving…" : "Save"}
         </Button>
         <Button
           type="button"
           size="sm"
-          variant="ghost"
+          variant="outline"
           onClick={() => setEditing(false)}
           disabled={isPending}
+          className="border-chalk/40 bg-transparent text-chalk hover:bg-chalk/10 hover:text-chalk"
         >
           Cancel
         </Button>
       </div>
       {state && "error" in state && (
-        <MonoChip className="text-red-500 text-[10px]">{state.error}</MonoChip>
+        <MonoChip className="text-[10px] text-red-400">{state.error}</MonoChip>
       )}
     </form>
   );

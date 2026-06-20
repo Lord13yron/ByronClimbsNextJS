@@ -157,3 +157,47 @@
     width: 100%;
   }
 }
+
+/* Blog masthead ambient motion. Disabled under reduced-motion. */
+@keyframes mast-glow {
+  from {
+    transform: translateY(-2%);
+  }
+  to {
+    transform: translateY(3%);
+  }
+}
+
+@keyframes mast-bob {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, 5px);
+  }
+}
+
+/* Masthead "Now Sending" live dot. */
+@keyframes ember-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.ember-pulse {
+  animation: ember-pulse 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-ph,
+  [style*="mast-glow"],
+  [style*="mast-bob"],
+  .ember-pulse {
+    animation: none !important;
+  }
+}

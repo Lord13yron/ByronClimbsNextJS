@@ -3,6 +3,7 @@ import MainPageBlog from "@/components/MainPageBlog";
 import MainPageDatabase from "@/components/MainPageDatabase";
 import SupabaseAuthListener from "@/components/SupabaseAuthListener";
 import TopoLine from "@/components/ui/TopoLine";
+import DrawOn from "@/components/anim/DrawOn";
 
 export const metadata = {
   title: "Byron Climbs",
@@ -17,9 +18,9 @@ export default function Home() {
       <HeroBanner />
       <MainPageBlog />
       {/* Topo divider */}
-      <div className="px-4 md:px-14 text-chalk-3">
+      <DrawOn className="px-4 md:px-14 text-chalk-3">
         <TopoLine height={48} seed={3} />
-      </div>
+      </DrawOn>
       <MainPageDatabase />
     </div>
   );

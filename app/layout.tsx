@@ -74,7 +74,7 @@ export default function RootLayout({
         >
           <TooltipProvider>
             <Header />
-            <main className="h-full overflow-auto">{children}</main>
+            <main>{children}</main>
             <Footer />
           </TooltipProvider>
         </ThemeProvider>

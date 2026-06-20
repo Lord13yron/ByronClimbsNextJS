@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import TypeGlyph from "./ui/TypeGlyph";
 import MonoChip from "./ui/MonoChip";
+import {
+  gsap,
+  prefersReducedMotion,
+  useIsomorphicLayoutEffect,
+} from "./anim/gsap";
 
 type GradeData = { grade: string; count: number };
-type Props = { data: GradeData[]; type: "boulder" | "sport" };
+type Props = {
+  data: GradeData[];
+  type: "boulder" | "sport";
+  /** Optional mono footnote rendered under the card with a top border. */
+  footnote?: string;
+};
 
 const SEGMENT_COLORS = [
   "#C8541E", // ember
@@ -36,8 +46,28 @@ function buildArcPath(
   return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`;
 }
 
-export default function GradePieChart({ data, type }: Props) {
+export default function GradePieChart({ data, type, footnote }: Props) {
   const [hovered, setHovered] = useState<number | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Donut rotates + scales + fades into place when scrolled into view. Runs
+  // before any hover, so it composes cleanly with the per-path hover opacity.
+  useIsomorphicLayoutEffect(() => {
+    const el = cardRef.current;
+    if (!el || prefersReducedMotion()) return;
+    const ctx = gsap.context(() => {
+      gsap.from(".donut-rotate", {
+        rotation: -28,
+        scale: 0.9,
+        autoAlpha: 0,
+        transformOrigin: "center center",
+        duration: 1.0,
+        ease: "power2.out",
+        scrollTrigger: { trigger: el, start: "top 84%", once: true },
+      });
+    }, el);
+    return () => ctx.revert();
+  }, []);
 
   const total = data.reduce((sum, d) => sum + d.count, 0);
   const kicker = type === "boulder" ? "— BOULDER" : "— SPORT";
@@ -58,6 +88,11 @@ export default function GradePieChart({ data, type }: Props) {
         <MonoChip className="text-slate-500 block py-6 text-center">
           No {type} sends yet.
         </MonoChip>
+        {footnote && (
+          <MonoChip className="mt-4 block border-t border-chalk-3 pt-3 text-slate-500">
+            {footnote}
+          </MonoChip>
+        )}
       </div>
     );
   }
@@ -118,7 +153,10 @@ export default function GradePieChart({ data, type }: Props) {
   const hovSeg = hovered !== null ? segments[hovered] : null;
 
   return (
-    <div className="bg-chalk border border-chalk-3 rounded-md p-5.5">
+    <div
+      ref={cardRef}
+      className="bg-chalk border border-chalk-3 rounded-md p-5.5"
+    >
       {/* Card header */}
       <div className="flex justify-between items-start mb-4">
         <div>
@@ -136,6 +174,7 @@ export default function GradePieChart({ data, type }: Props) {
           width="100%"
           viewBox="-70 -15 340 230"
           style={{ overflow: "visible" }}
+          className="donut-rotate"
         >
           {/* Segments */}
           {segments.map((s, i) => (
@@ -223,6 +262,12 @@ export default function GradePieChart({ data, type }: Props) {
           )}
         </div>
       </div>
+
+      {footnote && (
+        <MonoChip className="mt-4 block border-t border-chalk-3 pt-3 text-slate-500">
+          {footnote}
+        </MonoChip>
+      )}
     </div>
   );
 }

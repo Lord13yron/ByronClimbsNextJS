@@ -10,6 +10,9 @@ import {
 } from "@/app/types/types";
 import { createClient } from "./supabase/supabaseServer";
 import { getUser } from "./auth-actions";
+import { VGRADES, SPORTGRADES, hardestGrade } from "./grades";
+import { getRegions } from "./database-stats";
+import { cache } from "react";
 
 export async function getPosts() {
   const supabase = await createClient();
@@ -93,16 +96,16 @@ export async function getVideosForPost(postId: number) {
   return data as ContentVideo[];
 }
 
-export async function getAllClimbImages(): Promise<
+export const getAllClimbImages = cache(async (): Promise<
   { climb_id: number; url: string }[]
-> {
+> => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("climb_images")
     .select("climb_id, url");
   if (error) throw new Error("Failed to fetch climb images");
   return data ?? [];
-}
+});
 
 export async function getImagesForClimb(climbId: number) {
   const supabase = await createClient();
@@ -130,7 +133,7 @@ export async function getVideosForClimb(climbId: number) {
   return data as ContentVideo[];
 }
 
-export async function getClimbs() {
+export const getClimbs = cache(async () => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("climbs")
@@ -141,7 +144,7 @@ export async function getClimbs() {
     throw new Error("Failed to fetch climbs", error);
   }
   return data as Climb[];
-}
+});
 
 export async function getClimbBySlug(climbSlug: string) {
   const supabase = await createClient();
@@ -171,7 +174,7 @@ export async function getClimbById(climbId: string) {
   return data as Climb;
 }
 
-export async function getSendsForUser() {
+export const getSendsForUser = cache(async () => {
   const supabase = await createClient();
   const user = await getUser();
   if (!user) {
@@ -186,9 +189,9 @@ export async function getSendsForUser() {
     throw new Error("Failed to fetch sends for user", error);
   }
   return data as Send[];
-}
+});
 
-export async function getFavoritesForUser() {
+export const getFavoritesForUser = cache(async () => {
   const supabase = await createClient();
   const user = await getUser();
   if (!user) {
@@ -203,7 +206,32 @@ export async function getFavoritesForUser() {
     throw new Error("Failed to fetch favorites for user", error);
   }
   return data as Favorite[];
-}
+});
+
+// The site owner's (admin's) sends — used as the canonical "sent" set for the
+// Database page's read-only visualizations (masthead, skyline, pyramid, crags,
+// milestones) so they render identically signed-out and signed-in. Returns []
+// when no admin profile exists or on any error.
+export const getOwnerSends = cache(async (): Promise<Send[]> => {
+  try {
+    const supabase = await createClient();
+    const { data: owner } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin")
+      .limit(1)
+      .single();
+    if (!owner) return [];
+
+    const { data } = await supabase
+      .from("sends")
+      .select("*")
+      .eq("user_id", owner.id);
+    return (data as Send[]) ?? [];
+  } catch {
+    return [];
+  }
+});
 
 export async function getAllImagesForLibrary(): Promise<string[]> {
   const supabase = await createClient();
@@ -237,6 +265,70 @@ export async function getAdminStats() {
     totalUsers: totalUsers ?? 0,
     totalPosts: totalPosts ?? 0,
   };
+}
+
+export type OwnerSendStats = {
+  totalSends: number;
+  hardestBoulder: string | null;
+  hardestRoute: string | null;
+};
+
+// Masthead stat strip — counts the site owner's (admin's) sends. Auth-independent
+// so the strip renders identically for signed-out visitors. Returns zeroed/null
+// stats when no admin profile or no sends exist.
+export async function getOwnerSendStats(): Promise<OwnerSendStats> {
+  const empty: OwnerSendStats = {
+    totalSends: 0,
+    hardestBoulder: null,
+    hardestRoute: null,
+  };
+
+  try {
+    const supabase = await createClient();
+
+    const { data: owner } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin")
+      .limit(1)
+      .single();
+
+    if (!owner) return empty;
+
+    const [{ count }, { data: sends }] = await Promise.all([
+      supabase
+        .from("sends")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", owner.id),
+      supabase
+        .from("sends")
+        .select("climbs(grade, type)")
+        .eq("user_id", owner.id),
+    ]);
+
+    // Supabase types the joined relation as an array; flatten and drop nulls.
+    type ClimbGrade = { grade: string; type: string };
+    const climbs = (sends ?? [])
+      .flatMap((s: { climbs: ClimbGrade | ClimbGrade[] | null }) =>
+        Array.isArray(s.climbs) ? s.climbs : s.climbs ? [s.climbs] : [],
+      )
+      .filter((c): c is ClimbGrade => c != null);
+
+    const boulderGrades = climbs
+      .filter((c) => c.type === "boulder")
+      .map((c) => c.grade);
+    const routeGrades = climbs
+      .filter((c) => c.type !== "boulder")
+      .map((c) => c.grade);
+
+    return {
+      totalSends: count ?? 0,
+      hardestBoulder: hardestGrade(boulderGrades, VGRADES),
+      hardestRoute: hardestGrade(routeGrades, SPORTGRADES),
+    };
+  } catch {
+    return empty;
+  }
 }
 
 export type ActivityItem = {
@@ -311,6 +403,156 @@ export async function getRecentActivity(limit = 8): Promise<ActivityItem[]> {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     )
     .slice(0, limit);
+}
+
+// ---------------------------------------------------------------------------
+// Admin "Site pulse" analytics — site-wide aggregations for the /admin redesign.
+// Every value here comes from a real query; nothing is faked.
+// ---------------------------------------------------------------------------
+
+const MONTH_ABBR = [
+  "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+  "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+];
+
+export type VelocityBar = { label: string; count: number };
+
+export type KpiDelta = {
+  label: string;
+  value: number;
+  /** Absolute month-over-month change as a percentage. */
+  deltaPct: number;
+  direction: "up" | "down" | "flat";
+};
+
+export type HealthTile = { label: string; value: string; sub: string };
+
+export type AdminAnalytics = {
+  velocity: {
+    bars: VelocityBar[];
+    /** Index of the busiest month, or -1 when there are no sends. */
+    maxIndex: number;
+    total: number;
+    busiestLabel: string;
+    rangeLabel: string;
+  };
+  kpis: KpiDelta[];
+  health: HealthTile[];
+};
+
+/** The 12 rolling months ending with the current month (oldest → newest). */
+function rollingMonths(now: Date) {
+  return Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+    return { y: d.getFullYear(), m: d.getMonth(), label: MONTH_ABBR[d.getMonth()] };
+  });
+}
+
+function monthOverMonth(
+  curr: number,
+  prev: number,
+): { deltaPct: number; direction: KpiDelta["direction"] } {
+  if (curr === prev) return { deltaPct: 0, direction: "flat" };
+  const direction = curr > prev ? "up" : "down";
+  const deltaPct = prev === 0 ? 100 : Math.round(Math.abs((curr - prev) / prev) * 100);
+  return { deltaPct, direction };
+}
+
+export async function getAdminAnalytics(): Promise<AdminAnalytics> {
+  const supabase = await createClient();
+  const now = new Date();
+
+  // Month boundaries (local) as ISO strings for range counts.
+  const startThis = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const startLast = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+
+  const countRange = async (table: string, gte: string, lt?: string) => {
+    let q = supabase
+      .from(table)
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", gte);
+    if (lt) q = q.lt("created_at", lt);
+    const { count } = await q;
+    return count ?? 0;
+  };
+
+  const [
+    { data: sendRows },
+    sendsThis,
+    sendsLast,
+    routesThis,
+    routesLast,
+    climbImgThis,
+    climbImgLast,
+    postImgThis,
+    postImgLast,
+    climbs,
+    media,
+  ] = await Promise.all([
+    supabase.from("sends").select("created_at"),
+    countRange("sends", startThis),
+    countRange("sends", startLast, startThis),
+    countRange("climbs", startThis),
+    countRange("climbs", startLast, startThis),
+    countRange("climb_images", startThis),
+    countRange("climb_images", startLast, startThis),
+    countRange("post_images", startThis),
+    countRange("post_images", startLast, startThis),
+    getClimbs(),
+    getAllImagesForLibrary(),
+  ]);
+
+  // --- Send velocity (last 12 rolling months) ---
+  const buckets = rollingMonths(now);
+  const idxByKey = new Map(buckets.map((b, i) => [`${b.y}-${b.m}`, i]));
+  const counts = new Array(12).fill(0);
+  for (const s of (sendRows as { created_at: string }[] | null) ?? []) {
+    const d = new Date(s.created_at);
+    const i = idxByKey.get(`${d.getFullYear()}-${d.getMonth()}`);
+    if (i !== undefined) counts[i] += 1;
+  }
+  const total = counts.reduce((a, c) => a + c, 0);
+  const maxCount = Math.max(...counts);
+  const maxIndex = maxCount > 0 ? counts.indexOf(maxCount) : -1;
+  const bars: VelocityBar[] = buckets.map((b, i) => ({ label: b.label, count: counts[i] }));
+  const rangeLabel = `${buckets[0].label} ${buckets[0].y} → ${buckets[11].label} ${buckets[11].y}`;
+
+  // --- KPI deltas (month over month) ---
+  const mediaThis = climbImgThis + postImgThis;
+  const mediaLast = climbImgLast + postImgLast;
+  const kpis: KpiDelta[] = [
+    { label: "SENDS THIS MONTH", value: sendsThis, ...monthOverMonth(sendsThis, sendsLast) },
+    { label: "NEW ROUTES", value: routesThis, ...monthOverMonth(routesThis, routesLast) },
+    { label: "MEDIA UPLOADS", value: mediaThis, ...monthOverMonth(mediaThis, mediaLast) },
+  ];
+
+  // --- Database health tiles ---
+  const areas = new Set(climbs.map((c) => c.area).filter(Boolean));
+  const regions = getRegions(climbs);
+  const health: HealthTile[] = [
+    {
+      label: "CRAGS / AREAS",
+      value: String(areas.size),
+      sub: `${regions.length} REGION${regions.length === 1 ? "" : "S"}`,
+    },
+    {
+      label: "MEDIA LIBRARY",
+      value: String(media.length),
+      sub: "PHOTOS ON FILE",
+    },
+  ];
+
+  return {
+    velocity: {
+      bars,
+      maxIndex,
+      total,
+      busiestLabel: maxIndex >= 0 ? buckets[maxIndex].label : "—",
+      rangeLabel,
+    },
+    kpis,
+    health,
+  };
 }
 
 export async function getNotesForClimb(climbId: number) {

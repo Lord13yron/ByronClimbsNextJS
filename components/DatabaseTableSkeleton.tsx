@@ -17,10 +17,17 @@ export default function DatabaseTableSkeleton() {
           <Skeleton className={`h-8 w-14 rounded-sm ${s}`} />
           <Skeleton className={`h-8 w-12 rounded-sm ${s}`} />
         </div>
-        {/* Search + view toggle */}
-        <div className="flex items-center justify-between gap-2">
-          <Skeleton className={`h-9 w-48 sm:w-72 rounded-sm ${s}`} />
-          <Skeleton className={`h-9 w-24 rounded-sm ${s}`} />
+        {/* Grade left · search centered (right on small) · toggle right */}
+        <div className="flex items-center gap-2">
+          <div className="lg:flex-1">
+            <Skeleton className={`h-9 w-30 rounded-sm ${s}`} />
+          </div>
+          <div className="ml-auto flex flex-1 justify-end lg:ml-0 lg:justify-center">
+            <Skeleton className={`h-9 w-48 sm:w-65 rounded-sm ${s}`} />
+          </div>
+          <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+            <Skeleton className={`h-9 w-24 rounded-sm ${s}`} />
+          </div>
         </div>
       </div>
 

@@ -1,12 +1,31 @@
-import MonoChip from "@/components/ui/MonoChip";
-import TopoLine from "@/components/ui/TopoLine";
-import { getAdminStats, getRecentActivity } from "@/lib/data-service";
 import Link from "next/link";
+import {
+  Check,
+  FileText,
+  ListOrdered,
+  MountainSnow,
+  Newspaper,
+  PencilLine,
+  Plus,
+  Settings,
+  User2,
+  type LucideIcon,
+} from "lucide-react";
+import MonoChip from "@/components/ui/MonoChip";
+import Counter from "@/components/anim/Counter";
+import Reveal from "@/components/anim/Reveal";
+import AdminHero from "@/components/admin/AdminHero";
+import SendVelocity from "@/components/admin/SendVelocity";
+import ScrollProgressBar from "@/components/database/ScrollProgressBar";
+import {
+  getAdminStats,
+  getRecentActivity,
+  getAdminAnalytics,
+  type ActivityItem,
+} from "@/lib/data-service";
 
 function timeAgo(isoString: string): string {
-  const seconds = Math.floor(
-    (Date.now() - new Date(isoString).getTime()) / 1000
-  );
+  const seconds = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
   if (seconds < 60) return `${seconds} SECONDS AGO`;
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes} MINUTE${minutes === 1 ? "" : "S"} AGO`;
@@ -16,161 +35,229 @@ function timeAgo(isoString: string): string {
   return `${days} DAY${days === 1 ? "" : "S"} AGO`;
 }
 
+// Quick-action cards: a climbs row, a blog row, then a full-width Settings card.
+const ACTIONS: {
+  title: string;
+  sub: string;
+  href: string;
+  icon: LucideIcon;
+  wide?: boolean;
+}[] = [
+  { title: "Add new route", sub: "CREATE A CLIMB ENTRY", href: "/admin/add-climb", icon: Plus },
+  { title: "Manage climbs", sub: "EDIT THE DATABASE", href: "/admin/climbs", icon: ListOrdered },
+  { title: "Add blog post", sub: "WRITE A FIELD NOTE", href: "/admin/blog/add-post", icon: PencilLine },
+  { title: "Manage blog posts", sub: "EDIT FIELD NOTES", href: "/admin/blog", icon: Newspaper },
+  { title: "Settings", sub: "SITE CONFIGURATION", href: "/admin/settings", icon: Settings, wide: true },
+];
+
+// Maps an activity row's `type` to its glyph, colour and tag label.
+const TYPE_META: Record<
+  string,
+  { tag: string; icon: LucideIcon; color: string; tint: string }
+> = {
+  send_logged: { tag: "SEND", icon: Check, color: "#5FB87A", tint: "rgba(95,184,122,0.16)" },
+  climb_added: { tag: "DATABASE", icon: MountainSnow, color: "#E37A3F", tint: "rgba(227,122,63,0.16)" },
+  user_registered: { tag: "ACCOUNT", icon: User2, color: "#7FB6C4", tint: "rgba(127,182,196,0.16)" },
+  post_added: { tag: "JOURNAL", icon: FileText, color: "#E0883A", tint: "rgba(224,136,58,0.16)" },
+};
+const FALLBACK_META = TYPE_META.climb_added;
+
 export default async function AdminPage() {
-  const [stats, activity] = await Promise.all([
+  const [stats, activity, analytics] = await Promise.all([
     getAdminStats(),
     getRecentActivity(),
+    getAdminAnalytics(),
   ]);
 
   return (
-    <div className="bg-chalk min-h-screen p-6 md:p-10">
-      <div className="max-w-5xl mx-auto">
+    <>
+      <ScrollProgressBar />
 
-        {/* Masthead */}
-        <div className="mb-6">
-          <MonoChip className="text-ember mb-3 block">— ADMIN DASHBOARD</MonoChip>
-          <h1
-            className="font-display uppercase font-extrabold leading-[0.92] tracking-[0.01em] text-granite-100"
-            style={{ fontSize: "clamp(36px, 5vw, 72px)" }}
-          >
-            Dashboard.
-          </h1>
-          <p className="mt-3 text-[15px] leading-[1.6] text-slate-700 font-body">
-            Site overview and quick actions.
-          </p>
-        </div>
+      {/* 1 — Control-deck hero */}
+      <AdminHero stats={stats} />
 
-        <div className="text-chalk-3 opacity-60">
-          <TopoLine height={36} seed={3} />
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-          <div className="bg-chalk-2 border border-chalk-3 rounded-sm p-6">
-            <MonoChip className="text-ember block mb-3">— TOTAL CLIMBS</MonoChip>
-            <div className="font-display text-[56px] leading-none text-granite-100">
-              {stats.totalClimbs}
-            </div>
-            <MonoChip className="text-slate-400 block mt-2">ROUTES IN DATABASE</MonoChip>
-          </div>
-
-          <div className="bg-chalk-2 border border-chalk-3 rounded-sm p-6">
-            <MonoChip className="text-ember block mb-3">— SENDS LOGGED</MonoChip>
-            <div className="font-display text-[56px] leading-none text-granite-100">
-              {stats.totalSends}
-            </div>
-            <MonoChip className="text-slate-400 block mt-2">ALL-TIME SENDS</MonoChip>
-          </div>
-
-          <div className="bg-chalk-2 border border-chalk-3 rounded-sm p-6">
-            <MonoChip className="text-ember block mb-3">— TOTAL USERS</MonoChip>
-            <div className="font-display text-[56px] leading-none text-granite-100">
-              {stats.totalUsers}
-            </div>
-            <MonoChip className="text-slate-400 block mt-2">REGISTERED ACCOUNTS</MonoChip>
-          </div>
-
-          <div className="bg-chalk-2 border border-chalk-3 rounded-sm p-6">
-            <MonoChip className="text-ember block mb-3">— BLOG POSTS</MonoChip>
-            <div className="font-display text-[56px] leading-none text-granite-100">
-              {stats.totalPosts}
-            </div>
-            <MonoChip className="text-slate-400 block mt-2">PUBLISHED ENTRIES</MonoChip>
-          </div>
-        </div>
-
-        <div className="text-chalk-3 opacity-60 mt-8">
-          <TopoLine height={36} seed={7} />
-        </div>
-
-        {/* Quick Actions + Recent Activity */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-
-          {/* Quick Actions */}
-          <div className="bg-chalk-2 border border-chalk-3 rounded-sm overflow-hidden">
-            <div className="px-6 pt-6 pb-4">
-              <MonoChip className="text-ember block mb-2">— QUICK ACTIONS</MonoChip>
-              <h2 className="font-display uppercase font-bold text-[28px] leading-none text-granite-100">
-                Actions.
-              </h2>
-            </div>
-            <div>
-              <Link
-                href="/admin/add-climb"
-                className="flex justify-between items-center border-t border-chalk-3 py-4 px-6 hover:bg-chalk-3/40 transition-colors duration-150"
-              >
-                <div>
-                  <div className="font-display uppercase font-semibold text-[13px] tracking-[0.06em] text-granite-100">
-                    Add New Route
-                  </div>
-                  <MonoChip className="text-slate-400 block mt-0.5">
-                    CREATE A CLIMBING ROUTE
-                  </MonoChip>
-                </div>
-                <span className="font-display text-ember text-[18px]">→</span>
-              </Link>
-              <Link
-                href="/admin/blog/add-post"
-                className="flex justify-between items-center border-t border-chalk-3 py-4 px-6 hover:bg-chalk-3/40 transition-colors duration-150"
-              >
-                <div>
-                  <div className="font-display uppercase font-semibold text-[13px] tracking-[0.06em] text-granite-100">
-                    Add Blog Post
-                  </div>
-                  <MonoChip className="text-slate-400 block mt-0.5">
-                    WRITE A NEW ENTRY
-                  </MonoChip>
-                </div>
-                <span className="font-display text-ember text-[18px]">→</span>
-              </Link>
-              <Link
-                href="/admin/settings"
-                className="flex justify-between items-center border-t border-chalk-3 py-4 px-6 hover:bg-chalk-3/40 transition-colors duration-150"
-              >
-                <div>
-                  <div className="font-display uppercase font-semibold text-[13px] tracking-[0.06em] text-granite-100">
-                    Settings
-                  </div>
-                  <MonoChip className="text-slate-400 block mt-0.5">
-                    SITE CONFIGURATION
-                  </MonoChip>
-                </div>
-                <span className="font-display text-ember text-[18px]">→</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="bg-chalk-2 border border-chalk-3 rounded-sm overflow-hidden">
-            <div className="px-6 pt-6 pb-4">
-              <MonoChip className="text-ember block mb-2">— RECENT ACTIVITY</MonoChip>
-              <h2 className="font-display uppercase font-bold text-[28px] leading-none text-granite-100">
-                Activity.
-              </h2>
-            </div>
-            <div className="px-6 pb-6 flex flex-col gap-5 border-t border-chalk-3 pt-5">
-              {activity.length === 0 ? (
-                <MonoChip className="text-slate-400">NO RECENT ACTIVITY</MonoChip>
-              ) : (
-                activity.map((item, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-ember rounded-full mt-1.25 shrink-0" />
-                    <div>
-                      <p className="text-[14px] font-body text-granite-100 leading-snug">
-                        {item.label}
-                      </p>
-                      <MonoChip className="text-slate-400 block mt-1">
-                        {timeAgo(item.created_at)}
-                      </MonoChip>
+      {/* 2 — Quick actions + Recent activity */}
+      <section className="bg-chalk">
+        <div
+          className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-[22px] min-[920px]:grid-cols-[1.15fr_1fr]"
+          style={{ padding: "clamp(34px,5vw,64px) clamp(20px,5vw,56px)" }}
+        >
+          {/* Left — Quick actions */}
+          <div>
+            <MonoChip className="mb-2 block text-ember">— QUICK ACTIONS</MonoChip>
+            <h2 className="mb-6 font-display text-[clamp(26px,3.2vw,38px)] font-bold uppercase leading-[0.94] text-granite-100">
+              Run the site
+            </h2>
+            <Reveal
+              className="grid grid-cols-1 gap-[14px] min-[620px]:grid-cols-2"
+              y={16}
+              stagger={0.06}
+            >
+              {ACTIONS.map((a) => {
+                const Icon = a.icon;
+                return (
+                  <Link
+                    key={a.href}
+                    href={a.href}
+                    className={`group flex min-h-[148px] flex-col justify-between rounded-sm border border-chalk-3 bg-chalk-2 p-[18px] transition-all duration-150 hover:-translate-y-[3px] hover:border-ember hover:bg-chalk ${
+                      a.wide ? "min-[620px]:col-span-2" : ""
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-granite-100 text-chalk">
+                        <Icon size={18} strokeWidth={1.75} />
+                      </span>
+                      <span className="font-display text-[18px] text-slate-400 transition-all duration-150 group-hover:translate-x-1 group-hover:text-ember">
+                        →
+                      </span>
                     </div>
+                    <div>
+                      <div className="font-display text-[19px] font-bold uppercase leading-none text-granite-100">
+                        {a.title}
+                      </div>
+                      <MonoChip className="mt-1.5 block text-slate-400">{a.sub}</MonoChip>
+                    </div>
+                  </Link>
+                );
+              })}
+            </Reveal>
+          </div>
+
+          {/* Right — Recent activity (live feed) */}
+          <div
+            className="relative overflow-hidden rounded-sm border border-chalk-3 bg-granite-100"
+            style={{ padding: "clamp(18px,2.4vw,26px)" }}
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-10 -top-10 h-40 w-40"
+              style={{
+                background:
+                  "radial-gradient(ellipse at center, rgba(200,84,30,0.2), transparent 70%)",
+              }}
+            />
+            <div className="relative mb-4 flex items-start justify-between">
+              <div>
+                <MonoChip className="mb-2 block text-ember-soft">— LIVE FEED</MonoChip>
+                <h2 className="font-display text-[clamp(24px,3vw,34px)] font-bold uppercase leading-none text-chalk">
+                  Recent activity
+                </h2>
+              </div>
+              <span className="flex items-center gap-1.5">
+                <span
+                  className="ember-pulse inline-block h-1.5 w-1.5 rounded-full"
+                  style={{ background: "#5FB87A" }}
+                />
+                <MonoChip className="text-[rgba(244,241,236,0.5)]">LIVE</MonoChip>
+              </span>
+            </div>
+
+            {activity.length === 0 ? (
+              <MonoChip className="text-[rgba(244,241,236,0.42)]">NO RECENT ACTIVITY</MonoChip>
+            ) : (
+              <Reveal selector="li" x={16} stagger={0.06}>
+                <ul className="relative flex flex-col gap-0.5">
+                  {activity.map((item: ActivityItem, i) => {
+                    const meta = TYPE_META[item.type] ?? FALLBACK_META;
+                    const Icon = meta.icon;
+                    return (
+                      <li
+                        key={i}
+                        className="flex items-start gap-3 border-t border-[rgba(244,241,236,0.09)] px-1 py-[13px]"
+                      >
+                        <span
+                          className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-sm"
+                          style={{ background: meta.tint, color: meta.color }}
+                        >
+                          <Icon size={14} strokeWidth={2} />
+                        </span>
+                        <div>
+                          <p className="font-body text-[14px] leading-[1.4] text-chalk">
+                            {item.label}
+                          </p>
+                          <MonoChip className="mt-1 block text-[rgba(244,241,236,0.42)]">
+                            {meta.tag} · {timeAgo(item.created_at)}
+                          </MonoChip>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Reveal>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 3 — Site pulse (analytics) */}
+      <section className="bg-chalk-2">
+        <div
+          className="mx-auto w-full max-w-7xl"
+          style={{ padding: "clamp(30px,4.5vw,56px) clamp(20px,5vw,56px) clamp(48px,6vw,72px)" }}
+        >
+          <MonoChip className="mb-2 block text-ember">— BY THE NUMBERS</MonoChip>
+          <h2 className="mb-6 font-display text-[clamp(28px,3.6vw,42px)] font-bold uppercase leading-none text-granite-100">
+            Site pulse
+          </h2>
+
+          {/* Top row — velocity + KPI deltas */}
+          <div className="grid grid-cols-1 items-stretch gap-[22px] min-[920px]:grid-cols-[1.6fr_1fr]">
+            <SendVelocity velocity={analytics.velocity} />
+
+            <div className="flex flex-col gap-[14px]">
+              {analytics.kpis.map((kpi) => {
+                const isFlat = kpi.direction === "flat";
+                const isUp = kpi.direction === "up";
+                const pillStyle = isFlat
+                  ? { color: "#6E6E74", background: "rgba(140,140,146,0.12)" }
+                  : isUp
+                  ? { color: "#3F8F5C", background: "rgba(95,184,122,0.14)" }
+                  : { color: "#B0492A", background: "rgba(200,84,30,0.12)" };
+                return (
+                  <div
+                    key={kpi.label}
+                    className="flex items-center justify-between rounded-sm border border-chalk-3 bg-chalk px-5 py-[18px]"
+                  >
+                    <div>
+                      <MonoChip className="mb-1.5 block text-ember">{kpi.label}</MonoChip>
+                      <div className="font-display text-[clamp(34px,4vw,46px)] font-bold leading-none text-granite-100">
+                        <Counter value={kpi.value} />
+                      </div>
+                    </div>
+                    <span
+                      className="inline-flex items-center gap-1 rounded-sm px-[11px] py-[7px]"
+                      style={pillStyle}
+                    >
+                      <span className="text-[11px] leading-none">
+                        {isFlat ? "—" : isUp ? "▲" : "▼"}
+                      </span>
+                      <span className="font-mono text-[10px] uppercase leading-none tracking-widest">
+                        {isFlat ? "FLAT" : `${kpi.deltaPct}%`}
+                      </span>
+                    </span>
                   </div>
-                ))
-              )}
+                );
+              })}
             </div>
           </div>
 
+          {/* Database-health tiles */}
+          <div className="mt-[22px] grid grid-cols-1 gap-3 min-[620px]:grid-cols-2">
+            {analytics.health.map((tile) => (
+              <div
+                key={tile.label}
+                className="rounded-sm border border-chalk-3 bg-chalk px-5 py-[18px]"
+              >
+                <MonoChip className="block text-slate-400">{tile.label}</MonoChip>
+                <div className="mt-1.5 font-display text-[30px] font-bold leading-none text-granite-100">
+                  {tile.value}
+                </div>
+                <MonoChip className="mt-1.5 block text-ember">{tile.sub}</MonoChip>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </>
   );
 }

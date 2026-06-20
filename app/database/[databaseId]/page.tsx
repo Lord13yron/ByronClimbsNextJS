@@ -1,6 +1,6 @@
 import Climb from "@/components/Climb";
 import ClimbSignedOut from "@/components/ClimbSignedOut";
-import ClimbSkeleton from "@/components/ClimbSkeleton";
+import ScrollProgressBar from "@/components/database/ScrollProgressBar";
 import { getUser } from "@/lib/auth-actions";
 import { Suspense } from "react";
 
@@ -14,8 +14,11 @@ export default async function Page({
   const user = await getUser();
 
   return (
-    <Suspense fallback={<ClimbSkeleton />}>
-      {user ? <Climb databaseId={id} /> : <ClimbSignedOut databaseId={id} />}
-    </Suspense>
+    <>
+      <ScrollProgressBar />
+      <Suspense fallback={<div className="bg-background min-h-screen" />}>
+        {user ? <Climb databaseId={id} /> : <ClimbSignedOut databaseId={id} />}
+      </Suspense>
+    </>
   );
 }

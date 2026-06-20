@@ -1,7 +1,9 @@
 import { columnsSignedOut } from "@/app/database/columnsSignedout";
 import { DataTableSignedOut } from "@/app/database/data-table-signed-out";
 import { getClimbs } from "@/lib/data-service";
+import { filterClimbs } from "@/lib/database-filter";
 import { SearchParams } from "@/app/types/types";
+import MonoChip from "@/components/ui/MonoChip";
 
 export default async function DatabaseTableSignedout({
   searchParams,
@@ -9,20 +11,23 @@ export default async function DatabaseTableSignedout({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  let climbs = await getClimbs();
-
-  if (params.q) {
-    const q = params.q.toLowerCase();
-    climbs = climbs.filter((c) =>
-      ["name", "grade", "city", "area", "subArea"].some((field) =>
-        String((c as Record<string, unknown>)[field] ?? "").toLowerCase().includes(q),
-      ),
-    );
-  }
+  const climbs = await getClimbs();
+  const data = filterClimbs(climbs, params, { signedIn: false });
 
   return (
-    <div className="px-4 md:px-14 max-w-[1280px] mx-auto w-full pb-16">
-      <DataTableSignedOut columns={columnsSignedOut} data={climbs} />
+    <div className="mx-auto w-full max-w-7xl px-4 pb-16 md:px-14">
+      {data.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
+          <p className="font-display text-[26px] uppercase text-slate-300">
+            Nothing logged here
+          </p>
+          <MonoChip className="text-slate-400">
+            Try clearing a filter or two.
+          </MonoChip>
+        </div>
+      ) : (
+        <DataTableSignedOut columns={columnsSignedOut} data={data} />
+      )}
     </div>
   );
 }
