@@ -77,7 +77,7 @@ export default function FeaturedEntry({
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[center_40%]"
+          className="object-contain object-[center_40%]"
         />
       </Parallax>
 
@@ -85,7 +85,7 @@ export default function FeaturedEntry({
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_75%_20%,rgba(200,84,30,0.20),transparent_55%),linear-gradient(180deg,rgba(0,0,0,0.18)_0%,rgba(0,0,0,0.74)_100%)]" />
 
       {/* Content */}
-      <div className="relative z-[2] w-full px-[clamp(16px,4vw,56px)] pb-7 pt-24 md:pb-10 md:pt-[140px]">
+      <div className="relative z-2 w-full px-[clamp(16px,4vw,56px)] pb-7 pt-24 md:pb-10 md:pt-[140px]">
         <p
           data-reveal
           className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ember-soft"
