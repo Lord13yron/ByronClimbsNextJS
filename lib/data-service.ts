@@ -11,6 +11,7 @@ import {
 import { createClient } from "./supabase/supabaseServer";
 import { getUser } from "./auth-actions";
 import { VGRADES, SPORTGRADES, hardestGrade } from "./grades";
+import { getRegions } from "./database-stats";
 import { cache } from "react";
 
 export async function getPosts() {
@@ -402,6 +403,156 @@ export async function getRecentActivity(limit = 8): Promise<ActivityItem[]> {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     )
     .slice(0, limit);
+}
+
+// ---------------------------------------------------------------------------
+// Admin "Site pulse" analytics — site-wide aggregations for the /admin redesign.
+// Every value here comes from a real query; nothing is faked.
+// ---------------------------------------------------------------------------
+
+const MONTH_ABBR = [
+  "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+  "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+];
+
+export type VelocityBar = { label: string; count: number };
+
+export type KpiDelta = {
+  label: string;
+  value: number;
+  /** Absolute month-over-month change as a percentage. */
+  deltaPct: number;
+  direction: "up" | "down" | "flat";
+};
+
+export type HealthTile = { label: string; value: string; sub: string };
+
+export type AdminAnalytics = {
+  velocity: {
+    bars: VelocityBar[];
+    /** Index of the busiest month, or -1 when there are no sends. */
+    maxIndex: number;
+    total: number;
+    busiestLabel: string;
+    rangeLabel: string;
+  };
+  kpis: KpiDelta[];
+  health: HealthTile[];
+};
+
+/** The 12 rolling months ending with the current month (oldest → newest). */
+function rollingMonths(now: Date) {
+  return Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+    return { y: d.getFullYear(), m: d.getMonth(), label: MONTH_ABBR[d.getMonth()] };
+  });
+}
+
+function monthOverMonth(
+  curr: number,
+  prev: number,
+): { deltaPct: number; direction: KpiDelta["direction"] } {
+  if (curr === prev) return { deltaPct: 0, direction: "flat" };
+  const direction = curr > prev ? "up" : "down";
+  const deltaPct = prev === 0 ? 100 : Math.round(Math.abs((curr - prev) / prev) * 100);
+  return { deltaPct, direction };
+}
+
+export async function getAdminAnalytics(): Promise<AdminAnalytics> {
+  const supabase = await createClient();
+  const now = new Date();
+
+  // Month boundaries (local) as ISO strings for range counts.
+  const startThis = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const startLast = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+
+  const countRange = async (table: string, gte: string, lt?: string) => {
+    let q = supabase
+      .from(table)
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", gte);
+    if (lt) q = q.lt("created_at", lt);
+    const { count } = await q;
+    return count ?? 0;
+  };
+
+  const [
+    { data: sendRows },
+    sendsThis,
+    sendsLast,
+    routesThis,
+    routesLast,
+    climbImgThis,
+    climbImgLast,
+    postImgThis,
+    postImgLast,
+    climbs,
+    media,
+  ] = await Promise.all([
+    supabase.from("sends").select("created_at"),
+    countRange("sends", startThis),
+    countRange("sends", startLast, startThis),
+    countRange("climbs", startThis),
+    countRange("climbs", startLast, startThis),
+    countRange("climb_images", startThis),
+    countRange("climb_images", startLast, startThis),
+    countRange("post_images", startThis),
+    countRange("post_images", startLast, startThis),
+    getClimbs(),
+    getAllImagesForLibrary(),
+  ]);
+
+  // --- Send velocity (last 12 rolling months) ---
+  const buckets = rollingMonths(now);
+  const idxByKey = new Map(buckets.map((b, i) => [`${b.y}-${b.m}`, i]));
+  const counts = new Array(12).fill(0);
+  for (const s of (sendRows as { created_at: string }[] | null) ?? []) {
+    const d = new Date(s.created_at);
+    const i = idxByKey.get(`${d.getFullYear()}-${d.getMonth()}`);
+    if (i !== undefined) counts[i] += 1;
+  }
+  const total = counts.reduce((a, c) => a + c, 0);
+  const maxCount = Math.max(...counts);
+  const maxIndex = maxCount > 0 ? counts.indexOf(maxCount) : -1;
+  const bars: VelocityBar[] = buckets.map((b, i) => ({ label: b.label, count: counts[i] }));
+  const rangeLabel = `${buckets[0].label} ${buckets[0].y} → ${buckets[11].label} ${buckets[11].y}`;
+
+  // --- KPI deltas (month over month) ---
+  const mediaThis = climbImgThis + postImgThis;
+  const mediaLast = climbImgLast + postImgLast;
+  const kpis: KpiDelta[] = [
+    { label: "SENDS THIS MONTH", value: sendsThis, ...monthOverMonth(sendsThis, sendsLast) },
+    { label: "NEW ROUTES", value: routesThis, ...monthOverMonth(routesThis, routesLast) },
+    { label: "MEDIA UPLOADS", value: mediaThis, ...monthOverMonth(mediaThis, mediaLast) },
+  ];
+
+  // --- Database health tiles ---
+  const areas = new Set(climbs.map((c) => c.area).filter(Boolean));
+  const regions = getRegions(climbs);
+  const health: HealthTile[] = [
+    {
+      label: "CRAGS / AREAS",
+      value: String(areas.size),
+      sub: `${regions.length} REGION${regions.length === 1 ? "" : "S"}`,
+    },
+    {
+      label: "MEDIA LIBRARY",
+      value: String(media.length),
+      sub: "PHOTOS ON FILE",
+    },
+  ];
+
+  return {
+    velocity: {
+      bars,
+      maxIndex,
+      total,
+      busiestLabel: maxIndex >= 0 ? buckets[maxIndex].label : "—",
+      rangeLabel,
+    },
+    kpis,
+    health,
+  };
 }
 
 export async function getNotesForClimb(climbId: number) {
