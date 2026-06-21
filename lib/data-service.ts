@@ -363,7 +363,7 @@ export async function getRecentActivity(limit = 8): Promise<ActivityItem[]> {
       .limit(5),
     supabase
       .from("sends")
-      .select("id, created_at, climbs(name), profiles(username)")
+      .select("id, created_at, climbs(name, grade, type), profiles(username, email)")
       .order("created_at", { ascending: false })
       .limit(5),
   ]);
@@ -387,13 +387,32 @@ export async function getRecentActivity(limit = 8): Promise<ActivityItem[]> {
     ...(sends ?? []).map(
       (s: {
         created_at: string;
-        climbs: { name: string }[];
-        profiles: { username: string }[];
-      }) => ({
-        type: "send_logged",
-        label: `${s.profiles[0]?.username ?? "Someone"} sent ${s.climbs[0]?.name ?? "unknown route"}`,
-        created_at: s.created_at,
-      })
+        climbs:
+          | { name: string | null; grade: string | null; type: string | null }
+          | { name: string | null; grade: string | null; type: string | null }[]
+          | null;
+        profiles:
+          | { username: string | null; email: string | null }
+          | { username: string | null; email: string | null }[]
+          | null;
+      }) => {
+        const climb = Array.isArray(s.climbs) ? s.climbs[0] : s.climbs;
+        const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;
+        const who = profile?.username ?? profile?.email ?? "Someone";
+        const rawName = climb?.name ?? "unknown route";
+        const name = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+        const grade = climb?.grade
+          ? climb.type === "boulder"
+            ? `V${climb.grade}`
+            : climb.grade
+          : null;
+        const what = grade ? `${name} - ${grade}` : name;
+        return {
+          type: "send_logged",
+          label: `${who} sent ${what}`,
+          created_at: s.created_at,
+        };
+      }
     ),
   ];
 
