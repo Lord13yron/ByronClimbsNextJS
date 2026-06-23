@@ -2,16 +2,14 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import {
-  gsap,
-  prefersReducedMotion,
-  useIsomorphicLayoutEffect,
-} from "../anim/gsap";
+import { useMagnetic } from "../anim/useMagnetic";
 
 type MagneticButtonProps = {
   href: string;
   children: React.ReactNode;
   className?: string;
+  /** How strongly the button tracks the cursor (0–1). */
+  strength?: number;
 };
 
 /**
@@ -22,39 +20,10 @@ export default function MagneticButton({
   href,
   children,
   className,
+  strength = 0.3,
 }: MagneticButtonProps) {
   const ref = useRef<HTMLAnchorElement>(null);
-
-  useIsomorphicLayoutEffect(() => {
-    const el = ref.current;
-    if (!el || prefersReducedMotion()) return;
-
-    const mql = window.matchMedia("(min-width: 760px)");
-    if (!mql.matches) return;
-
-    const onMove = (e: MouseEvent) => {
-      const r = el.getBoundingClientRect();
-      const x = e.clientX - (r.left + r.width / 2);
-      const y = e.clientY - (r.top + r.height / 2);
-      gsap.to(el, {
-        x: x * 0.3,
-        y: y * 0.3,
-        duration: 0.4,
-        ease: "power3.out",
-      });
-    };
-    const onLeave = () => {
-      gsap.to(el, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1,0.4)" });
-    };
-
-    el.addEventListener("mousemove", onMove);
-    el.addEventListener("mouseleave", onLeave);
-    return () => {
-      el.removeEventListener("mousemove", onMove);
-      el.removeEventListener("mouseleave", onLeave);
-      gsap.killTweensOf(el);
-    };
-  }, []);
+  useMagnetic(ref, strength);
 
   return (
     <Link ref={ref} href={href} className={className}>

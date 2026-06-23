@@ -15,7 +15,8 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 export default function HomeCrags({ crags }: HomeCragsProps) {
   const top = crags[0];
   const caption = top
-    ? `${top.area}${top.city ? ` · ${top.city}` : ""}`
+    ? // ? `${top.area}${top.city ? ` · ${top.city}` : ""}`
+      "SQUAMISH · BC"
     : "THE OKANAGAN · BC";
 
   return (

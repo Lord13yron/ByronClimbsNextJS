@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ background:#F4F1EC; }
+  #bc-contact{ font-family:'Inter',system-ui,sans-serif; color:#1F1F21; -webkit-font-smoothing:antialiased; }
+  #bc-contact .bc-disp{ font-family:'Saira Condensed','Saira Condensed Fallback',sans-serif; }
+  #bc-contact .bc-mono{ font-family:'JetBrains Mono',ui-monospace,monospace; text-transform:uppercase; letter-spacing:0.18em; font-size:10px; line-height:1; color:#6E6E74; }
+  #bc-contact a{ text-decoration:none; color:inherit; }
+  .bc-nav-desktop{ display:flex; }
+  .bc-only-sm{ display:none; }
+  .bc-contact-grid{ display:grid; grid-template-columns:1.05fr 0.95fr; gap:clamp(36px,5vw,72px); align-items:start; }
+  .bc-side{ position:sticky; top:96px; }
+  @media (max-width:880px){
+    .bc-contact-grid{ grid-template-columns:1fr; gap:44px; }
+    .bc-side{ position:static; top:auto; }
+  }
+  @media (max-width:760px){
+    .bc-nav-desktop{ display:none !important; }
+    .bc-only-sm{ display:inline-flex !important; }
+  }
+  @keyframes bcGlow{ 0%,100%{ opacity:0.5; transform:scale(1); } 50%{ opacity:0.85; transform:scale(1.08); } }
+  .bc-glow{ animation:bcGlow 7s ease-in-out infinite; }
+  @keyframes bcPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(200,84,30,0.55); } 70%{ box-shadow:0 0 0 12px rgba(200,84,30,0); } }
+  @keyframes bcLiveDot{ 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
+  .bc-live-dot{ animation:bcLiveDot 1.8s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce){ .bc-glow,.bc-live-dot{ animation:none !important; } }
+</style>
+</helmet>
+
+<div id="bc-contact">
+
+  <!-- ============ HEADER ============ -->
+  <header data-screen-label="Header" style="position:sticky; top:0; z-index:50; background:rgba(244,241,236,0.9); backdrop-filter:saturate(180%) blur(10px); -webkit-backdrop-filter:saturate(180%) blur(10px); border-bottom:1px solid #DCD5C8;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px clamp(20px,5vw,56px); max-width:1320px; margin:0 auto;">
+      <a href="Byron Climbs Landing.dc.html" style="display:flex; align-items:center; gap:12px;">
+        <svg width="34" height="34" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <circle cx="20" cy="20" r="18" stroke="#1F1F21" stroke-width="1.5"></circle>
+          <circle cx="20" cy="20" r="13" stroke="#1F1F21" stroke-width="0.8" opacity="0.5"></circle>
+          <path d="M8 28 L16 16 L20 21 L26 12 L32 28 Z" fill="#1F1F21"></path>
+          <circle cx="26" cy="12" r="1.6" fill="#C8541E"></circle>
+        </svg>
+        <span style="display:flex; flex-direction:column; line-height:1;">
+          <span class="bc-disp" style="text-transform:uppercase; font-weight:700; font-size:19px; letter-spacing:0.06em; color:#1F1F21;">Byron Climbs</span>
+          <span class="bc-mono" style="margin-top:5px; font-size:9px;">EST. 2019 · KELOWNA, BC</span>
+        </span>
+      </a>
+      <nav class="bc-nav-desktop" style="align-items:center; gap:2px; white-space:nowrap;">
+        <a href="Byron Climbs Landing.dc.html" class="bc-disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:8px 14px; color:#6E6E74; border-bottom:2px solid transparent;" style-hover="color:#1F1F21;">Home</a>
+        <a href="Byron Climbs Blog.dc.html" class="bc-disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:8px 14px; color:#6E6E74; border-bottom:2px solid transparent;" style-hover="color:#1F1F21;">Field Notes</a>
+        <a href="Byron Climbs Database.dc.html" class="bc-disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:8px 14px; color:#6E6E74; border-bottom:2px solid transparent;" style-hover="color:#1F1F21;">Database</a>
+        <a href="Byron Climbs About.dc.html" class="bc-disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:8px 14px; color:#6E6E74; border-bottom:2px solid transparent;" style-hover="color:#1F1F21;">About</a>
+        <a href="#" class="bc-disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:8px 14px; color:#1F1F21; border-bottom:2px solid #C8541E;">Contact</a>
+      </nav>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <a href="#" class="bc-nav-desktop bc-disp" style="text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:8px 4px; color:#6E6E74; white-space:nowrap;" style-hover="color:#1F1F21;">Sign in</a>
+        <button class="bc-only-sm" aria-label="Menu" style="align-items:center; justify-content:center; border:1px solid #DCD5C8; background:transparent; padding:7px; border-radius:3px; cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F1F21" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"></path></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section id="bc-hero" data-screen-label="Contact Hero" style="position:relative; overflow:hidden; min-height:clamp(520px,80vh,720px); display:flex; flex-direction:column; justify-content:flex-end;">
+    <img id="bc-hero-img" src="assets/squamish-meadow.jpg" alt="Okanagan crag at golden hour" style="position:absolute; left:0; top:-10%; width:100%; height:122%; object-fit:cover; object-position:center 42%; z-index:0;">
+    <div style="position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, rgba(14,14,16,0.18) 0%, rgba(14,14,16,0.40) 46%, rgba(14,14,16,0.82) 100%);"></div>
+    <div class="bc-glow" style="position:absolute; bottom:-14%; right:-6%; width:54%; height:74%; z-index:1; pointer-events:none; background:radial-gradient(ellipse at center, rgba(200,84,30,0.34), transparent 62%);"></div>
+
+    <svg viewBox="0 0 1440 240" preserveAspectRatio="none" style="position:absolute; left:0; bottom:0; width:100%; height:46%; z-index:1; color:#F4F1EC; opacity:0.15; pointer-events:none;" aria-hidden="true">
+      <sc-for list="{{ heroTopo }}" as="d" hint-placeholder-count="6">
+        <path class="bc-topo-path" d="{{ d }}" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+      </sc-for>
+    </svg>
+
+    <div class="bc-hero-content" style="position:relative; z-index:2; width:100%; max-width:1320px; margin:0 auto; padding:0 clamp(20px,5vw,56px) clamp(34px,6vw,60px);">
+      <span class="bc-mono bc-hero-kicker" style="display:block; color:#E8884F; margin-bottom:16px; font-size:11px;">— CONTACT · LET'S TIE IN</span>
+      <h1 class="bc-disp" style="margin:0; text-transform:uppercase; font-weight:800; line-height:0.88; letter-spacing:0.01em; font-size:clamp(54px,10vw,132px); color:#F4F1EC; text-wrap:balance;">
+        <span style="display:block; overflow:hidden; padding-bottom:0.03em;"><span class="bc-line" style="display:block;">Find me on</span></span>
+        <span style="display:block; overflow:hidden; padding-bottom:0.03em;"><span class="bc-line" style="display:block; color:#E8884F;">the wall.</span></span>
+      </h1>
+      <p id="bc-hero-sub" style="max-width:560px; margin:22px 0 0; font-size:clamp(14px,1.6vw,17px); line-height:1.6; color:rgba(244,241,236,0.92); text-shadow:0 1px 8px rgba(0,0,0,0.6); text-wrap:pretty;">
+        If you're in the Kelowna area and want to share beta, meet up for a session, or just talk climbing over coffee — I'd love to hear from you.
+      </p>
+
+      <!-- live status chip -->
+      <div id="bc-status-chip" style="display:inline-flex; align-items:center; gap:12px; margin-top:30px; padding:11px 16px 11px 14px; background:rgba(14,14,16,0.55); border:1px solid rgba(244,241,236,0.18); border-radius:999px; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);">
+        <span class="bc-live-dot" style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#3FB873; box-shadow:0 0 10px rgba(63,184,115,0.8); flex:none;"></span>
+        <span style="display:flex; flex-direction:column; gap:3px;">
+          <span class="bc-mono" id="bc-clock" style="color:rgba(244,241,236,0.62); font-size:9px;">RIGHT NOW IN KELOWNA · — : —</span>
+          <span class="bc-disp" id="bc-status" style="text-transform:uppercase; font-weight:600; font-size:14px; letter-spacing:0.04em; color:#F4F1EC; line-height:1;">Checking the forecast…</span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT BODY ============ -->
+  <section id="bc-body" data-screen-label="Reach Me" style="background:#F4F1EC; padding:clamp(56px,8vw,96px) clamp(20px,5vw,56px) clamp(48px,7vw,80px);">
+    <div style="max-width:1180px; margin:0 auto;">
+
+      <div class="bc-body-head" style="margin-bottom:clamp(40px,5vw,60px); max-width:680px;">
+        <span class="bc-mono" style="display:block; color:#C8541E; margin-bottom:12px;">— THREE WAYS TO CLIP IN</span>
+        <h2 class="bc-disp" style="margin:0; text-transform:uppercase; font-weight:700; font-size:clamp(30px,5vw,52px); line-height:0.96; letter-spacing:0.01em; color:#1F1F21; text-wrap:balance;">Reach me from anywhere on the route.</h2>
+      </div>
+
+      <div class="bc-contact-grid">
+
+        <!-- LEFT: the belay rope w/ anchors -->
+        <div id="bc-rail-wrap" style="position:relative; padding-left:clamp(44px,7vw,76px);">
+          <div id="bc-rail" style="position:absolute; left:clamp(14px,3vw,26px); top:10px; bottom:18px; width:2px; background:#DCD5C8;">
+            <div id="bc-rail-fill" style="position:absolute; left:0; top:0; width:100%; height:100%; background:linear-gradient(180deg,#E8884F,#C8541E); transform-origin:top center; transform:scaleY(0);"></div>
+            <div id="bc-climber" style="position:absolute; left:50%; top:0; width:18px; height:18px; margin-left:-9px; margin-top:-9px; border-radius:50%; background:#C8541E; border:3px solid #F4F1EC; box-shadow:0 2px 10px rgba(200,84,30,0.5); animation:bcPulse 2.4s ease-out infinite;"></div>
+          </div>
+
+          <!-- ANCHOR 1 — EMAIL (click to copy) -->
+          <div class="bc-anchor" style="position:relative; padding-bottom:clamp(34px,5vw,52px);">
+            <div class="bc-bolt" style="position:absolute; left:calc(-1 * clamp(44px,7vw,76px) + clamp(14px,3vw,26px) - 6px); top:8px; width:14px; height:14px;">
+              <div style="position:absolute; inset:0; border-radius:50%; background:#F4F1EC; border:2px solid #C8541E;"></div>
+              <div class="bc-bolt-core" style="position:absolute; left:50%; top:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:#C8541E; transform:scale(0);"></div>
+            </div>
+            <div class="bc-anchor-card">
+              <span class="bc-mono" style="display:block; color:#6E6E74; margin-bottom:10px;">— EMAIL · PRIMARY ANCHOR</span>
+              <button id="bc-email-btn" onClick="{{ copyEmail }}" style="display:inline-flex; align-items:baseline; gap:10px; flex-wrap:wrap; background:transparent; border:none; padding:0; margin:0; cursor:pointer; text-align:left;">
+                <span class="bc-disp" id="bc-email-text" style="text-transform:none; font-weight:700; font-size:clamp(24px,3.6vw,38px); line-height:1; color:#1F1F21; letter-spacing:0; transition:color 0.25s ease;">loading…</span>
+              </button>
+              <div style="display:flex; align-items:center; gap:14px; margin-top:14px; flex-wrap:wrap;">
+                <span class="bc-mono" id="bc-copy-hint" style="display:inline-flex; align-items:center; gap:7px; color:#6E6E74;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span id="bc-copy-label">CLICK TO COPY</span>
+                </span>
+                <a id="bc-mail-open" href="#" class="bc-disp" style="display:inline-flex; align-items:center; gap:6px; text-transform:uppercase; font-weight:600; font-size:12px; letter-spacing:0.06em; color:#C8541E;" style-hover="color:#8E3A12;">Open mail →</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- ANCHOR 2 — INSTAGRAM -->
+          <div class="bc-anchor" style="position:relative; padding-bottom:clamp(34px,5vw,52px);">
+            <div class="bc-bolt" style="position:absolute; left:calc(-1 * clamp(44px,7vw,76px) + clamp(14px,3vw,26px) - 6px); top:8px; width:14px; height:14px;">
+              <div style="position:absolute; inset:0; border-radius:50%; background:#F4F1EC; border:2px solid #C8541E;"></div>
+              <div class="bc-bolt-core" style="position:absolute; left:50%; top:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:#C8541E; transform:scale(0);"></div>
+            </div>
+            <div class="bc-anchor-card">
+              <span class="bc-mono" style="display:block; color:#6E6E74; margin-bottom:10px;">— INSTAGRAM · CONDITIONS & SENDS</span>
+              <a id="bc-ig-link" href="https://www.instagram.com/byron.hayes.77" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:14px;">
+                <span class="bc-disp" style="text-transform:none; font-weight:700; font-size:clamp(24px,3.6vw,38px); line-height:1; color:#1F1F21; letter-spacing:0; transition:color 0.25s ease;" style-hover="color:#C8541E;">@byron.hayes.77</span>
+                <span id="bc-ig-arrow" class="bc-disp" style="display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:#1F1F21; color:#F4F1EC; flex:none;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H8M17 7v9"></path></svg>
+                </span>
+              </a>
+              <p style="margin:14px 0 0; font-size:14px; line-height:1.6; color:#6E6E74; max-width:380px; text-wrap:pretty;">Casual updates — trip photos, conditions reports, and the occasional send.</p>
+            </div>
+          </div>
+
+          <!-- ANCHOR 3 — IN PERSON -->
+          <div class="bc-anchor" style="position:relative;">
+            <div class="bc-bolt" style="position:absolute; left:calc(-1 * clamp(44px,7vw,76px) + clamp(14px,3vw,26px) - 6px); top:8px; width:14px; height:14px;">
+              <div style="position:absolute; inset:0; border-radius:50%; background:#F4F1EC; border:2px solid #C8541E;"></div>
+              <div class="bc-bolt-core" style="position:absolute; left:50%; top:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:#C8541E; transform:scale(0);"></div>
+            </div>
+            <div class="bc-anchor-card">
+              <span class="bc-mono" style="display:block; color:#6E6E74; margin-bottom:10px;">— IN PERSON · WEEKENDS</span>
+              <h3 class="bc-disp" style="margin:0; text-transform:uppercase; font-weight:700; font-size:clamp(24px,3.6vw,38px); line-height:1; color:#1F1F21;">At the crag</h3>
+              <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;">
+                <sc-for list="{{ spots }}" as="s" hint-placeholder-count="3">
+                  <span class="bc-disp bc-spot-chip" style="display:inline-flex; align-items:center; text-transform:uppercase; font-weight:600; font-size:12px; letter-spacing:0.06em; padding:7px 12px; border:1px solid #DCD5C8; border-radius:999px; color:#1F1F21;" style-hover="border-color:#C8541E; color:#C8541E;">{{ s }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: personal note + photo -->
+        <div class="bc-side">
+          <div class="bc-side-card" style="background:#FBFAF6; border:1px solid #DCD5C8; border-radius:3px; overflow:hidden;">
+            <div style="position:relative; height:clamp(180px,26vw,240px); overflow:hidden;">
+              <img class="bc-side-img" src="assets/cliff-over-water.jpg" alt="Byron at the Boulderfields" style="position:absolute; left:0; top:-10%; width:100%; height:120%; object-fit:cover; object-position:center 38%;">
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.42) 100%);"></div>
+              <span class="bc-mono" style="position:absolute; left:14px; bottom:14px; padding:6px 10px; background:rgba(15,15,16,0.7); color:#F4F1EC; backdrop-filter:blur(4px);">BOULDERFIELDS · 49.46°N</span>
+            </div>
+            <div style="padding:clamp(22px,3vw,32px);">
+              <h3 class="bc-disp" style="margin:0 0 14px; text-transform:uppercase; font-weight:700; font-size:clamp(22px,3vw,30px); line-height:1; color:#1F1F21;">Always down for a session.</h3>
+              <p style="margin:0 0 14px; font-size:15px; line-height:1.62; color:#4A4A4F; text-wrap:pretty;">You'll usually find me at the Boulderfields or Cougar Canyon on weekends. Email's the best way to reach me before then — I check it regularly and I'm always happy to talk climbing, share local beta, or point someone toward a good project.</p>
+              <p style="margin:0; font-size:15px; line-height:1.62; color:#4A4A4F; text-wrap:pretty;">Coming to climbing later in life? Even better. That's exactly who I built this for.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA (dark) ============ -->
+  <section id="bc-cta" data-screen-label="Send-off" style="position:relative; overflow:hidden; background:#0E0E10; color:#F4F1EC; padding:clamp(64px,9vw,116px) clamp(20px,5vw,56px);">
+    <div class="bc-glow" style="position:absolute; top:-20%; left:-6%; width:50%; height:80%; z-index:0; pointer-events:none; background:radial-gradient(ellipse at center, rgba(200,84,30,0.22), transparent 64%);"></div>
+    <div style="position:relative; z-index:1; max-width:980px; margin:0 auto;">
+      <span class="bc-mono bc-cta-reveal" style="display:block; color:#E8884F; margin-bottom:18px;">— SEE YOU OUT THERE</span>
+      <h2 class="bc-disp bc-cta-reveal" style="margin:0; text-transform:uppercase; font-weight:800; font-size:clamp(40px,7vw,84px); line-height:0.92; letter-spacing:0.01em; color:#F4F1EC; text-wrap:balance;">Bring chalk.<br>I'll bring the beta.</h2>
+      <div class="bc-cta-reveal" style="display:flex; gap:10px; margin-top:32px; flex-wrap:wrap;">
+        <a id="bc-magnet" href="#" class="bc-disp" style="display:inline-flex; align-items:center; text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:13px 24px; background:#C8541E; color:#F4F1EC; border:1px solid #C8541E; border-radius:3px;" style-hover="background:#8E3A12; border-color:#8E3A12;">Send me a note →</a>
+        <a href="Byron Climbs Database.dc.html" class="bc-disp" style="display:inline-flex; align-items:center; text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:0.06em; padding:13px 24px; background:transparent; color:#F4F1EC; border:1px solid rgba(244,241,236,0.4); border-radius:3px;" style-hover="background:rgba(244,241,236,0.1);">Browse the database</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer style="background:#0E0E10; color:#F4F1EC; padding:40px clamp(20px,5vw,56px); border-top:1px solid rgba(244,241,236,0.08);">
+    <div style="max-width:1320px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <svg width="30" height="30" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <circle cx="20" cy="20" r="18" stroke="#F4F1EC" stroke-width="1.5"></circle>
+          <circle cx="20" cy="20" r="13" stroke="#F4F1EC" stroke-width="0.8" opacity="0.5"></circle>
+          <path d="M8 28 L16 16 L20 21 L26 12 L32 28 Z" fill="#F4F1EC"></path>
+          <circle cx="26" cy="12" r="1.6" fill="#C8541E"></circle>
+        </svg>
+        <span class="bc-disp" style="text-transform:uppercase; font-weight:700; font-size:17px; letter-spacing:0.06em;">Byron Climbs</span>
+      </div>
+      <span class="bc-mono" style="color:rgba(244,241,236,0.45);">© 2026 BYRON HAYES · KELOWNA, BC · BUILT BETWEEN SESSIONS</span>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  topoPath(width, baseY, amp, seed, n) {
+    let s = "";
+    for (let i = 0; i <= n; i++) {
+      const x = (i / n) * width;
+      const y = baseY + Math.sin(i * 0.55 + seed) * amp + Math.cos(i * 1.2 + seed * 1.7) * amp * 0.42;
+      s += (i === 0 ? `M ${x.toFixed(1)} ${y.toFixed(1)}` : ` L ${x.toFixed(1)} ${y.toFixed(1)}`);
+    }
+    return s;
+  }
+
+  renderVals() {
+    const heroTopo = [];
+    for (let k = 0; k < 6; k++) heroTopo.push(this.topoPath(1440, 50 + k * 36, 22, k * 1.3 + 1, 28));
+
+    const spots = ["The Boulderfields", "Cougar Canyon", "Skaha Bluffs"];
+
+    const copyEmail = () => {
+      const email = this.email();
+      const label = document.getElementById("bc-copy-label");
+      const hint = document.getElementById("bc-copy-hint");
+      const txt = document.getElementById("bc-email-text");
+      const done = () => {
+        if (label) label.textContent = "COPIED!";
+        if (hint) hint.style.color = "#3FB873";
+        if (txt) txt.style.color = "#C8541E";
+        if (window.gsap && txt) window.gsap.fromTo(txt, { scale: 1 }, { scale: 1.04, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "left center" });
+        clearTimeout(this._copyT);
+        this._copyT = setTimeout(() => {
+          if (label) label.textContent = "CLICK TO COPY";
+          if (hint) hint.style.color = "#6E6E74";
+          if (txt) txt.style.color = "#1F1F21";
+        }, 2000);
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(email).then(done).catch(() => this._fallbackCopy(email, done));
+        } else { this._fallbackCopy(email, done); }
+      } catch (e) { this._fallbackCopy(email, done); }
+    };
+
+    return { heroTopo, spots, copyEmail };
+  }
+
+  email() {
+    // assembled at runtime so the literal never appears in served HTML (defeats email obfuscation)
+    return "byron.climbs.rocks" + String.fromCharCode(64) + "gmail" + String.fromCharCode(46) + "com";
+  }
+
+  wireEmail() {
+    const e = this.email();
+    const txt = document.getElementById("bc-email-text");
+    if (txt) txt.textContent = e;
+    const open = document.getElementById("bc-mail-open");
+    if (open) open.setAttribute("href", "mailto:" + e);
+    const mag = document.getElementById("bc-magnet");
+    if (mag) mag.setAttribute("href", "mailto:" + e + "?subject=" + encodeURIComponent("Climbing — let's connect"));
+  }
+
+  _fallbackCopy(text, done) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      done();
+    } catch (e) { /* no-op */ }
+  }
+
+  componentDidMount() {
+    this.wireEmail();
+    this.startClock();
+    const t0 = Date.now();
+    const tick = () => {
+      if (window.gsap && window.ScrollTrigger) {
+        try { this.motion(); } catch (e) { console.warn("motion init failed", e); }
+      } else if (Date.now() - t0 < 5000) {
+        setTimeout(tick, 60);
+      }
+    };
+    tick();
+  }
+
+  componentWillUnmount() {
+    if (this._clockT) clearInterval(this._clockT);
+    if (this._copyT) clearTimeout(this._copyT);
+  }
+
+  startClock() {
+    const update = () => {
+      const now = new Date();
+      let timeStr = "", h = 12, wd = "Mon";
+      try {
+        timeStr = new Intl.DateTimeFormat("en-US", { timeZone: "America/Vancouver", hour: "numeric", minute: "2-digit", hour12: true }).format(now);
+        h = parseInt(new Intl.DateTimeFormat("en-US", { timeZone: "America/Vancouver", hour: "2-digit", hour12: false }).format(now), 10);
+        wd = new Intl.DateTimeFormat("en-US", { timeZone: "America/Vancouver", weekday: "short" }).format(now);
+      } catch (e) {
+        timeStr = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+        h = now.getHours();
+      }
+      const weekend = wd === "Sat" || wd === "Sun";
+      let status, dot;
+      if (h < 6 || h >= 22) { status = "Asleep — rehearsing beta in my head"; dot = "#8C8C92"; }
+      else if (weekend && h >= 8 && h < 18) { status = "Probably at the Boulderfields"; dot = "#3FB873"; }
+      else if (!weekend && h >= 9 && h < 17) { status = "At work — email's your best bet"; dot = "#E8884F"; }
+      else { status = "Home, logging today's sends"; dot = "#3FB873"; }
+
+      const clk = document.getElementById("bc-clock");
+      const st = document.getElementById("bc-status");
+      const chip = document.getElementById("bc-status-chip");
+      if (clk) clk.textContent = "RIGHT NOW IN KELOWNA · " + timeStr;
+      if (st) st.textContent = status;
+      if (chip) {
+        const d = chip.querySelector(".bc-live-dot");
+        if (d) { d.style.background = dot; d.style.boxShadow = "0 0 10px " + dot; }
+      }
+    };
+    update();
+    this._clockT = setInterval(update, 5000);
+  }
+
+  drawPaths(paths, opts) {
+    const g = window.gsap;
+    paths.forEach((p, i) => {
+      let len = 1000;
+      try { len = p.getTotalLength() || 1000; } catch (e) {}
+      g.set(p, { strokeDasharray: len, strokeDashoffset: len });
+      const st = opts.trigger ? { trigger: opts.trigger, start: "top 85%", once: true } : undefined;
+      g.to(p, {
+        strokeDashoffset: 0,
+        duration: opts.duration || 1.6,
+        ease: "power1.inOut",
+        delay: (opts.delay || 0) + i * (opts.stagger || 0.1),
+        scrollTrigger: st,
+      });
+    });
+  }
+
+  motion() {
+    const g = window.gsap;
+    g.registerPlugin(window.ScrollTrigger);
+    const root = document.getElementById("bc-contact");
+    if (!root) return;
+    const q = (s) => Array.from(root.querySelectorAll(s));
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.innerWidth < 760;
+
+    if (reduce) {
+      g.set("#bc-rail-fill", { scaleY: 1 });
+      g.set(q(".bc-bolt-core"), { scale: 1 });
+      window.ScrollTrigger.refresh();
+      return;
+    }
+
+    // Hero entrance
+    const img = root.querySelector("#bc-hero-img");
+    g.set(img, { scale: 1.16 });
+    const tl = g.timeline({ defaults: { ease: "power3.out" } });
+    tl.to(img, { scale: 1.0, duration: 1.8, ease: "power2.out" }, 0)
+      .from(root.querySelector(".bc-hero-kicker"), { y: 14, opacity: 0, duration: 0.6 }, 0.2)
+      .from(q("#bc-hero .bc-line"), { yPercent: 120, duration: 1.0, stagger: 0.12 }, 0.3)
+      .from(root.querySelector("#bc-hero-sub"), { y: 18, opacity: 0, duration: 0.8 }, "-=0.5")
+      .from(root.querySelector("#bc-status-chip"), { y: 14, opacity: 0, duration: 0.7 }, "-=0.4");
+
+    // Hero topo draw
+    this.drawPaths(q("#bc-hero .bc-topo-path"), { duration: 1.8, stagger: 0.12, delay: 0.4 });
+
+    // Hero parallax
+    const hero = root.querySelector("#bc-hero");
+    g.to(img, { yPercent: mobile ? 6 : 10, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } });
+
+    // Body heading reveal
+    g.from(q(".bc-body-head"), { y: 30, opacity: 0, duration: 0.8, ease: "power3.out", scrollTrigger: { trigger: "#bc-body", start: "top 80%", once: true } });
+
+    // ===== Belay rope: scrub-driven fill + climber + bolts =====
+    const rail = root.querySelector("#bc-rail");
+    const fill = root.querySelector("#bc-rail-fill");
+    const climber = root.querySelector("#bc-climber");
+    if (rail && fill && climber) {
+      const railH = () => rail.getBoundingClientRect().height;
+      g.set(fill, { scaleY: 0 });
+      g.to(fill, {
+        scaleY: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: "#bc-rail-wrap",
+          start: "top 72%",
+          end: "bottom 80%",
+          scrub: 0.6,
+          onUpdate: (self) => { g.set(climber, { y: railH() * self.progress }); },
+          onRefresh: (self) => { g.set(climber, { y: railH() * self.progress }); },
+        },
+      });
+    }
+
+    // Anchor cards reveal + bolt pop
+    q(".bc-anchor").forEach((item) => {
+      g.from(item.querySelector(".bc-anchor-card"), {
+        x: 26, opacity: 0, duration: 0.7, ease: "power3.out",
+        scrollTrigger: { trigger: item, start: "top 84%", once: true },
+      });
+      g.fromTo(item.querySelector(".bc-bolt-core"), { scale: 0 }, {
+        scale: 1, duration: 0.4, ease: "back.out(2.2)",
+        scrollTrigger: { trigger: item, start: "top 82%", once: true },
+      });
+    });
+
+    // Side card reveal + subtle parallax on its image
+    g.from(q(".bc-side-card"), { y: 30, opacity: 0, duration: 0.9, ease: "power3.out", scrollTrigger: { trigger: ".bc-side", start: "top 82%", once: true } });
+    const sideImg = root.querySelector(".bc-side-img");
+    if (sideImg) {
+      g.fromTo(sideImg, { yPercent: -5 }, { yPercent: 5, ease: "none", scrollTrigger: { trigger: ".bc-side-card", start: "top bottom", end: "bottom top", scrub: true } });
+    }
+
+    // CTA reveal
+    g.from(q(".bc-cta-reveal"), { y: 32, opacity: 0, duration: 0.8, ease: "power3.out", stagger: 0.1, scrollTrigger: { trigger: "#bc-cta", start: "top 80%", once: true } });
+
+    // Magnetic interactions (desktop only)
+    if (!mobile) {
+      const magnetize = (el, sx, sy) => {
+        if (!el) return;
+        const onMove = (e) => {
+          const r = el.getBoundingClientRect();
+          const mx = e.clientX - (r.left + r.width / 2);
+          const my = e.clientY - (r.top + r.height / 2);
+          g.to(el, { x: mx * sx, y: my * sy, duration: 0.4, ease: "power3.out" });
+        };
+        const onLeave = () => g.to(el, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1,0.4)" });
+        el.addEventListener("mousemove", onMove);
+        el.addEventListener("mouseleave", onLeave);
+      };
+      magnetize(root.querySelector("#bc-magnet"), 0.3, 0.4);
+      magnetize(root.querySelector("#bc-ig-arrow"), 0.5, 0.5);
+    }
+
+    window.ScrollTrigger.refresh();
+  }
+}
+</script>
+</body>
+</html>
