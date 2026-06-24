@@ -29,40 +29,38 @@ export default function ConnectCTA() {
       >
         <Reveal y={30} stagger={0.1}>
           <MonoChip className="mb-4 block text-ember-soft">
-            — WHY THIS BLOG · LET&apos;S CONNECT
+            — WHY THIS BLOG
           </MonoChip>
           <h2
             className="font-display font-extrabold uppercase leading-[0.92] tracking-[0.01em] text-chalk"
             style={{ fontSize: "clamp(40px,7vw,84px)" }}
           >
-            Find me at the
+            My climbing
             <br />
-            Boulderfields.
+            journal.
           </h2>
           <p
             className="mt-5 max-w-[620px] font-body text-[15px] leading-[1.6]"
             style={{ color: "rgba(244,241,236,0.72)", textWrap: "pretty" }}
           >
-            I built this because I wish I&apos;d had a resource like it when I
-            started — honest insight into coming to climbing later in life. If
-            you&apos;re in the Kelowna area and want to share beta, meet for a
-            session, or just talk climbing over coffee, I&apos;d love to hear
-            from you.
+            I built this to track my progress and keep a record of everything I
+            climb — every project, every send, and the ones still kicking my
+            ass. This is the logbook I wished I&apos;d kept from day one.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3.5">
             <MagneticButton
-              href="/contact"
+              href="/database"
               className="inline-flex items-center rounded-sm border border-ember bg-ember px-5 py-3 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-chalk transition-colors duration-150 hover:border-ember-deep hover:bg-ember-deep"
             >
-              Get in touch →
+              Browse the database →
             </MagneticButton>
             <Link
-              href="/database"
+              href="/contact"
               className="inline-flex items-center rounded-sm border px-5 py-3 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-chalk transition-colors duration-150 hover:bg-[rgba(244,241,236,0.1)]"
               style={{ borderColor: "rgba(244,241,236,0.4)" }}
             >
-              Browse the database
+              Get in touch
             </Link>
           </div>
         </Reveal>
